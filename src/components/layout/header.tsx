@@ -30,7 +30,7 @@ export function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
-            src="/logo.png"
+            src="/Logo.png"
             alt="Stitch Please Logo"
             width={64}
             height={16}
