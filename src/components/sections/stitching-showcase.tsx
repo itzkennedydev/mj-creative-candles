@@ -7,7 +7,7 @@ export function StitchingShowcase() {
     <Container>
       <div className="flex flex-col lg:flex-row items-center gap-8 py-8 md:py-16">
         {/* Images Grid */}
-        <div className="relative w-full lg:w-[45%]">
+        <div className="relative w-full lg:w-[45%] mb-12 lg:mb-0">
           <div className="relative overflow-hidden rounded-lg">
             <Image
               src="/showcase/S1.jpg"
