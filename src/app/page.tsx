@@ -3,6 +3,7 @@ import { BrandsSection } from "~/components/sections/brands";
 import { Categories } from "~/components/sections/categories";
 import { CtaSection } from "~/components/sections/cta"
 import { StitchingShowcase } from "~/components/sections/stitching-showcase"
+import { WhyChoose } from "~/components/sections/why-choose"
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
       <Categories />
       <CtaSection />
       <StitchingShowcase />
+      <WhyChoose />
       {/* Other sections */}
     </div>
   );

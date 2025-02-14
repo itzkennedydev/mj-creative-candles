@@ -1,15 +1,30 @@
+"use client"
+
 import Image from "next/image"
+import { motion } from "framer-motion"
 import { Button } from "~/components/ui/button"
 import { Container } from "~/components/ui/container"
+
+const MotionImage = motion(Image)
 
 export function StitchingShowcase() {
   return (
     <Container>
       <div className="flex flex-col lg:flex-row items-center gap-8 py-8 md:py-16">
         {/* Images Grid */}
-        <div className="relative w-full lg:w-[45%] mb-12 lg:mb-0">
+        <motion.div 
+          initial={{ opacity: 0, x: -50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="relative w-full lg:w-[45%] mb-12 lg:mb-0"
+        >
           <div className="relative overflow-hidden rounded-lg">
-            <Image
+            <MotionImage
+              initial={{ scale: 1.2 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
               src="/showcase/S1.jpg"
               alt="Stitching shop showcase"
               width={800}
@@ -18,7 +33,13 @@ export function StitchingShowcase() {
               priority
             />
           </div>
-          <div className="absolute bottom-[-8%] right-[-4%] w-2/5 overflow-hidden rounded-lg shadow-xl">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="absolute bottom-[-8%] right-[-4%] w-2/5 overflow-hidden rounded-lg shadow-xl"
+          >
             <div className="shadow-[0_16px_40px_rgba(8,_112,_184,_0.7)]">
               <Image
                 src="/showcase/S2.jpeg"
@@ -28,12 +49,24 @@ export function StitchingShowcase() {
                 className="object-cover w-full"
               />
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Content */}
-        <div className="space-y-4 w-full lg:w-[55%] lg:pl-24">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1]">
+        <motion.div 
+          initial={{ opacity: 0, x: 50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="space-y-4 w-full lg:w-[55%] lg:pl-24"
+        >
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1]"
+          >
             You&apos;ve got the <span className="relative inline-block ml-4">
               ideas
               <Image
@@ -46,18 +79,30 @@ export function StitchingShowcase() {
             </span>,
             <br />
             <span className="underline decoration-[#74CADC]">we&apos;ve got the tools</span>
-          </h2>
-          <p className="text-muted-foreground text-base md:text-lg max-w-xl leading-[1.75]">
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="text-muted-foreground text-base md:text-lg max-w-xl leading-[1.75]"
+          >
             We empower your creativity with our top-notch stitching and embroidery services. 
             Whether you dream of intricate designs, personalized monograms, or unique patterns, 
             our skilled artisans are ready to bring your visions to life.
-          </p>
-          <div className="pt-4">
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="pt-4"
+          >
             <Button size="lg" className="w-full sm:w-auto bg-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/90">
               Get Started
             </Button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </Container>
   )
