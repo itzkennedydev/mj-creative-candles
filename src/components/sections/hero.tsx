@@ -3,194 +3,93 @@
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
 import { MapPin, ArrowRight } from "lucide-react";
-import { motion, type HTMLMotionProps } from "framer-motion";
-import { Dancing_Script } from 'next/font/google';
-
-const dancingScript = Dancing_Script({ subsets: ['latin'] });
-
-const letterAnimation = {
-  initial: { opacity: 0, y: 20 },
-  animate: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: 0.3 + (i * 0.1),
-      duration: 0.4
-    }
-  })
-};
+import { motion } from "framer-motion";
+import Image from "next/image";
 
 export function Hero() {
-  const brandText = "stitch please".split("");
-
   return (
-    <section className="pt-16">
+    <section className="relative pt-16">
       <Container>
-        <div 
-          className="relative rounded-2xl overflow-hidden h-[544px] md:h-[640px]"
-          style={{
-            backgroundImage: "url('/stitch.jpg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center"
-          }}
-        >
-          {/* Gradient overlay for better text contrast */}
+        <div className="relative rounded-3xl overflow-hidden h-[544px] md:h-[640px]">
+          {/* Hero Image with Next.js Image optimization */}
+          <Image
+            src="/stitch.jpg"
+            alt="Stitch Please storefront"
+            fill
+            priority
+            className="object-cover"
+            sizes="(max-width: 1280px) 100vw, 1280px"
+            quality={90}
+          />
+
+          {/* Gradient overlay with improved contrast */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1 }}
-            className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/20" 
+            className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" 
           />
           
           {/* Content */}
-          <div className="relative h-full flex md:justify-end items-center p-8 md:p-16">
-            {/* Mobile view - centered content */}
-            <div className="md:hidden w-full">
+          <div className="relative h-full flex items-center p-4 sm:p-8 md:p-16">
+            {/* Content Container */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20, x: 0 }}
+              animate={{ opacity: 1, y: 0, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 sm:p-8 w-full md:w-auto md:max-w-[544px] shadow-xl ring-1 ring-black/5 mx-auto md:mx-0 md:ml-auto"
+            >
+              {/* Location Badge */}
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="bg-white/95 backdrop-blur-md rounded-2xl p-8 mx-auto max-w-[95%] border border-white/20"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="flex flex-col items-center mb-6 md:mb-8"
               >
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.4 }}
-                  className="flex justify-center items-center gap-2 mb-4 bg-[#74CADC]/20 text-[#0A5565] px-4 py-2 rounded-full mx-auto w-fit"
-                >
-                  <MapPin className="h-4 w-4" />
-                  <span className="font-bold text-sm">415 13th St, Moline IL</span>
-                </motion.div>
-
-                <motion.h1 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}
-                  className="text-2xl font-bold mb-4 text-foreground text-center"
-                >
-                  Bring Your Ideas to Life at{" "}
-                  <span className={`${dancingScript.className} text-[#74CADC] text-3xl inline-flex`}>
-                    {brandText.map((letter, i) => (
-                      <motion.span
-                        key={i}
-                        custom={i}
-                        variants={letterAnimation}
-                        initial="initial"
-                        animate="animate"
-                        className="inline-block"
-                      >
-                        {letter === " " ? "\u00A0" : letter}
-                      </motion.span>
-                    ))}
-                  </span>
-                </motion.h1>
-                
-                <motion.p 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.4 }}
-                  className="text-lg text-muted-foreground mb-8 text-center"
-                >
-                  Custom embroidery and personalized designs crafted with care.
-                </motion.p>
-
-                <div className="flex flex-col gap-4">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.4 }}
-                  >
-                    <Button 
-                      size="lg"
-                      className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium"
-                    >
-                      Get Directions
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6, duration: 0.4 }}
-                  >
-                    <Button 
-                      variant="outline"
-                      size="lg"
-                      className="w-full border-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/10"
-                    >
-                      Start Creating
-                    </Button>
-                  </motion.div>
+                <div className="bg-[#74CADC]/20 text-[#0A5565] px-4 sm:px-6 py-2 rounded-full text-center">
+                  <span className="text-sm sm:text-base font-medium">415 13th St, Moline IL</span>
                 </div>
               </motion.div>
-            </div>
 
-            {/* Desktop view */}
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="hidden md:block bg-white/95 backdrop-blur-md rounded-2xl p-8 max-w-[544px] border border-white/20"
-            >
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
-                className="flex justify-center items-center gap-2 mb-8 bg-[#74CADC]/20 text-[#0A5565] px-4 py-2 rounded-full mx-auto w-fit"
-              >
-                <MapPin className="h-5 w-5" />
-                <span className="font-medium">415 13th St, Moline IL</span>
-              </motion.div>
-              
+              {/* Heading */}
               <motion.h1 
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.4 }}
-                className="text-4xl font-bold mb-8 text-foreground leading-tight text-center"
+                transition={{ delay: 0.3 }}
+                className="text-xl sm:text-2xl md:text-4xl leading-[1.2] md:leading-tight font-bold text-zinc-900 mb-4 sm:mb-6 md:mb-8 text-center"
               >
-                Bring Your Ideas to Life at{" "}
-                <span className={`${dancingScript.className} text-[#74CADC] text-6xl inline-flex`}>
-                  {brandText.map((letter, i) => (
-                    <motion.span
-                      key={i}
-                      custom={i}
-                      variants={letterAnimation}
-                      initial="initial"
-                      animate="animate"
-                      className="inline-block"
-                    >
-                      {letter === " " ? "\u00A0" : letter}
-                    </motion.span>
-                  ))}
-                </span>
+                Bring Your Ideas to Life at Stitch Please
               </motion.h1>
-              
+
+              {/* Description */}
               <motion.p 
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.4 }}
-                className="text-xl text-muted-foreground mb-8 text-center"
+                transition={{ delay: 0.4 }}
+                className="text-base sm:text-lg md:text-xl text-zinc-600 mb-6 sm:mb-8 md:mb-12 text-center"
               >
                 Custom embroidery and personalized designs crafted with care. Transform your vision into wearable art.
               </motion.p>
 
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
+              {/* CTA Buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.4 }}
-                className="flex justify-center gap-4"
+                transition={{ delay: 0.5 }}
+                className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4"
               >
                 <Button 
                   size="lg"
-                  className="flex-1 bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium"
+                  className="w-full sm:w-auto bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-xl font-medium"
+                  onClick={() => window.open("https://maps.google.com/?q=415+13th+St,+Moline+IL", "_blank")}
                 >
                   Get Directions
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
                 <Button 
                   variant="outline"
                   size="lg"
-                  className="flex-1 border-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/10"
+                  className="w-full sm:w-auto text-[#0A5565] hover:bg-[#74CADC]/10 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-xl font-medium border-zinc-200"
                 >
                   Start Creating
                 </Button>
