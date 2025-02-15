@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-const INSTAGRAM_USERNAME = "stitchpleaseqc";
 const RECENT_POST_IDS = [
   'C5Ry_ePLXGD',
   'C5PUdXbLXwD',

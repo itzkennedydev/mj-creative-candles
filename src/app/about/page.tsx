@@ -78,7 +78,7 @@ export default function AboutPage() {
                 Tanika Zentic is a self motivated and creative designer looking to help you bring your ideas to life! She and her team do professional embroidery, custom signs; both wooden and canvas, team apparel, business logos, family reunions, church events, memorabilia items, personalized gift items, seasonal and promotional items and much more.
               </p>
               <p className="text-lg leading-relaxed text-zinc-600">
-                Any and every customized project you're looking to produce, they can achieve it for you! In a time crunch? Not a problem! Tanika and her team work efficiently to meet your deadlines.
+                Any and every customized project you&apos;re looking to produce, they can achieve it for you! In a time crunch? Not a problem! Tanika and her team work efficiently to meet your deadlines.
               </p>
             </div>
             <Button 
