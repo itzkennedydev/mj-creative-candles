@@ -157,7 +157,7 @@ export default function AboutPage() {
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 className="bg-white p-8 rounded-2xl space-y-4 shadow-sm hover:shadow-md transition-all border border-zinc-100"
               >
-                <p className="italic text-zinc-600 text-lg">"{testimonial.quote}"</p>
+                <p className="italic text-zinc-600 text-lg">&ldquo;{testimonial.quote}&rdquo;</p>
                 <p className="font-medium text-[#0A5565]">— {testimonial.author}</p>
               </motion.div>
             ))}

@@ -35,7 +35,8 @@ export async function GET() {
       const html = await response.text();
       
       // Extract the image URL from the oEmbed response
-      const imageUrlMatch = html.match(/property="og:image" content="([^"]+)"/);
+      const imageUrlRegex = /property="og:image" content="([^"]+)"/;
+      const imageUrlMatch = imageUrlRegex.exec(html);
       if (imageUrlMatch?.[1]) {
         posts.push({
           id: postId,
