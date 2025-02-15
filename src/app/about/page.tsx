@@ -1,18 +1,25 @@
 "use client";
 
-import Image from "next/image";
+import React from 'react';
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
-import { Mail, MapPin, Phone, Clock, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { Mail, ArrowRight } from "lucide-react";
+import Image from "next/image";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 
 const testimonials = [
   {
-    quote: "Stitch, Please embroidered T-shirts and Polos for my church&apos;s 101st Anniversary. The owner &quot;Tanika&quot; did an outstanding job, she went above and beyond to make sure I (Mt. Zion) was satisfied! I (as well as other church members) was very pleased! I highly recommend Stitch, Please!",
+    quote: "Stitch, Please embroidered T-shirts and Polos for my church&apos;s 101st Anniversary. The owner &apos;Tanika&apos; did an outstanding job, she went above and beyond to make sure I (Mt. Zion) was satisfied! I (as well as other church members) was very pleased! I highly recommend Stitch, Please!",
     author: "Ivey"
   },
   {
-    quote: "We walked in, we told her what we needed. We came back an hour and half later and the item was ready to go. It's perfect, exactly what I wanted. Very, very friendly! We will definitely recommend to others. Thank you!",
+    quote: "We walked in, we told her what we needed. We came back an hour and half later and the item was ready to go. It is perfect, exactly what I wanted. Very, very friendly! We will definitely recommend to others. Thank you!",
     author: "Jonna"
   },
   {
@@ -25,175 +32,98 @@ const testimonials = [
   }
 ];
 
-const businessHours = [
-  { day: "Monday", hours: "1pm-3pm" },
-  { day: "Tuesday", hours: "1pm-3pm" },
-  { day: "Wednesday", hours: "CLOSED" },
-  { day: "Thursday", hours: "CLOSED" },
-  { day: "Friday", hours: "1PM-3PM" },
-  { day: "Saturday", hours: "CLOSED" },
-  { day: "Sunday", hours: "CLOSED" },
-];
-
 export default function AboutPage() {
   return (
     <Container>
-      <div className="py-16 md:py-24 space-y-16 md:space-y-24">
-        {/* Hero Section */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center space-y-6"
-        >
-          <div className="inline-block bg-[#74CADC]/20 text-[#0A5565] px-6 py-2 rounded-full mb-4">
-            <span className="text-sm font-medium">About Us</span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900">About Stitch, Please!</h1>
-          <p className="text-xl text-zinc-600 max-w-3xl mx-auto">
-            Turn your ideas into amazing creations. Work with our team of specialists to make your visions come true!
-          </p>
-        </motion.section>
-
+      <div className="py-16 space-y-16">
         {/* About Content */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid md:grid-cols-2 gap-12 items-start"
-        >
-          <div className="space-y-8">
-            <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-8">
-              <Image
-                src="/stitch.jpg"
-                alt="Tanika Zentic - Owner of Stitch, Please!"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
-            </div>
-            <div className="space-y-6">
-              <p className="text-lg leading-relaxed text-zinc-600">
-                Tanika Zentic is a self motivated and creative designer looking to help you bring your ideas to life! She and her team do professional embroidery, custom signs; both wooden and canvas, team apparel, business logos, family reunions, church events, memorabilia items, personalized gift items, seasonal and promotional items and much more.
-              </p>
-              <p className="text-lg leading-relaxed text-zinc-600">
-                Any and every customized project you&apos;re looking to produce, they can achieve it for you! In a time crunch? Not a problem! Tanika and her team work efficiently to meet your deadlines.
-              </p>
-            </div>
-            <Button 
-              size="lg"
-              className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-lg w-full md:w-auto"
-            >
-              Start Your Project
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
+          <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden group">
+            <Image
+              src="/stitch.jpg"
+              alt="Stitch Please Studio"
+              fill
+              className="object-cover transition-transform group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority
+            />
           </div>
 
-          {/* Contact Information */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-zinc-50 p-8 rounded-2xl space-y-8 border border-zinc-200"
-          >
-            <h2 className="text-2xl font-semibold text-zinc-900">Contact Information</h2>
-            <div className="space-y-6">
-              <div className="flex items-start space-x-4">
-                <Mail className="w-5 h-5 text-[#0A5565] mt-1" />
-                <div>
-                  <h3 className="font-medium text-zinc-900">Email</h3>
-                  <p className="text-zinc-600">pleasestitch18@gmail.com</p>
+          <div className="space-y-6">
+            <Card className="border border-zinc-200">
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#1d1d1f]">Meet Our Founder</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <p className="text-[#1d1d1f]/60 leading-relaxed">
+                  At Stitch, Please!, our founder Tanika Zentic leads a passionate team of creative professionals dedicated to bringing your ideas to life through expert craftsmanship and attention to detail. Starting from humble beginnings in her home studio, Tanika has grown Stitch, Please! into the Quad Cities&apos; premier destination for custom embroidery and personalization services.
+                </p>
+                <div className="hidden lg:block">
+                  <h3 className="text-lg font-semibold mb-2">Experience & Expertise</h3>
+                  <p className="text-[#1d1d1f]/60 mb-4">
+                    With over a decade of experience in custom embroidery and personalization, Tanika has built a reputation for excellence and innovation in the Quad Cities area. Her expertise spans from intricate monogramming to large-scale commercial projects, utilizing state-of-the-art equipment and techniques to deliver exceptional results. She has personally trained each team member to ensure the highest standards of quality and craftsmanship in every project.
+                  </p>
+                  <h3 className="text-lg font-semibold mb-2">Our Commitment</h3>
+                  <p className="text-[#1d1d1f]/60">
+                    Her commitment to quality and customer satisfaction has made Stitch, Please! the go-to destination for both individual and business clients seeking premium personalization services. We pride ourselves on our attention to detail, quick turnaround times, and ability to handle projects of any size. Whether it is a single custom piece or a large corporate order, we approach each project with the same level of dedication and care. Our team stays current with the latest industry trends and techniques to provide innovative solutions that exceed our clients&apos; expectations.
+                  </p>
                 </div>
-              </div>
-              <div className="flex items-start space-x-4">
-                <Phone className="w-5 h-5 text-[#0A5565] mt-1" />
-                <div>
-                  <h3 className="font-medium text-zinc-900">Phone</h3>
-                  <p className="text-zinc-600">309-373-6017</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-4">
-                <MapPin className="w-5 h-5 text-[#0A5565] mt-1" />
-                <div>
-                  <h3 className="font-medium text-zinc-900">Visit Us</h3>
-                  <p className="text-zinc-600">415 13th street Moline, IL 61265</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Business Hours */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Clock className="w-5 h-5 text-[#0A5565]" />
-                <h3 className="font-medium text-zinc-900">Business Hours</h3>
-              </div>
-              <div className="space-y-2">
-                {businessHours.map((schedule) => (
-                  <div key={schedule.day} className="flex justify-between text-sm">
-                    <span className="font-medium text-zinc-900">{schedule.day}</span>
-                    <span className="text-zinc-600">{schedule.hours}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </motion.section>
+                <Button 
+                  size="lg"
+                  className="w-full bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
+                >
+                  Start Your Project
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
         {/* Testimonials */}
-        <motion.section 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          className="space-y-12"
-        >
-          <h2 className="text-3xl font-semibold text-zinc-900 text-center">What People Are Saying</h2>
+        <section className="space-y-12">
+          <h2 className="text-3xl font-semibold text-[#1d1d1f] text-center">What People Are Saying</h2>
           <div className="grid md:grid-cols-2 gap-8">
             {testimonials.map((testimonial, index) => (
-              <motion.div 
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="bg-white p-8 rounded-2xl space-y-4 shadow-sm hover:shadow-md transition-all border border-zinc-100"
-              >
-                <p className="italic text-zinc-600 text-lg">&ldquo;{testimonial.quote}&rdquo;</p>
-                <p className="font-medium text-[#0A5565]">— {testimonial.author}</p>
-              </motion.div>
+              <Card key={index} className="group hover:bg-[#f7f7f7] transition-all border border-zinc-200">
+                <CardContent className="p-8 space-y-4">
+                  <p className="italic text-[#1d1d1f]/60 text-lg">{testimonial.quote}</p>
+                  <p className="font-medium text-[#0A5565]">— {testimonial.author}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
-        </motion.section>
+        </section>
 
         {/* Newsletter Signup */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="bg-zinc-50 p-12 rounded-2xl text-center space-y-8 border border-zinc-200"
-        >
-          <div className="max-w-2xl mx-auto space-y-4">
-            <h2 className="text-3xl font-semibold text-zinc-900">Stay Updated</h2>
-            <p className="text-zinc-600">Sign up with your email address to receive news and updates.</p>
-          </div>
-          
-          <form className="max-w-md mx-auto space-y-4">
-            <input
-              type="email"
-              placeholder="Email Address"
-              className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-white focus:border-[#74CADC] focus:ring-[#74CADC] transition-colors"
-            />
-            <Button 
-              type="submit"
-              size="lg"
-              className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-lg"
-            >
-              Sign Up
-              <Mail className="ml-2 h-5 w-5" />
-            </Button>
-          </form>
-          <p className="text-sm text-zinc-500">We respect your privacy.</p>
-        </motion.section>
+        <Card className="bg-[#f7f7f7] border border-zinc-200">
+          <CardContent className="p-12 text-center space-y-8">
+            <div className="max-w-2xl mx-auto space-y-4">
+              <CardTitle className="text-3xl">Stay Updated</CardTitle>
+              <CardDescription className="text-lg">
+                Sign up with your email address to receive news and updates.
+              </CardDescription>
+            </div>
+            
+            <form className="max-w-md mx-auto space-y-4">
+              <input
+                type="email"
+                placeholder="Email Address"
+                className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm focus:border-[#0A5565] focus:ring-[#0A5565] transition-colors"
+              />
+              <Button 
+                type="submit"
+                size="lg"
+                className="w-full bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
+              >
+                Sign Up
+                <Mail className="ml-2 h-5 w-5" />
+              </Button>
+            </form>
+            <p className="text-sm text-[#1d1d1f]/50">We respect your privacy.</p>
+          </CardContent>
+        </Card>
       </div>
     </Container>
   );
-} 
+}

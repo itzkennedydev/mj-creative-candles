@@ -6,35 +6,35 @@ import { Instagram } from "lucide-react";
 
 const galleryImages = [
   {
-    src: "/showcase/S1.jpg",
+    src: "/Instagram/I1.png",
     alt: "Custom embroidery showcase 1"
   },
   {
-    src: "/showcase/S2.jpeg",
+    src: "/Instagram/I2.png",
     alt: "Custom embroidery showcase 2"
   },
   {
-    src: "/showcase/S1.jpg",
+    src: "/Instagram/I3.png",
     alt: "Custom embroidery showcase 3"
   },
   {
-    src: "/showcase/S2.jpeg",
+    src: "/Instagram/I4.png",
     alt: "Custom embroidery showcase 4"
   },
   {
-    src: "/showcase/S1.jpg",
+    src: "/Instagram/I5.png",
     alt: "Custom embroidery showcase 5"
   },
   {
-    src: "/showcase/S2.jpeg",
+    src: "/Instagram/I6.png",
     alt: "Custom embroidery showcase 6"
   },
   {
-    src: "/showcase/S1.jpg",
+    src: "/Instagram/I7.png",
     alt: "Custom embroidery showcase 7"
   },
   {
-    src: "/showcase/S2.jpeg",
+    src: "/Instagram/I8.png",
     alt: "Custom embroidery showcase 8"
   }
 ];
@@ -48,7 +48,7 @@ export function Gallery() {
             href="https://www.instagram.com/stitchpleaseqc"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-lg font-medium text-gray-900 hover:text-gray-700 transition-colors"
+            className="flex items-center gap-2 text-lg font-medium text-[#1d1d1f] hover:text-[#1d1d1f]/70 transition-colors"
           >
             <Instagram className="w-5 h-5" />
             <span>Follow us @stitchpleaseqc</span>
@@ -70,7 +70,7 @@ export function Gallery() {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   priority={index < 4}
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                <div className="absolute inset-0 bg-[#1d1d1f]/0 group-hover:bg-[#1d1d1f]/20 transition-colors duration-300" />
               </a>
             ))}
           </div>

@@ -8,7 +8,7 @@ import Image from "next/image";
 
 export function Hero() {
   return (
-    <section className="relative pt-16">
+    <section className="relative pt-8">
       <Container>
         <div className="relative rounded-3xl overflow-hidden h-[544px] md:h-[640px]">
           {/* Hero Image with Next.js Image optimization */}
@@ -27,7 +27,7 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1 }}
-            className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" 
+            className="absolute inset-0 bg-gradient-to-r from-[#1d1d1f]/30 via-[#1d1d1f]/20 to-[#1d1d1f]/10" 
           />
           
           {/* Content */}
@@ -37,7 +37,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20, x: 0 }}
               animate={{ opacity: 1, y: 0, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 sm:p-8 w-full md:w-auto md:max-w-[544px] shadow-xl ring-1 ring-black/5 mx-auto md:mx-0 md:ml-auto"
+              className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 sm:p-8 w-full md:w-auto md:max-w-[544px] shadow-xl ring-1 ring-[#1d1d1f]/5 mx-auto md:mx-0 md:ml-auto"
             >
               {/* Location Badge */}
               <motion.div 
@@ -56,7 +56,7 @@ export function Hero() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-xl sm:text-2xl md:text-4xl leading-[1.2] md:leading-tight font-bold text-zinc-900 mb-4 sm:mb-6 md:mb-8 text-center"
+                className="text-xl sm:text-2xl md:text-4xl leading-[1.2] md:leading-tight font-bold text-[#1d1d1f] mb-4 sm:mb-6 md:mb-8 text-center"
               >
                 Bring Your Ideas to Life at Stitch Please
               </motion.h1>
@@ -66,7 +66,7 @@ export function Hero() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-base sm:text-lg md:text-xl text-zinc-600 mb-6 sm:mb-8 md:mb-12 text-center"
+                className="text-base sm:text-lg md:text-xl text-[#1d1d1f]/60 mb-6 sm:mb-8 md:mb-12 text-center"
               >
                 Custom embroidery and personalized designs crafted with care. Transform your vision into wearable art.
               </motion.p>
@@ -89,7 +89,7 @@ export function Hero() {
                 <Button 
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto text-[#0A5565] hover:bg-[#74CADC]/10 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-xl font-medium border-zinc-200"
+                  className="w-full sm:w-auto text-[#0A5565] hover:bg-[#74CADC]/10 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-xl font-medium border-[#1d1d1f]/10"
                 >
                   Start Creating
                 </Button>

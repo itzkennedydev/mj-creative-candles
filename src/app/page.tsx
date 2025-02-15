@@ -8,7 +8,7 @@ import { Gallery } from "~/components/sections/gallery"
 
 export default function Home() {
   return (
-    <div className="space-y-4 md:space-y-10 pb-8">
+    <div className="space-y-2 md:space-y-6 pb-8">
       <Hero />
       <BrandsSection />
       <Categories />

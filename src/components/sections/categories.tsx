@@ -44,7 +44,7 @@ const categories: CategoryCard[] = [
 
 export function Categories() {
   return (
-    <section className="pt-12 md:pt-20 bg-gradient-to-b from-white to-gray-50">
+    <section className="pt-8 md:pt-12 bg-gradient-to-b from-white to-gray-50">
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {categories.map((category) => (
@@ -61,7 +61,7 @@ export function Categories() {
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1d1d1f]/90 via-[#1d1d1f]/50 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500" />
                 <div className="absolute top-4 right-4">
                   <Eye className="w-5 h-5 text-white/80 group-hover:opacity-0 transition-opacity duration-300" />
                 </div>

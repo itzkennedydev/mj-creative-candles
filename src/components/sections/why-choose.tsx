@@ -48,7 +48,7 @@ export function WhyChoose() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4 }}
-            className="text-gray-600 text-center max-w-[90%] sm:max-w-xl md:max-w-2xl mx-auto text-xs sm:text-sm md:text-base mb-8 px-8"
+            className="text-[#1d1d1f]/60 text-center max-w-[90%] sm:max-w-xl md:max-w-2xl mx-auto text-xs sm:text-sm md:text-base mb-8 px-8"
           >
             Our personalized collaboration, swift turnaround, and commitment to impeccable craftsmanship make us the ideal choice for those who seek excellence in every stitch.
           </motion.p>
