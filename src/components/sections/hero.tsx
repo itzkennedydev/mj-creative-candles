@@ -81,7 +81,7 @@ export function Hero() {
                 <Button 
                   size="lg"
                   className="w-full sm:w-auto bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-xl font-medium"
-                  onClick={() => window.open("https://maps.google.com/?q=415+13th+St,+Moline+IL", "_blank")}
+                  onClick={() => window.open("https://maps.google.com/?q=415+13th+St,+Moline+IL+61265", "_blank")}
                 >
                   Get Directions
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />

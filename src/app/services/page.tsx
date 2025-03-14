@@ -186,7 +186,7 @@ export default function ServicesPage() {
                 className="bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
               >
                 <Phone className="mr-2 h-5 w-5" />
-                Call or Text 309-373-6017
+                Call or Text (309) 373-6017
               </Button>
             </div>
           </CardContent>

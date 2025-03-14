@@ -1,3 +1,4 @@
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "~/components/ui/container";
@@ -16,12 +17,23 @@ const footerLinks = {
   ],
 };
 
+// Business hours
+const businessHours = [
+  { day: "Monday", hours: "1–3 PM" },
+  { day: "Tuesday", hours: "1–3 PM" },
+  { day: "Wednesday", hours: "Closed" },
+  { day: "Thursday", hours: "Closed" },
+  { day: "Friday", hours: "1–3 PM" },
+  { day: "Saturday", hours: "Closed" },
+  { day: "Sunday", hours: "Closed" },
+];
+
 export function Footer() {
   return (
     <footer className="border-t bg-white">
       <Container>
         <div className="py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             {/* Logo and Description */}
             <div className="space-y-4">
               <Link href="/" className="block">
@@ -76,10 +88,23 @@ export function Footer() {
             <div>
               <h3 className="font-semibold mb-4">Contact Us</h3>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p>Email: info@stitchplease.com</p>
-                <p>Phone: (555) 123-4567</p>
-                <p>Address: 123 Stitch Street</p>
-                <p>City, State 12345</p>
+                <p>Email: pleasestitch18@gmail.com</p>
+                <p>Phone: (309) 373-6017</p>
+                <p>Address: 415 13th St</p>
+                <p>Moline, IL 61265</p>
+              </div>
+            </div>
+            
+            {/* Business Hours */}
+            <div>
+              <h3 className="font-semibold mb-4">Business Hours</h3>
+              <div className="grid grid-cols-2 gap-x-2 text-sm text-muted-foreground">
+                {businessHours.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <p className="font-medium">{item.day}:</p>
+                    <p>{item.hours}</p>
+                  </React.Fragment>
+                ))}
               </div>
             </div>
           </div>
