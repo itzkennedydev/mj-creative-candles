@@ -47,15 +47,9 @@ export function Header() {
               Home
             </Link>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 text-sm font-medium">
-                Create Your Own <ChevronDown className="h-4 w-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>Option 1</DropdownMenuItem>
-                <DropdownMenuItem>Option 2</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Link href="/Create" className="text-sm font-medium hover:text-primary/80">
+                Create Your Own
+            </Link>
 
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-2 text-sm font-medium">
@@ -106,24 +100,6 @@ export function Header() {
                 <Link href="/" className="text-sm font-medium hover:text-primary/80 py-2">
                   Home
                 </Link>
-                
-                <div>
-                  <button 
-                    onClick={() => setIsCreateOpen(!isCreateOpen)}
-                    className="flex items-center gap-2 text-sm font-medium w-full py-2"
-                  >
-                    Create Your Own 
-                    <ChevronDown className={`h-4 w-4 transition-transform ${isCreateOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  <div className={`grid transition-[grid-template-rows] duration-200 ${isCreateOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-                    <div className="overflow-hidden">
-                      <div className="flex flex-col gap-4 pl-8 py-4">
-                        <Link href="/create/option1" className="text-sm hover:text-primary/80">Option 1</Link>
-                        <Link href="/create/option2" className="text-sm hover:text-primary/80">Option 2</Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
                 <div>
                   <button 

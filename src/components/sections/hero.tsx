@@ -90,6 +90,7 @@ export function Hero() {
                   variant="outline"
                   size="lg"
                   className="w-full sm:w-auto text-[#0A5565] hover:bg-[#74CADC]/10 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-xl font-medium border-[#1d1d1f]/10"
+                  onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
                 >
                   Start Creating
                 </Button>

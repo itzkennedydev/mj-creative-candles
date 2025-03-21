@@ -38,6 +38,7 @@ export function CtaContent() {
           <Button 
             size="lg" 
             className="w-full sm:w-auto bg-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/90"
+            onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
           >
             Get Started
           </Button>

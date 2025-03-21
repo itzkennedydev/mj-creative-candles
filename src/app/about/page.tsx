@@ -71,6 +71,7 @@ export default function AboutPage() {
                 <Button 
                   size="lg"
                   className="w-full bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
+                  onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
                 >
                   Start Your Project
                   <ArrowRight className="ml-2 h-5 w-5" />
