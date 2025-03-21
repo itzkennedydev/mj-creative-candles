@@ -47,7 +47,7 @@ export function Header() {
               Home
             </Link>
 
-            <Link href="/Create" className="text-sm font-medium hover:text-primary/80">
+            <Link href="https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product" className="text-sm font-medium hover:text-primary/80">
                 Create Your Own
             </Link>
 

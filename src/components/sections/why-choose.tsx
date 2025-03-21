@@ -75,6 +75,7 @@ export function WhyChoose() {
               <Button 
                 size="lg"
                 className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium text-sm sm:text-base transition-colors duration-200"
+                onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
               >
                 <motion.span
                   className="flex items-center"
