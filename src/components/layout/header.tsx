@@ -56,8 +56,11 @@ export function Header() {
                 Shop <ChevronDown className="h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>Category 1</DropdownMenuItem>
-                <DropdownMenuItem>Category 2</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="https://stores.inksoft.com/eliteiconic/shop/home">
+                    Iconic Elite
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -112,7 +115,7 @@ export function Header() {
                   <div className={`grid transition-[grid-template-rows] duration-200 ${isShopOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                     <div className="overflow-hidden">
                       <div className="flex flex-col gap-4 pl-8 py-4">
-                        <Link href="/shop/category1" className="text-sm hover:text-primary/80">Category 1</Link>
+                        <Link href="https://stores.inksoft.com/eliteiconic/shop/home" className="text-sm hover:text-primary/80">Iconic Elite</Link>
                         <Link href="/shop/category2" className="text-sm hover:text-primary/80">Category 2</Link>
                       </div>
                     </div>
