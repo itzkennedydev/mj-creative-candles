@@ -3,15 +3,8 @@
 import React from 'react';
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
-import { Mail, ArrowRight } from "lucide-react";
+import { Mail, ArrowRight, Facebook, Instagram } from "lucide-react";
 import Image from "next/image";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
 
 const testimonials = [
   {
@@ -37,7 +30,7 @@ export default function AboutPage() {
     <Container>
       <div className="py-16 space-y-16">
         {/* About Content */}
-        <div className="grid lg:grid-cols-2 gap-12 items-start">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden group">
             <Image
               src="/stitch.jpg"
@@ -49,81 +42,100 @@ export default function AboutPage() {
             />
           </div>
 
-          <div className="space-y-6">
-            <Card className="border border-zinc-200">
-              <CardHeader>
-                <CardTitle className="text-2xl text-[#1d1d1f]">Meet Our Founder</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <p className="text-[#1d1d1f]/60 leading-relaxed">
-                  At Stitch, Please!, our founder Tanika Zentic leads a passionate team of creative professionals dedicated to bringing your ideas to life through expert craftsmanship and attention to detail. Starting from humble beginnings in her home studio, Tanika has grown Stitch, Please! into the Quad Cities&apos; premier destination for custom embroidery and personalization services.
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-3xl font-bold text-[#1d1d1f] mb-4">Our Story</h2>
+              <p className="text-[#1d1d1f]/60 leading-relaxed">
+                From a home studio to the Quad Cities&apos; premier destination for custom embroidery and personalization services, our founder Tanika Zentic leads a passionate team of creative professionals dedicated to bringing your ideas to life through expert craftsmanship and attention to detail.
+              </p>
+            </div>
+
+            <div className="grid gap-6">
+              <div className="p-6 rounded-2xl bg-[#f7f7f7]">
+                <h3 className="text-xl font-semibold text-[#0A5565] mb-3">Experience & Expertise</h3>
+                <p className="text-[#1d1d1f]/60">
+                  With over a decade of experience in custom embroidery and personalization, Tanika has built a reputation for excellence and innovation in the Quad Cities area. Her expertise spans from intricate monogramming to large-scale commercial projects.
                 </p>
-                <div className="hidden lg:block">
-                  <h3 className="text-lg font-semibold mb-2">Experience & Expertise</h3>
-                  <p className="text-[#1d1d1f]/60 mb-4">
-                    With over a decade of experience in custom embroidery and personalization, Tanika has built a reputation for excellence and innovation in the Quad Cities area. Her expertise spans from intricate monogramming to large-scale commercial projects, utilizing state-of-the-art equipment and techniques to deliver exceptional results. She has personally trained each team member to ensure the highest standards of quality and craftsmanship in every project.
-                  </p>
-                  <h3 className="text-lg font-semibold mb-2">Our Commitment</h3>
-                  <p className="text-[#1d1d1f]/60">
-                    Her commitment to quality and customer satisfaction has made Stitch, Please! the go-to destination for both individual and business clients seeking premium personalization services. We pride ourselves on our attention to detail, quick turnaround times, and ability to handle projects of any size. Whether it is a single custom piece or a large corporate order, we approach each project with the same level of dedication and care. Our team stays current with the latest industry trends and techniques to provide innovative solutions that exceed our clients&apos; expectations.
-                  </p>
-                </div>
-                <Button 
-                  size="lg"
-                  className="w-full bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
-                  onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
-                >
-                  Start Your Project
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </CardContent>
-            </Card>
+              </div>
+
+              <div className="p-6 rounded-2xl bg-[#f7f7f7]">
+                <h3 className="text-xl font-semibold text-[#0A5565] mb-3">Our Commitment</h3>
+                <p className="text-[#1d1d1f]/60">
+                  We pride ourselves on our attention to detail, quick turnaround times, and ability to handle projects of any size. Whether it&apos;s a single custom piece or a large corporate order, we approach each project with the same level of dedication and care.
+                </p>
+              </div>
+            </div>
+
+            <Button 
+              size="lg"
+              className="w-full bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
+              onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
+            >
+              Start Your Project
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </div>
         </div>
 
         {/* Testimonials */}
-        <section className="space-y-12">
-          <h2 className="text-3xl font-semibold text-[#1d1d1f] text-center">What People Are Saying</h2>
-          <div className="grid md:grid-cols-2 gap-8">
+        <section className="space-y-8">
+          <h2 className="text-3xl font-bold text-[#1d1d1f] text-center">What People Are Saying</h2>
+          <div className="grid md:grid-cols-2 gap-6">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="group hover:bg-[#f7f7f7] transition-all border border-zinc-200">
-                <CardContent className="p-8 space-y-4">
-                  <p className="italic text-[#1d1d1f]/60 text-lg">{testimonial.quote}</p>
-                  <p className="font-medium text-[#0A5565]">— {testimonial.author}</p>
-                </CardContent>
-              </Card>
+              <div key={index} className="p-6 rounded-2xl bg-[#f7f7f7]">
+                <p className="text-[#1d1d1f]/60 mb-4">{testimonial.quote}</p>
+                <p className="font-medium text-[#0A5565]">— {testimonial.author}</p>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* Newsletter Signup */}
-        <Card className="bg-[#f7f7f7] border border-zinc-200">
-          <CardContent className="p-12 text-center space-y-8">
-            <div className="max-w-2xl mx-auto space-y-4">
-              <CardTitle className="text-3xl">Stay Updated</CardTitle>
-              <CardDescription className="text-lg">
-                Sign up with your email address to receive news and updates.
-              </CardDescription>
+        {/* Newsletter & Social */}
+        <div className="p-12 rounded-2xl bg-[#f7f7f7]">
+          <div className="max-w-xl mx-auto space-y-8">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-[#1d1d1f] mb-2">Stay Connected</h3>
+              <p className="text-[#1d1d1f]/60">Get the latest updates and join our community.</p>
             </div>
             
-            <form className="max-w-md mx-auto space-y-4">
-              <input
-                type="email"
-                placeholder="Email Address"
-                className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm focus:border-[#0A5565] focus:ring-[#0A5565] transition-colors"
-              />
-              <Button 
-                type="submit"
-                size="lg"
-                className="w-full bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
-              >
-                Sign Up
-                <Mail className="ml-2 h-5 w-5" />
-              </Button>
-            </form>
-            <p className="text-sm text-[#1d1d1f]/50">We respect your privacy.</p>
-          </CardContent>
-        </Card>
+            <div className="space-y-6">
+              <form className="flex gap-3">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-3 rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm"
+                />
+                <Button 
+                  type="submit"
+                  size="lg"
+                  className="bg-[#0A5565] hover:bg-[#0A5565]/90 text-white whitespace-nowrap"
+                >
+                  Subscribe
+                  <Mail className="ml-2 h-5 w-5" />
+                </Button>
+              </form>
+
+              <div className="flex justify-center gap-4">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-[#0A5565] hover:bg-white border-zinc-200"
+                  onClick={() => window.open("https://www.facebook.com/stitchpleaseqc", "_blank")}
+                >
+                  <Facebook className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-[#0A5565] hover:bg-white border-zinc-200"
+                  onClick={() => window.open("https://www.instagram.com/stitchpleaseqc", "_blank")}
+                >
+                  <Instagram className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </Container>
   );

@@ -3,15 +3,8 @@
 import React from 'react';
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
-import { Mail, Facebook, Instagram, Phone, Search } from "lucide-react";
+import { Mail, Facebook, Instagram, Phone } from "lucide-react";
 import Image from "next/image";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
 import {
   Tabs,
   TabsContent,
@@ -92,195 +85,141 @@ export default function ServicesPage() {
   return (
     <Container>
       <div className="py-16 space-y-16">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden rounded-3xl bg-[#f7f7f7] p-8 md:p-16">
-          <div className="max-w-3xl space-y-6">
-            <h1 className="text-4xl md:text-6xl font-bold text-[#1d1d1f]">
-              Where We Make Your Logo Come to Life
-            </h1>
-            <p className="text-xl text-[#1d1d1f]/60">
-              We offer a wide range of customization services to bring your vision to life.
-            </p>
-          </div>
-        </section>
-
         {/* Products & Services */}
         <section className="space-y-8">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-[#1d1d1f]">Our Products & Services</h2>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#1d1d1f]/40 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search services..."
-                className="pl-10 pr-4 py-2 rounded-full border border-zinc-200 focus:border-[#0A5565] focus:ring-[#0A5565] w-64"
-              />
-            </div>
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold text-[#1d1d1f] mb-2">Our Products & Services</h2>
+            <p className="text-[#1d1d1f]/60">
+              From apparel to promotional items, we offer a wide range of customization options to bring your vision to life.
+            </p>
           </div>
 
           <Tabs defaultValue="Apparel" className="space-y-8">
-            <TabsList className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-transparent">
+            <TabsList className="flex flex-wrap justify-center gap-3 bg-transparent">
               {productCategories.map((category) => (
                 <TabsTrigger
                   key={category.name}
                   value={category.name}
-                  className="data-[state=active]:bg-[#f7f7f7] data-[state=active]:text-[#0A5565] border border-zinc-200 hover:border-[#0A5565]"
+                  className="data-[state=active]:bg-[#0A5565] data-[state=active]:text-white border border-zinc-200 hover:border-[#0A5565] px-4 py-2 rounded-xl"
                 >
-                  <span className="mr-2">{category.icon}</span>
                   {category.name}
                 </TabsTrigger>
               ))}
             </TabsList>
             {productCategories.map((category) => (
               <TabsContent key={category.name} value={category.name}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-[#0A5565]">
-                      <span className="text-2xl mr-2">{category.icon}</span>
-                      {category.name}
-                    </CardTitle>
-                    <CardDescription>
-                      Explore our {category.name.toLowerCase()} customization options
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {category.items.map((item, i) => (
-                        <div
-                          key={i}
-                          className="p-4 rounded-lg bg-[#f7f7f7] hover:bg-[#f7f7f7] transition-colors group cursor-pointer"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <span className="w-2 h-2 bg-[#0A5565] rounded-full group-hover:scale-125 transition-transform" />
-                            <span className="text-[#1d1d1f]/70">{item}</span>
+                <div className="p-8 rounded-2xl bg-[#f7f7f7]">
+                  <div className="flex items-center text-[#0A5565] mb-6">
+                    <h3 className="text-2xl font-semibold">{category.name}</h3>
+                  </div>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {category.items.map((item, i) => (
+                      <div
+                        key={i}
+                        className="p-4 rounded-xl bg-white hover:bg-white/80 transition-colors group cursor-pointer border border-zinc-100"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-[#0A5565]/10 flex items-center justify-center">
+                            <span className="text-[#0A5565] text-sm font-medium">{i + 1}</span>
                           </div>
+                          <span className="text-[#1d1d1f]/80 font-medium">{item}</span>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </TabsContent>
             ))}
           </Tabs>
 
-          <Card className="bg-[#f7f7f7] border-zinc-200">
-            <CardContent className="p-6">
-              <p className="text-[#0A5565] font-medium text-lg text-center">
-                Don&apos;t see what you&apos;re looking for? Contact us! We can customize almost anything!
-              </p>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Mobile Services */}
-        <Card className="bg-[#f7f7f7]">
-          <CardContent className="p-12 text-center space-y-6">
-            <h2 className="text-3xl font-semibold text-[#1d1d1f]">Mobile Services Now Available!</h2>
-            <p className="text-xl text-[#1d1d1f]/60">
-              We are now bringing the personalization to you! 🪡
-            </p>
-            <div className="space-y-4">
-              <p className="font-medium text-[#0A5565]">ASK ABOUT OUR MOBILE SERVICES!</p>
+          <div className="p-8 rounded-2xl bg-[#f7f7f7] text-center">
+            <div className="max-w-2xl mx-auto space-y-6">
+              <div>
+                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-2">Don&apos;t see what you&apos;re looking for?</h3>
+                <p className="text-[#1d1d1f]/60">
+                  We can customize almost anything! Our mobile services bring the personalization to you.
+                </p>
+              </div>
               <Button 
                 size="lg"
-                className="bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
+                className="bg-[#0A5565] hover:bg-[#0A5565]/90 text-white"
+                onClick={() => window.open("tel:3093736017", "_blank")}
               >
                 <Phone className="mr-2 h-5 w-5" />
                 Call or Text (309) 373-6017
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Partners Showcase */}
         <section className="space-y-8">
-          <h2 className="text-2xl font-semibold text-[#1d1d1f] text-center">Trusted By</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <h2 className="text-2xl font-bold text-[#1d1d1f] text-center">Trusted By</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {partners.map((partner) => (
-              <Card
+              <div
                 key={partner.name}
-                className="group hover:shadow-lg transition-all overflow-hidden"
+                className="p-6 rounded-2xl bg-[#f7f7f7] group hover:bg-white transition-all"
               >
-                <CardContent className="p-6">
-                  <div className="relative aspect-square">
-                    <Image
-                      src={partner.image}
-                      alt={partner.name}
-                      fill
-                      className="object-contain group-hover:scale-110 transition-transform duration-300"
-                      sizes="(max-width: 768px) 50vw, 25vw"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+                <div className="relative aspect-square">
+                  <Image
+                    src={partner.image}
+                    alt={partner.name}
+                    fill
+                    className="object-contain group-hover:scale-110 transition-transform duration-300"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                </div>
+              </div>
             ))}
           </div>
         </section>
 
         {/* Newsletter & Social */}
-        <div className="grid md:grid-cols-2 gap-8">
-          <Card className="bg-[#f7f7f7]">
-            <CardContent className="p-8 space-y-6">
-              <CardTitle className="text-2xl">Stay Updated</CardTitle>
-              <CardDescription>
-                Sign up to receive news and updates about our latest services and promotions.
-              </CardDescription>
-              <form className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder="First Name"
-                    className="px-4 py-3 rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Last Name"
-                    className="px-4 py-3 rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm"
-                  />
-                </div>
+        <div className="p-12 rounded-2xl bg-[#f7f7f7]">
+          <div className="max-w-xl mx-auto space-y-8">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-[#1d1d1f] mb-2">Stay Connected</h3>
+              <p className="text-[#1d1d1f]/60">Get the latest updates and join our community.</p>
+            </div>
+            
+            <div className="space-y-6">
+              <form className="flex gap-3">
                 <input
                   type="email"
-                  placeholder="Email Address"
-                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm"
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-3 rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm"
                 />
                 <Button 
                   type="submit"
                   size="lg"
-                  className="w-full bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
+                  className="bg-[#0A5565] hover:bg-[#0A5565]/90 text-white whitespace-nowrap"
                 >
-                  Sign Up
+                  Subscribe
                   <Mail className="ml-2 h-5 w-5" />
                 </Button>
               </form>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardContent className="p-8 space-y-6">
-              <CardTitle className="text-2xl">Get Connected</CardTitle>
-              <CardDescription>
-                Follow us on social media @stitchpleaseqc for the latest updates, behind-the-scenes content, and inspiration.
-              </CardDescription>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex justify-center gap-4">
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full text-[#0A5565] hover:bg-[#f7f7f7] border-zinc-200"
+                  className="text-[#0A5565] hover:bg-white border-zinc-200"
+                  onClick={() => window.open("https://www.facebook.com/stitchpleaseqc", "_blank")}
                 >
-                  <Facebook className="mr-2 h-5 w-5" />
-                  Facebook
+                  <Facebook className="h-5 w-5" />
                 </Button>
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full text-[#0A5565] hover:bg-[#f7f7f7] border-zinc-200"
+                  className="text-[#0A5565] hover:bg-white border-zinc-200"
+                  onClick={() => window.open("https://www.instagram.com/stitchpleaseqc", "_blank")}
                 >
-                  <Instagram className="mr-2 h-5 w-5" />
-                  Instagram
+                  <Instagram className="h-5 w-5" />
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </Container>

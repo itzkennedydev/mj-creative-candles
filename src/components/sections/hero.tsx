@@ -18,16 +18,25 @@ export function Hero() {
             transition={{ duration: 0.7 }}
             className="order-2 lg:order-1 space-y-8"
           >
-            {/* Main Heading */}
-            <h1 className="text-4xl md:text-5xl font-bold text-[#1d1d1f] leading-tight">
-              <span className="block">Bring Your <span className="text-[#0A5565]">Ideas</span> to Life</span>
-              <span className="block mt-2">at{" "}
-                <span className="relative inline-block ml-3 md:ml-4">
-                  <span className="relative text-[#0A5565] z-10 px-2">Stitch Please</span>
-                  <span className="absolute inset-0 -left-2 -right-2 bg-[#74CADC]/40 z-0"></span>
-                </span>
-              </span>
-            </h1>
+{/* Main Heading */}
+<h1 className="text-4xl md:text-5xl font-bold text-[#1d1d1f] leading-tight">
+  {/* Mobile - Single line for "Bring Your Ideas to Life at Stitch Please" */}
+  <span className="md:hidden">
+    Bring Your <span className="text-[#0A5565]">Ideas</span> to Life at <span className="text-[#0A5565] bg-[#74CADC]/40 px-2">Stitch Please</span>
+  </span>
+  
+  {/* Desktop version with two lines */}
+  <span className="hidden md:block">
+    <span className="block">Bring Your <span className="text-[#0A5565]">Ideas</span> to Life</span>
+    <span className="block mt-2">
+      at
+      <span className="relative inline-block ml-4">
+        <span className="relative text-[#0A5565] z-10 px-2">Stitch Please</span>
+        <span className="absolute inset-0 -left-2 -right-2 bg-[#74CADC]/40 z-0"></span>
+      </span>
+    </span>
+  </span>
+</h1>
             
             {/* Description */}
             <p className="text-lg text-[#1d1d1f]/70 max-w-lg">
