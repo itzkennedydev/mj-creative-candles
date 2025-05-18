@@ -21,7 +21,6 @@ import { Container } from "~/components/ui/container";
 import { NotificationBar } from "./notification-bar";
 
 export function Header() {
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isShopOpen, setIsShopOpen] = useState(false);
 
   return (
@@ -66,6 +65,11 @@ export function Header() {
 
             <Link href="/services" className="text-sm font-medium hover:text-primary/80">
               Services
+            </Link>
+
+            <Link href="/appointments" className="text-sm font-medium hover:text-primary/80 flex items-center gap-2">
+              <span className="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded-sm font-medium">New</span>
+              Mobile Embroidery
             </Link>
 
             <Link href="/about" className="text-sm font-medium hover:text-primary/80">
@@ -124,6 +128,11 @@ export function Header() {
 
                 <Link href="/services" className="text-sm font-medium hover:text-primary/80 py-2">
                   Services
+                </Link>
+
+                <Link href="/appointments" className="text-sm font-medium hover:text-primary/80 py-2 flex items-center gap-2">
+                  <span className="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded-sm font-medium">New</span>
+                  Mobile Embroidery
                 </Link>
                 
                 <Link href="/about" className="text-sm font-medium hover:text-primary/80 py-2">
