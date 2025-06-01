@@ -38,11 +38,18 @@ export function Footer() {
             <div className="space-y-4">
               <Link href="/" className="block">
                 <Image
-                  src="/Logo.png"
+                  src="/Stitch Please Ish Black.png"
                   alt="Stitch Please Logo"
                   width={100}
                   height={33}
-                  className="h-auto w-auto"
+                  className="h-auto w-auto dark:hidden"
+                />
+                <Image
+                  src="/Feeling Stitch Please Ish White.png"
+                  alt="Stitch Please Logo"
+                  width={100}
+                  height={33}
+                  className="h-auto w-auto hidden dark:block"
                 />
               </Link>
               <p className="text-sm text-muted-foreground">

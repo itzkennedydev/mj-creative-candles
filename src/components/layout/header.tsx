@@ -27,15 +27,23 @@ export function Header() {
     <>
       <NotificationBar />
       <header className="pt-4 md:pt-8">
-        <Container className="h-16 flex items-center justify-between">
+        <Container className="min-h-[64px] py-2 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
-              src="/Logo.png"
+              src="/Stitch Please Ish Black.png"
               alt="Stitch Please Logo"
-              width={64}
-              height={16}
-              className="object-contain"
+              width="120"
+              height="30"
+              className="object-contain dark:hidden"
+              priority
+            />
+            <Image
+              src="/Feeling Stitch Please Ish White.png"
+              alt="Stitch Please Logo"
+              width="120"
+              height="30"
+              className="object-contain hidden dark:block"
               priority
             />
           </Link>
