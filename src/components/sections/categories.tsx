@@ -21,14 +21,14 @@ const categories: CategoryCard[] = [
   },
   {
     title: "Screen Printing",
-    image: "/categories/Bottoms.jpeg",
+    image: "/categories/SP.jpeg",
     href: "/services/screen-printing",
     description: "High-quality screen printing for all garments",
     services: ["Bulk Orders", "Team Uniforms", "Custom Graphics"]
   },
   {
     title: "Headwear",
-    image: "/categories/Hats.jpeg",
+    image: "/categories/Hats.jpg",
     href: "/services/headwear",
     description: "Custom embroidered hats and caps",
     services: ["Baseball Caps", "Beanies", "Visors"]
