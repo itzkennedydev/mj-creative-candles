@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
-import { CartItem, Product } from "./types";
+import { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
+import type { CartItem, Product } from "./types";
 
 interface CartContextType {
   items: CartItem[];
@@ -19,7 +20,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
   const addItem = (product: Product, quantity: number, selectedSize?: string, selectedColor?: string) => {
-    const itemId = `${product.id}-${selectedSize || 'default'}-${selectedColor || 'default'}`;
+    const itemId = `${product.id}-${selectedSize ?? 'default'}-${selectedColor ?? 'default'}`;
     
     setItems(prev => {
       const existingItem = prev.find(item => 
@@ -47,7 +48,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const removeItem = (itemId: string) => {
     setItems(prev => prev.filter(item => 
-      `${item.product.id}-${item.selectedSize || 'default'}-${item.selectedColor || 'default'}` !== itemId
+      `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}` !== itemId
     ));
   };
 
@@ -58,7 +59,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     setItems(prev => prev.map(item => {
-      const currentItemId = `${item.product.id}-${item.selectedSize || 'default'}-${item.selectedColor || 'default'}`;
+      const currentItemId = `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}`;
       return currentItemId === itemId ? { ...item, quantity } : item;
     }));
   };

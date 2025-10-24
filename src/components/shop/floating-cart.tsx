@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ShoppingCart, X, Plus, Minus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/cart-context";
 
 export function FloatingCart() {
   const [isOpen, setIsOpen] = useState(false);
-  const { items: cartItems, updateQuantity, removeItem, getTotalItems, getTotalPrice } = useCart();
+  const { items: cartItems, updateQuantity, getTotalItems, getTotalPrice } = useCart();
 
   const itemCount = getTotalItems();
   const subtotal = getTotalPrice();
@@ -66,13 +67,15 @@ export function FloatingCart() {
                 ) : (
                   <div className="space-y-4">
                     {cartItems.map((item) => {
-                      const itemId = `${item.product.id}-${item.selectedSize || 'default'}-${item.selectedColor || 'default'}`;
+                      const itemId = `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}`;
                       return (
                         <div key={itemId} className="flex gap-4 border-b border-gray-100 pb-4">
                           <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden">
-                            <img
+                            <Image
                               src={item.product.image}
                               alt={item.product.name}
+                              width={64}
+                              height={64}
                               className="w-full h-full object-cover"
                             />
                           </div>

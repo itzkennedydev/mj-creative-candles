@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import { CustomerInfo, ShippingAddress } from "~/lib/types";
+import type { CustomerInfo, ShippingAddress } from "~/lib/types";
 
 export function CheckoutForm() {
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({

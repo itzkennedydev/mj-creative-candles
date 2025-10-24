@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Product } from "~/lib/types";
+import type { Product } from "~/lib/types";
 import { Button } from "~/components/ui/button";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
 import { useCart } from "~/lib/cart-context";

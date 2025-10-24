@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
+import { ProductsProvider } from "~/lib/products-context";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -43,11 +44,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
       <body className="antialiased min-h-screen flex flex-col" suppressHydrationWarning>
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <ProductsProvider>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </ProductsProvider>
         <Script
           src="https://www.instagram.com/embed.js"
           strategy="lazyOnload"
