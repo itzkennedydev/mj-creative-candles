@@ -2,7 +2,7 @@ import type { Product } from "./types";
 
 export const products: Product[] = [
   {
-    id: "1",
+    id: 1,
     name: "Custom Embroidered T-Shirt",
     description: "High-quality cotton t-shirt with custom embroidery",
     price: 25.99,

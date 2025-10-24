@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
-import { Product } from "./types";
+import { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
+import type { Product } from "./types";
 
 interface ProductsContextType {
   products: Product[];
@@ -22,6 +23,7 @@ const initialProducts: Product[] = [
     inStock: true,
     description: "High-quality cotton t-shirt with custom embroidery",
     image: "/categories/Tops.jpeg",
+    category: "Apparel",
     sizes: ["S", "M", "L", "XL"],
     colors: ["White", "Black", "Navy"]
   }

@@ -20,23 +20,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
   const addItem = (product: Product, quantity: number, selectedSize?: string, selectedColor?: string) => {
-    const itemId = `${product.id}-${selectedSize ?? 'default'}-${selectedColor ?? 'default'}`;
-    
     setItems(prev => {
       const existingItem = prev.find(item => 
         item.product.id === product.id && 
         item.selectedSize === selectedSize && 
         item.selectedColor === selectedColor
       );
-
+      
       if (existingItem) {
-        return prev.map(item =>
-          item === existingItem
+        return prev.map(item => 
+          item === existingItem 
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
-
+      
       return [...prev, {
         product,
         quantity,

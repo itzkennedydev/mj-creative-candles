@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
-import { Settings, Package, Truck, DollarSign, Save, BarChart3, Users, ShoppingCart, TrendingUp, Grid3X3, Edit, Trash2, Upload, Image as ImageIcon, X } from "lucide-react";
+import { Settings, Package, Save, Edit, Trash2, Upload, X } from "lucide-react";
 import { useProducts } from "~/lib/products-context";
+import type { Product } from "~/lib/types";
 
 interface AdminSettings {
   taxRate: number;
@@ -56,13 +57,6 @@ export default function AdminPage() {
     image: ""
   });
 
-  // Mock dashboard data
-  const dashboardStats = {
-    totalOrders: 47,
-    totalRevenue: 1250.00,
-    totalProducts: products.length,
-    pendingOrders: 3
-  };
 
   const sidebarItems = [
     { id: "products", label: "Products", icon: Package },
@@ -101,22 +95,15 @@ export default function AdminPage() {
     alert("Settings saved successfully!");
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, productId?: number) => {
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // Create a preview URL
     const imageUrl = URL.createObjectURL(file);
     
-    if (productId) {
-      // Update existing product image
-      setProducts(products.map(p => 
-        p.id === productId ? { ...p, image: imageUrl } : p
-      ));
-    } else {
-      // Set image for new product
-      setNewProduct({ ...newProduct, image: imageUrl });
-    }
+    // Set image for new product
+    setNewProduct({ ...newProduct, image: imageUrl });
   };
 
   const handleAddProduct = () => {
@@ -127,22 +114,23 @@ export default function AdminPage() {
     
     addProduct({
       ...newProduct,
-      image: newProduct.image || "/placeholder-product.jpg"
+      image: newProduct.image || "/placeholder-product.jpg",
+      category: "Apparel"
     });
     setNewProduct({ name: "", price: 0, description: "", inStock: true, sizes: [], colors: [], image: "" });
     alert("Product added successfully!");
   };
 
-  const handleEditProduct = (product: any) => {
+  const handleEditProduct = (product: Product) => {
     setEditingProduct(product.id);
     setEditProduct({
       name: product.name,
       price: product.price,
       description: product.description,
       inStock: product.inStock,
-      sizes: product.sizes || [],
-      colors: product.colors || [],
-      image: product.image || ""
+      sizes: product.sizes ?? [],
+      colors: product.colors ?? [],
+      image: product.image ?? ""
     });
     setShowEditModal(true);
   };
@@ -282,60 +270,6 @@ export default function AdminPage() {
     );
   }
 
-  const renderDashboard = () => (
-    <div className="space-y-8">
-      {/* Dashboard Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Orders</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalOrders}</p>
-            </div>
-            <div className="p-3 bg-gray-100 rounded-lg">
-              <ShoppingCart className="h-6 w-6 text-gray-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">${dashboardStats.totalRevenue.toFixed(2)}</p>
-            </div>
-            <div className="p-3 bg-gray-100 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-gray-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Products</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalProducts}</p>
-            </div>
-            <div className="p-3 bg-gray-100 rounded-lg">
-              <Package className="h-6 w-6 text-gray-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Pending Orders</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardStats.pendingOrders}</p>
-            </div>
-            <div className="p-3 bg-gray-100 rounded-lg">
-              <Users className="h-6 w-6 text-gray-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   const renderProducts = () => (
     <div className="space-y-12">
