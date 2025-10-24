@@ -4,24 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "~/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTrigger,
 } from "~/components/ui/sheet";
-import { Menu, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { Menu } from "lucide-react";
 import { Container } from "~/components/ui/container";
 import { NotificationBar } from "./notification-bar";
 
 export function Header() {
-  const [isShopOpen, setIsShopOpen] = useState(false);
 
   return (
     <>
@@ -54,22 +46,10 @@ export function Header() {
               Home
             </Link>
 
-            <Link href="https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product" className="text-sm font-medium hover:text-primary/80">
-                Create Your Own
-            </Link>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 text-sm font-medium">
-                Shop <ChevronDown className="h-4 w-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild>
-                  <Link href="https://stores.inksoft.com/eliteiconic/shop/home">
-                    Iconic Elite
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Link href="/shop" className="text-sm font-medium hover:text-primary/80">
+              Shop
+            </Link>
 
             <Link href="/services" className="text-sm font-medium hover:text-primary/80">
               Services
@@ -116,23 +96,9 @@ export function Header() {
                   Home
                 </Link>
 
-                <div>
-                  <button 
-                    onClick={() => setIsShopOpen(!isShopOpen)}
-                    className="flex items-center gap-2 text-sm font-medium w-full py-2"
-                  >
-                    Shop 
-                    <ChevronDown className={`h-4 w-4 transition-transform ${isShopOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  <div className={`grid transition-[grid-template-rows] duration-200 ${isShopOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-                    <div className="overflow-hidden">
-                      <div className="flex flex-col gap-4 pl-8 py-4">
-                        <Link href="https://stores.inksoft.com/eliteiconic/shop/home" className="text-sm hover:text-primary/80">Iconic Elite</Link>
-                        <Link href="/shop/category2" className="text-sm hover:text-primary/80">Category 2</Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <Link href="/shop" className="text-sm font-medium hover:text-primary/80 py-2">
+                  Shop
+                </Link>
 
                 <Link href="/services" className="text-sm font-medium hover:text-primary/80 py-2">
                   Services
