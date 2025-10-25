@@ -22,8 +22,10 @@ export interface ShippingAddress {
   country: string;
 }
 
+import type { ObjectId } from 'mongodb';
+
 export interface Order {
-  _id?: string;
+  _id?: ObjectId | string;
   orderNumber: string;
   customer: CustomerInfo;
   shipping: ShippingAddress;

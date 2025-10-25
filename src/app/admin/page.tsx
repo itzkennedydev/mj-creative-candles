@@ -6,6 +6,7 @@ import { Button } from "~/components/ui/button";
 import { Settings, Package, Save, Edit, Trash2, Upload, X } from "lucide-react";
 import { useProducts } from "~/lib/products-context";
 import type { Product } from "~/lib/types";
+import type { Order } from "~/lib/order-types";
 
 interface AdminSettings {
   taxRate: number;
@@ -23,7 +24,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [activeSection, setActiveSection] = useState("products");
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<number | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -79,7 +80,7 @@ export default function AdminPage() {
     setOrdersLoading(true);
     try {
       const response = await fetch('/api/orders');
-      const data = await response.json();
+      const data = await response.json() as { success: boolean; orders: Order[] };
       if (data.success) {
         setOrders(data.orders);
       }
@@ -92,7 +93,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (isAuthenticated && activeSection === 'orders') {
-      fetchOrders();
+      void fetchOrders();
     }
   }, [isAuthenticated, activeSection]);
 
@@ -568,7 +569,7 @@ export default function AdminPage() {
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
-            <div key={order._id} className="bg-white border border-gray-200 rounded-xl p-6">
+            <div key={order._id?.toString() ?? order.orderNumber} className="bg-white border border-gray-200 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
@@ -612,7 +613,7 @@ export default function AdminPage() {
               <div className="mt-4">
                 <h4 className="font-medium text-gray-900 mb-2">Items</h4>
                 <div className="space-y-2">
-                  {order.items.map((item: any, index: number) => (
+                  {order.items.map((item, index: number) => (
                     <div key={index} className="flex justify-between text-sm">
                       <span className="text-gray-600">
                         {item.productName} {item.selectedSize && `(${item.selectedSize})`} {item.selectedColor && `- ${item.selectedColor}`}

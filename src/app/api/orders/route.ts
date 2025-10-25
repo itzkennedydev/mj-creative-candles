@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
 import { sendOrderConfirmationEmail } from '~/lib/email-service';
 import type { CreateOrderRequest, Order } from '~/lib/order-types';
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CreateOrderRequest = await request.json();
+    const body = await request.json() as CreateOrderRequest;
     
     // Validate required fields
     if (!body.customer || !body.items || body.items.length === 0) {
@@ -84,12 +85,12 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limit = parseInt(searchParams.get('limit') ?? '50');
 
     // Build query
-    const query: any = {};
-    if (status) {
-      query.status = status;
+    const query: { status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' } = {};
+    if (status && ['pending', 'processing', 'shipped', 'delivered', 'cancelled'].includes(status)) {
+      query.status = status as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
     }
 
     // Fetch orders

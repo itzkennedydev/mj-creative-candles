@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/cart-context";
-import type { CustomerInfo, ShippingAddress } from "~/lib/types";
+import type { CustomerInfo } from "~/lib/types";
 import type { CreateOrderRequest } from "~/lib/order-types";
 
 export function CheckoutForm() {
@@ -71,7 +71,7 @@ export function CheckoutForm() {
         body: JSON.stringify(orderData)
       });
 
-      const result = await response.json();
+      const result = await response.json() as { success: boolean; orderNumber?: string; error?: string };
 
       if (result.success) {
         // Clear cart after successful order
@@ -87,7 +87,7 @@ export function CheckoutForm() {
         // Redirect to home or order confirmation page
         window.location.href = '/';
       } else {
-        throw new Error(result.error || 'Failed to create order');
+        throw new Error(result.error ?? 'Failed to create order');
       }
       
     } catch (error) {
@@ -170,7 +170,7 @@ export function CheckoutForm() {
               <div className="ml-3">
                 <h4 className="text-sm font-medium text-blue-800">Pickup Only Service</h4>
                 <p className="text-sm text-blue-700 mt-1">
-                  All orders are for pickup only. We'll contact you to arrange a convenient pickup time once your order is ready.
+                  All orders are for pickup only. We&apos;ll contact you to arrange a convenient pickup time once your order is ready.
                 </p>
               </div>
             </div>

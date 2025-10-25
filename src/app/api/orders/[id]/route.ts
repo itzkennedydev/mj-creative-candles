@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
 import type { Order } from '~/lib/order-types';
 import { ObjectId } from 'mongodb';
@@ -41,14 +42,14 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const body = await request.json();
+    const body = await request.json() as { status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'; notes?: string };
     const { status, notes } = body;
 
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const ordersCollection = db.collection<Order>('orders');
 
-    const updateData: any = {
+    const updateData: { updatedAt: Date; status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'; notes?: string } = {
       updatedAt: new Date()
     };
 
