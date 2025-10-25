@@ -8,7 +8,7 @@ export function OrderSummary() {
   
   const subtotal = getTotalPrice();
   const tax = subtotal * 0.085; // 8.5% tax
-  const shipping = subtotal > 50 ? 0 : 9.99; // Free shipping over $50
+  const shipping = 0; // No shipping - pickup only
   const total = subtotal + tax + shipping;
 
   return (
@@ -62,10 +62,8 @@ export function OrderSummary() {
           <span className="text-gray-900">${tax.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Shipping</span>
-          <span className="text-gray-900">
-            {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
-          </span>
+          <span className="text-gray-600">Pickup</span>
+          <span className="text-gray-900">Free</span>
         </div>
         <div className="border-t pt-2">
         <div className="flex justify-between text-lg font-medium">

@@ -603,14 +603,9 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Shipping</h4>
-                  <p className="text-sm text-gray-600">
-                    {order.shipping.street}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {order.shipping.city}, {order.shipping.state} {order.shipping.zipCode}
-                  </p>
-                  <p className="text-sm text-gray-600">{order.shipping.country}</p>
+                  <h4 className="font-medium text-gray-900 mb-2">Pickup</h4>
+                  <p className="text-sm text-gray-600">Pickup Only Service</p>
+                  <p className="text-sm text-gray-600">Customer will be contacted for pickup arrangement</p>
                 </div>
               </div>
 
@@ -640,10 +635,8 @@ export default function AdminPage() {
                   <span className="text-gray-900">${order.tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Shipping</span>
-                  <span className="text-gray-900">
-                    {order.shippingCost === 0 ? "Free" : `$${order.shippingCost.toFixed(2)}`}
-                  </span>
+                  <span className="text-gray-600">Pickup</span>
+                  <span className="text-gray-900">Free</span>
                 </div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600">Payment Method</span>

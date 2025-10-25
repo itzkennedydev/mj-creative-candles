@@ -33,7 +33,7 @@ export interface Order {
   shippingCost: number;
   total: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  paymentMethod: 'card' | 'cash' | 'pickup';
+  paymentMethod: 'card';
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -47,6 +47,6 @@ export interface CreateOrderRequest {
   tax: number;
   shippingCost: number;
   total: number;
-  paymentMethod: 'card' | 'cash' | 'pickup';
+  paymentMethod: 'card';
   notes?: string;
 }

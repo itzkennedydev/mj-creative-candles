@@ -5,14 +5,15 @@ import { ObjectId } from 'mongodb';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const ordersCollection = db.collection<Order>('orders');
 
-    const order = await ordersCollection.findOne({ _id: new ObjectId(params.id) });
+    const { id } = await params;
+    const order = await ordersCollection.findOne({ _id: new ObjectId(id) });
 
     if (!order) {
       return NextResponse.json(
@@ -37,7 +38,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
@@ -54,8 +55,9 @@ export async function PUT(
     if (status) updateData.status = status;
     if (notes !== undefined) updateData.notes = notes;
 
+    const { id } = await params;
     const result = await ordersCollection.updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: updateData }
     );
 

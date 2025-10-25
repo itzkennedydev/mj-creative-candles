@@ -16,15 +16,9 @@ export function CheckoutForm() {
     phone: ""
   });
 
-  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
-    street: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "United States"
-  });
+  // Removed shipping address - pickup only
 
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'cash' | 'pickup'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card'>('card');
   const [notes, setNotes] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -36,7 +30,7 @@ export function CheckoutForm() {
       // Calculate totals
       const subtotal = getTotalPrice();
       const tax = subtotal * 0.085; // 8.5% tax
-      const shippingCost = subtotal > 50 ? 0 : 9.99; // Free shipping over $50
+      const shippingCost = 0; // No shipping - pickup only
       const total = subtotal + tax + shippingCost;
 
       // Prepare order items
@@ -52,7 +46,13 @@ export function CheckoutForm() {
       // Prepare order data for database
       const orderData: CreateOrderRequest = {
         customer: customerInfo,
-        shipping: shippingAddress,
+        shipping: {
+          street: "Pickup Only",
+          city: "Pickup Location",
+          state: "Local",
+          zipCode: "00000",
+          country: "United States"
+        },
         items: orderItems,
         subtotal,
         tax,
@@ -82,7 +82,6 @@ export function CheckoutForm() {
         
         // Reset form
         setCustomerInfo({ firstName: "", lastName: "", email: "", phone: "" });
-        setShippingAddress({ street: "", city: "", state: "", zipCode: "", country: "United States" });
         setNotes("");
         
         // Redirect to home or order confirmation page
@@ -158,58 +157,21 @@ export function CheckoutForm() {
           </div>
         </div>
 
-        {/* Shipping Address */}
+        {/* Pickup Information */}
         <div>
-          <h3 className="text-base md:text-lg font-medium text-gray-900 mb-4">Shipping Address</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Street Address *
-              </label>
-              <input
-                type="text"
-                required
-                value={shippingAddress.street}
-                onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  City *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={shippingAddress.city}
-                  onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                />
+          <h3 className="text-base md:text-lg font-medium text-gray-900 mb-4">Pickup Information</h3>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={shippingAddress.state}
-                  onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ZIP Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={shippingAddress.zipCode}
-                  onChange={(e) => setShippingAddress({...shippingAddress, zipCode: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                />
+              <div className="ml-3">
+                <h4 className="text-sm font-medium text-blue-800">Pickup Only Service</h4>
+                <p className="text-sm text-blue-700 mt-1">
+                  All orders are for pickup only. We'll contact you to arrange a convenient pickup time once your order is ready.
+                </p>
               </div>
             </div>
           </div>
@@ -223,40 +185,21 @@ export function CheckoutForm() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Payment Method
               </label>
-              <div className="space-y-2">
-                <label className="flex items-center">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center">
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="card"
                     checked={paymentMethod === 'card'}
                     onChange={(e) => setPaymentMethod(e.target.value as 'card')}
-                    className="mr-2"
+                    className="mr-3"
                   />
-                  <span className="text-sm text-gray-700">Credit/Debit Card</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="cash"
-                    checked={paymentMethod === 'cash'}
-                    onChange={(e) => setPaymentMethod(e.target.value as 'cash')}
-                    className="mr-2"
-                  />
-                  <span className="text-sm text-gray-700">Cash on Delivery</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="pickup"
-                    checked={paymentMethod === 'pickup'}
-                    onChange={(e) => setPaymentMethod(e.target.value as 'pickup')}
-                    className="mr-2"
-                  />
-                  <span className="text-sm text-gray-700">Pay on Pickup</span>
-                </label>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Pay Online (Credit/Debit Card)</span>
+                    <p className="text-xs text-gray-500 mt-1">Secure online payment required</p>
+                  </div>
+                </div>
               </div>
             </div>
             
