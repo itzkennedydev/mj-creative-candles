@@ -34,7 +34,7 @@ export interface Order {
   tax: number;
   shippingCost: number;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed';
+  status: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed';
   paymentMethod: 'card';
   paymentIntentId?: string;
   notes?: string;

@@ -49,7 +49,7 @@ export function Hero() {
                 className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-base px-6 py-3 h-auto rounded-xl font-medium shadow-lg shadow-[#74CADC]/20"
                 onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
               >
-                Start Creating
+                Shop
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button 

@@ -29,6 +29,15 @@ export default function AdminPage() {
   const [activeSection, setActiveSection] = useState("products");
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const ordersPerPage = 10;
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showPickupModal, setShowPickupModal] = useState(false);
+  const [pickupTime, setPickupTime] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
   const [editingProduct, setEditingProduct] = useState<number | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editProduct, setEditProduct] = useState({
@@ -79,13 +88,28 @@ export default function AdminPage() {
     }
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page = 1, search = "") => {
     setOrdersLoading(true);
     try {
-      const response = await fetch('/api/orders');
-      const data = await response.json() as { success: boolean; orders: Order[] };
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: ordersPerPage.toString(),
+        ...(search && { search })
+      });
+      
+      const response = await fetch(`/api/orders?${params}`);
+      const data = await response.json() as { 
+        success: boolean; 
+        orders: Order[];
+        total: number;
+        totalPages: number;
+      };
+      
       if (data.success) {
         setOrders(data.orders);
+        setTotalOrders(data.total);
+        setTotalPages(data.totalPages);
+        setCurrentPage(page);
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -96,9 +120,130 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (isAuthenticated && activeSection === 'orders') {
-      void fetchOrders();
+      void fetchOrders(1, searchQuery);
     }
-  }, [isAuthenticated, activeSection]);
+  }, [isAuthenticated, activeSection, searchQuery]);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+    void fetchOrders(1, query);
+  };
+
+  const handlePageChange = (page: number) => {
+    void fetchOrders(page, searchQuery);
+  };
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    // If changing to "ready_for_pickup", open the modal instead
+    if (newStatus === 'ready_for_pickup') {
+      const order = orders.find(o => o._id?.toString() === orderId);
+      if (order) {
+        handlePickupReady(order);
+        return;
+      }
+    }
+
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        addToast({
+          title: "Status Updated",
+          description: `Order status updated to ${newStatus}`,
+          type: "success"
+        });
+        // Refresh orders
+        void fetchOrders(currentPage, searchQuery);
+      } else {
+        throw new Error('Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      addToast({
+        title: "Update Failed",
+        description: "Failed to update order status",
+        type: "error"
+      });
+    }
+  };
+
+  const handlePickupReady = (order: Order) => {
+    setSelectedOrder(order);
+    // Set default pickup time to tomorrow at 2 PM
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(14, 0, 0, 0);
+    setPickupTime(tomorrow.toISOString().slice(0, 16));
+    setCustomMessage("");
+    setShowPickupModal(true);
+  };
+
+  const handleSendPickupNotification = async () => {
+    if (!selectedOrder || !pickupTime) {
+      addToast({
+        title: "Missing Information",
+        description: "Please select a pickup time",
+        type: "warning"
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/orders/send-pickup-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: selectedOrder._id?.toString(),
+          pickupTime,
+          customMessage
+        }),
+      });
+
+      if (response.ok) {
+        addToast({
+          title: "Notification Sent",
+          description: "Pickup notification sent to customer",
+          type: "success"
+        });
+        setShowPickupModal(false);
+        // Update order status to ready for pickup directly
+        try {
+          const statusResponse = await fetch(`/api/orders/${selectedOrder._id?.toString()}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: 'ready_for_pickup' }),
+          });
+          
+          if (statusResponse.ok) {
+            // Refresh orders
+            void fetchOrders(currentPage, searchQuery);
+          }
+        } catch (error) {
+          console.error('Error updating order status:', error);
+        }
+      } else {
+        throw new Error('Failed to send notification');
+      }
+    } catch (error) {
+      console.error('Error sending pickup notification:', error);
+      addToast({
+        title: "Notification Failed",
+        description: "Failed to send pickup notification",
+        type: "error"
+      });
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -580,13 +725,40 @@ export default function AdminPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold text-gray-900">Orders</h2>
         <Button
-          onClick={fetchOrders}
+          onClick={() => fetchOrders(currentPage, searchQuery)}
           disabled={ordersLoading}
           className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 py-3"
         >
           {ordersLoading ? "Loading..." : "Refresh"}
         </Button>
       </div>
+
+      {/* Search Bar */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Search orders by customer name, email, or order number..."
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC]"
+          />
+        </div>
+        {searchQuery && (
+          <Button
+            onClick={() => handleSearch("")}
+            variant="ghost"
+            className="text-gray-500 hover:text-gray-700"
+          >
+            Clear
+          </Button>
+        )}
+      </div>
+      {searchQuery && (
+        <p className="text-sm text-gray-500">
+          Showing results for &quot;{searchQuery}&quot; ({totalOrders} orders found)
+        </p>
+      )}
 
       {ordersLoading ? (
         <div className="text-center py-8">
@@ -612,15 +784,35 @@ export default function AdminPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-gray-900">${order.total.toFixed(2)}</p>
-                  <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    order.status === 'processing' ? 'bg-blue-100 text-blue-800' :
-                    order.status === 'shipped' ? 'bg-purple-100 text-purple-800' :
-                    order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                  </span>
+                  <div className="flex items-center gap-3 mt-3">
+                    <select
+                      value={order.status}
+                      onChange={(e) => handleStatusChange(order._id!.toString(), e.target.value)}
+                      className={`pl-3 pr-8 py-2 text-sm font-medium rounded-md border transition-colors cursor-pointer focus:outline-none focus:ring-1 ${
+                        order.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 focus:ring-yellow-300' :
+                        order.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 focus:ring-blue-300' :
+                        order.status === 'ready_for_pickup' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 focus:ring-green-300' :
+                        order.status === 'shipped' ? 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 focus:ring-purple-300' :
+                        order.status === 'delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 focus:ring-emerald-300' :
+                        'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 focus:ring-red-300'
+                      }`}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="ready_for_pickup">Ready for Pickup</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                    {order.status === 'processing' && (
+                      <Button
+                        onClick={() => handlePickupReady(order)}
+                        className="px-3 py-2 text-sm font-medium bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] rounded-md transition-colors"
+                      >
+                        Mark Ready
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -683,6 +875,58 @@ export default function AdminPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-500">
+              Showing {((currentPage - 1) * ordersPerPage) + 1} to {Math.min(currentPage * ordersPerPage, totalOrders)} of {totalOrders} orders
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1 || ordersLoading}
+                variant="ghost"
+                className="px-3 py-2"
+              >
+                Previous
+              </Button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const page = i + 1;
+                  const isActive = page === currentPage;
+                  
+                  return (
+                    <Button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      disabled={ordersLoading}
+                      className={`px-3 py-2 ${
+                        isActive 
+                          ? 'bg-[#74CADC] text-[#0A5565]' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      {page}
+                    </Button>
+                  );
+                })}
+              </div>
+              
+              <Button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || ordersLoading}
+                variant="ghost"
+                className="px-3 py-2"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -1080,6 +1324,81 @@ export default function AdminPage() {
                     Cancel
                   </Button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pickup Notification Modal */}
+      {showPickupModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900">Mark Order Ready for Pickup</h2>
+              <Button
+                onClick={() => setShowPickupModal(false)}
+                className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-700"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Order #{selectedOrder.orderNumber}</p>
+                <p className="text-sm text-gray-600">
+                  Customer: {selectedOrder.customer.firstName} {selectedOrder.customer.lastName}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Pickup Date & Time *
+                </label>
+                <input
+                  type="datetime-local"
+                  value={pickupTime}
+                  onChange={(e) => setPickupTime(e.target.value)}
+                  min={new Date().toISOString().slice(0, 16)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC]"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Select a date and time for customer pickup
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Additional Comments (Optional)
+                </label>
+                <textarea
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  rows={3}
+                  placeholder="Add any special instructions, notes, or additional information for the customer..."
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] resize-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  This message will be included in the pickup notification email
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleSendPickupNotification}
+                  className="flex-1 bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]"
+                >
+                  Send Notification
+                </Button>
+                <Button
+                  onClick={() => setShowPickupModal(false)}
+                  variant="ghost"
+                  className="flex-1 text-gray-600 hover:text-gray-900"
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           </div>

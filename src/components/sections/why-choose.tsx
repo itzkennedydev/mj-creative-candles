@@ -88,7 +88,7 @@ export function WhyChoose() {
                     }
                   }}
                 >
-                  Start Creating
+                  Shop
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </motion.span>
               </Button>

@@ -85,24 +85,48 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
+    const search = searchParams.get('search');
+    const page = parseInt(searchParams.get('page') ?? '1');
     const limit = parseInt(searchParams.get('limit') ?? '50');
+    const skip = (page - 1) * limit;
 
-    // Build query
-    const query: { status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' } = {};
-    if (status && ['pending', 'processing', 'shipped', 'delivered', 'cancelled'].includes(status)) {
-      query.status = status as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-    }
+        // Build query
+        const query: Record<string, unknown> = {};
+        
+        // Status filter
+        if (status && ['pending', 'processing', 'shipped', 'delivered', 'cancelled'].includes(status)) {
+          query.status = status as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+        }
 
-    // Fetch orders
+        // Search filter
+        if (search) {
+          query.$or = [
+            { orderNumber: { $regex: search, $options: 'i' } },
+            { 'customer.firstName': { $regex: search, $options: 'i' } },
+            { 'customer.lastName': { $regex: search, $options: 'i' } },
+            { 'customer.email': { $regex: search, $options: 'i' } },
+            { 'customer.phone': { $regex: search, $options: 'i' } }
+          ];
+        }
+
+    // Get total count for pagination
+    const total = await ordersCollection.countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+
+    // Fetch orders with pagination
     const orders = await ordersCollection
       .find(query)
       .sort({ createdAt: -1 })
+      .skip(skip)
       .limit(limit)
       .toArray();
 
     return NextResponse.json({
       success: true,
-      orders: orders
+      orders: orders,
+      total: total,
+      totalPages: totalPages,
+      currentPage: page
     });
 
   } catch (error) {
