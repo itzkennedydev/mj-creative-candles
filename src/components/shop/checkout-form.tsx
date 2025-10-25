@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/cart-context";
+import { useToast } from "~/lib/toast-context";
 import type { CustomerInfo } from "~/lib/types";
 import type { CreateOrderRequest } from "~/lib/order-types";
 
 export function CheckoutForm() {
   const { items: cartItems, getTotalPrice } = useCart();
+  const { addToast } = useToast();
   
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     firstName: "",
@@ -109,7 +111,11 @@ export function CheckoutForm() {
       
     } catch (error) {
       console.error("Checkout error:", error);
-      alert("There was an error processing your order. Please try again.");
+      addToast({
+        title: "Order Error",
+        description: "There was an error processing your order. Please try again.",
+        type: "error"
+      });
       setIsProcessing(false);
     }
   };

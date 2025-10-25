@@ -5,6 +5,9 @@ import { type Metadata } from "next";
 import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
 import { ProductsProvider } from "~/lib/products-context";
+import { CartProvider } from "~/lib/cart-context";
+import { ToastProvider } from "~/lib/toast-context";
+import { ToastContainer } from "~/components/ui/toast";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -45,11 +48,16 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
       <body className="antialiased min-h-screen flex flex-col" suppressHydrationWarning>
         <ProductsProvider>
-          <Header />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
+          <CartProvider>
+            <ToastProvider>
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+              <ToastContainer />
+            </ToastProvider>
+          </CartProvider>
         </ProductsProvider>
         <Script
           src="https://www.instagram.com/embed.js"

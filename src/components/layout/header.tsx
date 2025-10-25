@@ -3,17 +3,28 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "~/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTrigger,
 } from "~/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, ShoppingCart } from "lucide-react";
 import { Container } from "~/components/ui/container";
 import { NotificationBar } from "./notification-bar";
+import { useCart } from "~/lib/cart-context";
 
 export function Header() {
+  const { getTotalItems } = useCart();
+  const router = useRouter();
+  const itemCount = getTotalItems();
+
+  const handleCartClick = () => {
+    if (itemCount > 0) {
+      router.push('/shop/checkout');
+    }
+  };
 
   return (
     <>
@@ -65,18 +76,20 @@ export function Header() {
             </Link>
           </nav>
 
-          {/* Auth Buttons (Desktop) */}
-          <div className="hidden md:flex items-center gap-8">
+          {/* Cart Icon (Desktop) */}
+          <div className="hidden md:flex items-center">
             <Button
               variant="ghost"
-              className="text-[#0A5565] hover:text-[#0A5565]/90"
+              size="icon"
+              className="relative text-[#0A5565] hover:text-[#0A5565]/90"
+              onClick={handleCartClick}
             >
-              Login
-            </Button>
-            <Button
-              className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]"
-            >
-              Sign Up
+              <ShoppingCart className="h-6 w-6" />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
             </Button>
           </div>
 
@@ -113,17 +126,19 @@ export function Header() {
                   About Us
                 </Link>
 
-                <div className="flex flex-col gap-8 mt-8 pt-8 border-t">
+                <div className="flex items-center justify-center mt-8 pt-8 border-t">
                   <Button
                     variant="ghost"
-                    className="text-[#0A5565] hover:text-[#0A5565]/90 text-center"
+                    size="icon"
+                    className="relative text-[#0A5565] hover:text-[#0A5565]/90"
+                    onClick={handleCartClick}
                   >
-                    Login
-                  </Button>
-                  <Button
-                    className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-center"
-                  >
-                    Sign Up
+                    <ShoppingCart className="h-6 w-6" />
+                    {itemCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {itemCount}
+                      </span>
+                    )}
                   </Button>
                 </div>
               </nav>

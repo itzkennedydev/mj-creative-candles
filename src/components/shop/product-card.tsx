@@ -6,6 +6,7 @@ import type { Product } from "~/lib/types";
 import { Button } from "~/components/ui/button";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
+import { useToast } from "~/lib/toast-context";
 
 interface ProductCardProps {
   product: Product;
@@ -16,22 +17,35 @@ export function ProductCard({ product }: ProductCardProps) {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const { addItem } = useCart();
+  const { addToast } = useToast();
 
   // Calculate price with XXL surcharge
   const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : 0);
 
   const handleAddToCart = () => {
     if (product.sizes && product.sizes.length > 1 && !selectedSize) {
-      alert("Please select a size");
+      addToast({
+        title: "Size Required",
+        description: "Please select a size before adding to cart.",
+        type: "warning"
+      });
       return;
     }
     if (product.colors && product.colors.length > 1 && !selectedColor) {
-      alert("Please select a color");
+      addToast({
+        title: "Color Required",
+        description: "Please select a color before adding to cart.",
+        type: "warning"
+      });
       return;
     }
     
     addItem(product, quantity, selectedSize, selectedColor);
-    alert("Added to cart!");
+    addToast({
+      title: "Added to Cart!",
+      description: `${product.name} has been added to your cart.`,
+      type: "success"
+    });
   };
 
   return (

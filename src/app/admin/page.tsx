@@ -5,6 +5,7 @@ import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
 import { Settings, Package, Save, Edit, Trash2, Upload, X } from "lucide-react";
 import { useProducts } from "~/lib/products-context";
+import { useToast } from "~/lib/toast-context";
 import type { Product } from "~/lib/types";
 import type { Order } from "~/lib/order-types";
 
@@ -19,6 +20,7 @@ interface AdminSettings {
 
 export default function AdminPage() {
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { addToast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
@@ -117,7 +119,11 @@ export default function AdminPage() {
   const handleSaveSettings = () => {
     // TODO: Save to database/API
     console.log("Saving settings:", settings);
-    alert("Settings saved successfully!");
+    addToast({
+      title: "Settings Saved",
+      description: "Your settings have been saved successfully!",
+      type: "success"
+    });
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,7 +139,11 @@ export default function AdminPage() {
 
   const handleAddProduct = () => {
     if (!newProduct.name || newProduct.price <= 0) {
-      alert("Please fill in all required fields");
+      addToast({
+        title: "Required Fields",
+        description: "Please fill in all required fields",
+        type: "warning"
+      });
       return;
     }
     
@@ -143,7 +153,11 @@ export default function AdminPage() {
       category: "Apparel"
     });
     setNewProduct({ name: "", price: 0, description: "", inStock: true, sizes: [], colors: [], image: "" });
-    alert("Product added successfully!");
+    addToast({
+      title: "Product Added",
+      description: "Product has been added successfully!",
+      type: "success"
+    });
   };
 
   const handleEditProduct = (product: Product) => {
@@ -162,7 +176,11 @@ export default function AdminPage() {
 
   const handleUpdateProduct = () => {
     if (!editProduct.name || editProduct.price <= 0) {
-      alert("Please fill in all required fields");
+      addToast({
+        title: "Required Fields",
+        description: "Please fill in all required fields",
+        type: "warning"
+      });
       return;
     }
     
@@ -172,7 +190,11 @@ export default function AdminPage() {
     setEditingProduct(null);
     setEditProduct({ name: "", price: 0, description: "", inStock: true, sizes: [], colors: [], image: "" });
     setShowEditModal(false);
-    alert("Product updated successfully!");
+    addToast({
+      title: "Product Updated",
+      description: "Product has been updated successfully!",
+      type: "success"
+    });
   };
 
   const handleEditImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,7 +208,11 @@ export default function AdminPage() {
   const handleDeleteProduct = (id: number) => {
     if (confirm("Are you sure you want to delete this product?")) {
       deleteProduct(id);
-      alert("Product deleted successfully!");
+      addToast({
+        title: "Product Deleted",
+        description: "Product has been deleted successfully!",
+        type: "success"
+      });
     }
   };
 
