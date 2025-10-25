@@ -43,15 +43,8 @@ export function OrderSummary() {
               </div>
               <div className="text-right">
                 <p className="font-medium text-gray-900">
-                  ${(() => {
-                    const sizeSurcharge = item.selectedSize === '2XL' ? 2 : 0;
-                    const finalPrice = item.product.price + sizeSurcharge;
-                    return (finalPrice * item.quantity).toFixed(2);
-                  })()}
+                  ${((item.product.price + (item.selectedSize === 'XXL' ? 3 : 0)) * item.quantity).toFixed(2)}
                 </p>
-                {item.selectedSize === '2XL' && (
-                  <p className="text-xs text-gray-500">+$2.00 2XL surcharge</p>
-                )}
               </div>
             </div>
           ))

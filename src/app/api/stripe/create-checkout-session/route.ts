@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
 
     // Create line items for Stripe Checkout
     const lineItems = items.map(item => {
-      // Add $2 surcharge for 2XL size
-      const sizeSurcharge = item.selectedSize === '2XL' ? 2 : 0;
+      // Add $3 surcharge for XXL size
+      const sizeSurcharge = item.selectedSize === 'XXL' ? 3 : 0;
       const unitPrice = item.productPrice + sizeSurcharge;
       
       return {

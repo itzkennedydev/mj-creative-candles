@@ -103,7 +103,7 @@ export function FloatingCart() {
                                 </button>
                               </div>
                               <span className="font-medium text-gray-900">
-                                ${(item.product.price * item.quantity).toFixed(2)}
+                                ${((item.product.price + (item.selectedSize === 'XXL' ? 3 : 0)) * item.quantity).toFixed(2)}
                               </span>
                             </div>
                           </div>

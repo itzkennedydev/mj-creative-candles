@@ -17,6 +17,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const { addItem } = useCart();
 
+  // Calculate price with XXL surcharge
+  const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : 0);
+
   const handleAddToCart = () => {
     if (product.sizes && product.sizes.length > 1 && !selectedSize) {
       alert("Please select a size");
@@ -56,7 +59,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         
         <div className="text-xl md:text-2xl font-medium text-gray-900">
-          ${product.price.toFixed(2)}
+          ${displayPrice.toFixed(2)}
         </div>
 
         {/* Size Selection */}

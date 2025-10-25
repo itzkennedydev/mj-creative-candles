@@ -33,9 +33,9 @@ export function CheckoutForm() {
       const shippingCost = 0; // No shipping - pickup only
       const total = subtotal + tax + shippingCost;
 
-      // Prepare order items with 2XL surcharge
+      // Prepare order items with XXL surcharge
       const orderItems = cartItems.map(item => {
-        const sizeSurcharge = item.selectedSize === '2XL' ? 2 : 0;
+        const sizeSurcharge = item.selectedSize === 'XXL' ? 3 : 0;
         const finalPrice = item.product.price + sizeSurcharge;
         
         return {
