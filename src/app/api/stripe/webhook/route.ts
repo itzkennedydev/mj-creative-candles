@@ -37,9 +37,9 @@ export async function POST(request: NextRequest) {
     const db = client.db('stitch_orders');
 
     switch (event.type) {
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object;
-        const orderId = paymentIntent.metadata.orderId;
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const orderId = session.metadata?.orderId;
 
         if (orderId) {
           // Update order status to paid
@@ -48,8 +48,13 @@ export async function POST(request: NextRequest) {
             { 
               $set: { 
                 status: 'paid',
-                paymentIntentId: paymentIntent.id,
-                paidAt: new Date()
+                paymentIntentId: session.payment_intent,
+                paidAt: new Date(),
+                // Store payment details from metadata
+                stripeSessionId: session.id,
+                stripeSubtotal: session.metadata?.subtotal ? parseFloat(session.metadata.subtotal) : undefined,
+                stripeTax: session.metadata?.tax ? parseFloat(session.metadata.tax) : undefined,
+                stripeTotal: session.metadata?.total ? parseFloat(session.metadata.total) : undefined,
               }
             }
           );
@@ -57,19 +62,18 @@ export async function POST(request: NextRequest) {
         break;
       }
 
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object;
-        const orderId = paymentIntent.metadata.orderId;
+      case 'checkout.session.expired': {
+        const session = event.data.object;
+        const orderId = session.metadata?.orderId;
 
         if (orderId) {
-          // Update order status to failed
+          // Update order status to cancelled
           await db.collection('orders').updateOne(
             { _id: new ObjectId(orderId) },
             { 
               $set: { 
-                status: 'payment_failed',
-                paymentIntentId: paymentIntent.id,
-                failureReason: paymentIntent.last_payment_error?.message
+                status: 'cancelled',
+                failureReason: 'Checkout session expired'
               }
             }
           );

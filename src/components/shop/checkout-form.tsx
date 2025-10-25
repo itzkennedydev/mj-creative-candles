@@ -5,11 +5,9 @@ import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/cart-context";
 import type { CustomerInfo } from "~/lib/types";
 import type { CreateOrderRequest } from "~/lib/order-types";
-import { StripeProvider } from "~/components/stripe/stripe-provider";
-import { PaymentForm } from "~/components/stripe/payment-form";
 
 export function CheckoutForm() {
-  const { items: cartItems, getTotalPrice, clearCart } = useCart();
+  const { items: cartItems, getTotalPrice } = useCart();
   
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     firstName: "",
@@ -23,9 +21,6 @@ export function CheckoutForm() {
   const [paymentMethod, setPaymentMethod] = useState<'card'>('card');
   const [notes, setNotes] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string>('');
-  const [orderId, setOrderId] = useState<string>('');
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,15 +33,20 @@ export function CheckoutForm() {
       const shippingCost = 0; // No shipping - pickup only
       const total = subtotal + tax + shippingCost;
 
-      // Prepare order items
-      const orderItems = cartItems.map(item => ({
-        productId: item.product.id,
-        productName: item.product.name,
-        productPrice: item.product.price,
-        quantity: item.quantity,
-        selectedSize: item.selectedSize,
-        selectedColor: item.selectedColor
-      }));
+      // Prepare order items with 2XL surcharge
+      const orderItems = cartItems.map(item => {
+        const sizeSurcharge = item.selectedSize === '2XL' ? 2 : 0;
+        const finalPrice = item.product.price + sizeSurcharge;
+        
+        return {
+          productId: item.product.id,
+          productName: item.product.name,
+          productPrice: finalPrice,
+          quantity: item.quantity,
+          selectedSize: item.selectedSize,
+          selectedColor: item.selectedColor
+        };
+      });
 
       // Prepare order data for database
       const orderData: CreateOrderRequest = {
@@ -79,27 +79,29 @@ export function CheckoutForm() {
       const result = await response.json() as { success: boolean; orderNumber?: string; orderId?: string; error?: string };
 
       if (result.success && result.orderId) {
-        setOrderId(result.orderId);
-        
-        // Create payment intent
-        const paymentResponse = await fetch('/api/stripe/create-payment-intent', {
+        // Create Stripe Checkout session
+        const checkoutResponse = await fetch('/api/stripe/create-checkout-session', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            amount: total,
-            orderId: result.orderId
+            orderId: result.orderId,
+            items: orderItems,
+            subtotal,
+            tax,
+            total,
+            customerEmail: customerInfo.email
           })
         });
 
-        const paymentResult = await paymentResponse.json() as { clientSecret?: string; error?: string };
+        const checkoutResult = await checkoutResponse.json() as { sessionId?: string; url?: string; error?: string };
         
-        if (paymentResult.clientSecret) {
-          setClientSecret(paymentResult.clientSecret);
-          setShowPaymentForm(true);
+        if (checkoutResult.url) {
+          // Redirect to Stripe Checkout
+          window.location.href = checkoutResult.url;
         } else {
-          throw new Error('Failed to create payment intent');
+          throw new Error('Failed to create checkout session');
         }
       } else {
         throw new Error(result.error ?? 'Failed to create order');
@@ -110,49 +112,6 @@ export function CheckoutForm() {
       alert("There was an error processing your order. Please try again.");
       setIsProcessing(false);
     }
-  };
-
-  const handlePaymentSuccess = async (paymentIntentId: string) => {
-    try {
-      // Update order with payment intent ID
-      await fetch(`/api/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          paymentIntentId,
-          status: 'paid'
-        })
-      });
-
-      // Clear cart after successful payment
-      clearCart();
-      
-      // Show success message
-      alert(`Payment successful! Order #${orderId}`);
-      
-      // Reset form
-      setCustomerInfo({ firstName: "", lastName: "", email: "", phone: "" });
-      setNotes("");
-      setShowPaymentForm(false);
-      setClientSecret('');
-      setOrderId('');
-      
-      // Redirect to home
-      window.location.href = '/';
-    } catch (error) {
-      console.error("Payment success handler error:", error);
-      alert("Payment was successful but there was an error updating your order. Please contact support.");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handlePaymentError = (error: string) => {
-    console.error("Payment error:", error);
-    alert(`Payment failed: ${error}`);
-    setIsProcessing(false);
   };
 
   return (
@@ -275,28 +234,13 @@ export function CheckoutForm() {
           </div>
         </div>
 
-        {!showPaymentForm ? (
-          <Button
-            type="submit"
-            disabled={isProcessing}
-            className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-3 text-base font-medium"
-          >
-            {isProcessing ? "Processing..." : "Continue to Payment"}
-          </Button>
-        ) : (
-          <div className="space-y-4">
-            <h3 className="text-base md:text-lg font-medium text-gray-900">Payment Details</h3>
-            <StripeProvider clientSecret={clientSecret}>
-              <PaymentForm
-                clientSecret={clientSecret}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-                isProcessing={isProcessing}
-                setIsProcessing={setIsProcessing}
-              />
-            </StripeProvider>
-          </div>
-        )}
+        <Button
+          type="submit"
+          disabled={isProcessing}
+          className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-3 text-base font-medium"
+        >
+          {isProcessing ? "Processing..." : "Continue to Payment"}
+        </Button>
       </form>
     </div>
   );

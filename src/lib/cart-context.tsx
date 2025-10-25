@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { CartItem, Product } from "./types";
 
@@ -18,6 +18,18 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+
+  // Listen for cart cleared event from success page
+  useEffect(() => {
+    const handleCartCleared = () => {
+      setItems([]);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('cartCleared', handleCartCleared);
+      return () => window.removeEventListener('cartCleared', handleCartCleared);
+    }
+  }, []);
 
   const addItem = (product: Product, quantity: number, selectedSize?: string, selectedColor?: string) => {
     setItems(prev => {
@@ -71,7 +83,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const getTotalPrice = () => {
-    return items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    return items.reduce((sum, item) => {
+      const sizeSurcharge = item.selectedSize === '2XL' ? 2 : 0;
+      const finalPrice = item.product.price + sizeSurcharge;
+      return sum + (finalPrice * item.quantity);
+    }, 0);
   };
 
   return (

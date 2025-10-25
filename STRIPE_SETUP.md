@@ -1,12 +1,13 @@
 # Stripe Payment Integration Setup
 
 ## Overview
-Stripe payment integration has been successfully set up for your Stitch Please application. The integration includes:
+Stripe payment integration has been successfully set up for your Stitch Please application using **Stripe Checkout** (hosted pages). The integration includes:
 
-- Secure payment processing with Stripe Elements
-- Payment intent creation and confirmation
+- Secure payment processing with Stripe's hosted checkout pages
+- Automatic tax calculation
 - Webhook handling for payment status updates
 - Order status management
+- Mobile-optimized checkout experience
 
 ## Required Environment Variables
 
@@ -31,29 +32,28 @@ STRIPE_WEBHOOK_SECRET=whsec_...  # Your Stripe webhook secret
    - Go to [Stripe Dashboard > Webhooks](https://dashboard.stripe.com/webhooks)
    - Click "Add endpoint"
    - Set endpoint URL to: `https://yourdomain.com/api/stripe/webhook`
-   - Select events: `payment_intent.succeeded` and `payment_intent.payment_failed`
+   - Select events: `checkout.session.completed` and `checkout.session.expired`
    - Copy the webhook signing secret (starts with `whsec_`)
 
 ## How It Works
 
 1. **Customer fills out checkout form** → Order is created in database with "pending" status
-2. **Payment intent is created** → Stripe generates a client secret
-3. **Customer enters payment details** → Stripe Elements handles secure card input
-4. **Payment is processed** → Stripe confirms payment
+2. **Stripe Checkout session is created** → Customer is redirected to Stripe's hosted checkout page
+3. **Customer completes payment** → Stripe handles all payment processing securely
+4. **Customer is redirected back** → Success page shows confirmation
 5. **Webhook updates order** → Order status changes to "paid"
 
 ## Files Added/Modified
 
 ### New Files:
 - `src/lib/stripe.ts` - Stripe configuration and utilities
-- `src/app/api/stripe/create-payment-intent/route.ts` - Creates payment intents
+- `src/app/api/stripe/create-checkout-session/route.ts` - Creates Stripe Checkout sessions
 - `src/app/api/stripe/webhook/route.ts` - Handles Stripe webhooks
-- `src/components/stripe/stripe-provider.tsx` - Stripe Elements provider
-- `src/components/stripe/payment-form.tsx` - Payment form component
+- `src/app/checkout/success/page.tsx` - Success page after payment
 
 ### Modified Files:
 - `src/env.js` - Added Stripe environment variables
-- `src/components/shop/checkout-form.tsx` - Integrated Stripe payment flow
+- `src/components/shop/checkout-form.tsx` - Redirects to Stripe Checkout
 - `src/app/api/orders/[id]/route.ts` - Added PATCH method for payment updates
 - `src/lib/order-types.ts` - Added payment-related fields
 
