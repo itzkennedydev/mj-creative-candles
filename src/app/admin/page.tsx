@@ -46,7 +46,7 @@ export default function AdminPage() {
     pickupOnly: false,
     freeShippingThreshold: 50,
     shippingCost: 9.99,
-    pickupInstructions: "Please call (555) 123-4567 to schedule pickup. Available Monday-Friday 9AM-5PM."
+    pickupInstructions: "Please call (309) 373-6017 to schedule pickup. Available Monday-Friday 9AM-5PM."
   });
 
 
