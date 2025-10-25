@@ -82,3 +82,59 @@ export async function PUT(
     );
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const body = await request.json() as { 
+      status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed'; 
+      paymentIntentId?: string;
+      notes?: string;
+    };
+    const { status, paymentIntentId, notes } = body;
+
+    const client = await clientPromise;
+    const db = client.db('stitch_orders');
+    const ordersCollection = db.collection<Order>('orders');
+
+    const updateData: { 
+      updatedAt: Date; 
+      status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed';
+      paymentIntentId?: string;
+      notes?: string;
+    } = {
+      updatedAt: new Date()
+    };
+
+    if (status) updateData.status = status;
+    if (paymentIntentId) updateData.paymentIntentId = paymentIntentId;
+    if (notes !== undefined) updateData.notes = notes;
+
+    const { id } = await params;
+    const result = await ordersCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData }
+    );
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { error: 'Order not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Order updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Error updating order:', error);
+    return NextResponse.json(
+      { error: 'Failed to update order' },
+      { status: 500 }
+    );
+  }
+}

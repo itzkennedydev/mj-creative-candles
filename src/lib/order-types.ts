@@ -34,11 +34,14 @@ export interface Order {
   tax: number;
   shippingCost: number;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed';
   paymentMethod: 'card';
+  paymentIntentId?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
+  paidAt?: Date;
+  failureReason?: string;
 }
 
 export interface CreateOrderRequest {

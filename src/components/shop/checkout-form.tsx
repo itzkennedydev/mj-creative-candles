@@ -5,6 +5,8 @@ import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/cart-context";
 import type { CustomerInfo } from "~/lib/types";
 import type { CreateOrderRequest } from "~/lib/order-types";
+import { StripeProvider } from "~/components/stripe/stripe-provider";
+import { PaymentForm } from "~/components/stripe/payment-form";
 
 export function CheckoutForm() {
   const { items: cartItems, getTotalPrice, clearCart } = useCart();
@@ -21,6 +23,9 @@ export function CheckoutForm() {
   const [paymentMethod, setPaymentMethod] = useState<'card'>('card');
   const [notes, setNotes] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string>('');
+  const [orderId, setOrderId] = useState<string>('');
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +67,7 @@ export function CheckoutForm() {
         notes: notes.trim() || undefined
       };
       
-      // Save order to database
+      // Save order to database first
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
@@ -71,21 +76,31 @@ export function CheckoutForm() {
         body: JSON.stringify(orderData)
       });
 
-      const result = await response.json() as { success: boolean; orderNumber?: string; error?: string };
+      const result = await response.json() as { success: boolean; orderNumber?: string; orderId?: string; error?: string };
 
-      if (result.success) {
-        // Clear cart after successful order
-        clearCart();
+      if (result.success && result.orderId) {
+        setOrderId(result.orderId);
         
-        // Show success message with order number
-        alert(`Order placed successfully! Order #${result.orderNumber}`);
+        // Create payment intent
+        const paymentResponse = await fetch('/api/stripe/create-payment-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: total,
+            orderId: result.orderId
+          })
+        });
+
+        const paymentResult = await paymentResponse.json() as { clientSecret?: string; error?: string };
         
-        // Reset form
-        setCustomerInfo({ firstName: "", lastName: "", email: "", phone: "" });
-        setNotes("");
-        
-        // Redirect to home or order confirmation page
-        window.location.href = '/';
+        if (paymentResult.clientSecret) {
+          setClientSecret(paymentResult.clientSecret);
+          setShowPaymentForm(true);
+        } else {
+          throw new Error('Failed to create payment intent');
+        }
       } else {
         throw new Error(result.error ?? 'Failed to create order');
       }
@@ -93,9 +108,51 @@ export function CheckoutForm() {
     } catch (error) {
       console.error("Checkout error:", error);
       alert("There was an error processing your order. Please try again.");
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePaymentSuccess = async (paymentIntentId: string) => {
+    try {
+      // Update order with payment intent ID
+      await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paymentIntentId,
+          status: 'paid'
+        })
+      });
+
+      // Clear cart after successful payment
+      clearCart();
+      
+      // Show success message
+      alert(`Payment successful! Order #${orderId}`);
+      
+      // Reset form
+      setCustomerInfo({ firstName: "", lastName: "", email: "", phone: "" });
+      setNotes("");
+      setShowPaymentForm(false);
+      setClientSecret('');
+      setOrderId('');
+      
+      // Redirect to home
+      window.location.href = '/';
+    } catch (error) {
+      console.error("Payment success handler error:", error);
+      alert("Payment was successful but there was an error updating your order. Please contact support.");
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handlePaymentError = (error: string) => {
+    console.error("Payment error:", error);
+    alert(`Payment failed: ${error}`);
+    setIsProcessing(false);
   };
 
   return (
@@ -218,13 +275,28 @@ export function CheckoutForm() {
           </div>
         </div>
 
-        <Button
-          type="submit"
-          disabled={isProcessing}
-          className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-3 text-base font-medium"
-        >
-          {isProcessing ? "Processing..." : "Place Order"}
-        </Button>
+        {!showPaymentForm ? (
+          <Button
+            type="submit"
+            disabled={isProcessing}
+            className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-3 text-base font-medium"
+          >
+            {isProcessing ? "Processing..." : "Continue to Payment"}
+          </Button>
+        ) : (
+          <div className="space-y-4">
+            <h3 className="text-base md:text-lg font-medium text-gray-900">Payment Details</h3>
+            <StripeProvider clientSecret={clientSecret}>
+              <PaymentForm
+                clientSecret={clientSecret}
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+                isProcessing={isProcessing}
+                setIsProcessing={setIsProcessing}
+              />
+            </StripeProvider>
+          </div>
+        )}
       </form>
     </div>
   );
