@@ -16,7 +16,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
     const customerEmailHtml = generateCustomerEmailTemplate(order);
     
     await resend.emails.send({
-      from: 'Stitch Please <orders@itskennedy.dev>',
+      from: 'Stitch Please <orders@stitchpleaseqc.com>',
       to: [order.customer.email],
       subject: `Order Confirmation - ${order.orderNumber}`,
       html: customerEmailHtml
@@ -26,8 +26,8 @@ export async function sendOrderConfirmationEmail(order: Order) {
     const ownerEmailHtml = generateOwnerEmailTemplate(order);
     
     await resend.emails.send({
-      from: 'Stitch Please Orders <orders@itskennedy.dev>',
-      to: ['itskennedy.dev@gmail.com'],
+      from: 'Stitch Please Orders <orders@stitchpleaseqc.com>',
+      to: ['pleasestitch18@gmail.com'],
       subject: `New Order Received - ${order.orderNumber}`,
       html: ownerEmailHtml
     });
