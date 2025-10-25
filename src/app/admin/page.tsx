@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
 import { Settings, Package, Save, Edit, Trash2, Upload, X } from "lucide-react";
@@ -339,9 +340,11 @@ export default function AdminPage() {
               <div className="flex items-center gap-6">
                 {newProduct.image && (
                   <div className="w-24 h-24 rounded-xl overflow-hidden border border-gray-200">
-                    <img
+                    <Image
                       src={newProduct.image}
                       alt="Product preview"
+                      width={96}
+                      height={96}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -501,9 +504,11 @@ export default function AdminPage() {
           {products.map((product) => (
             <div key={product.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-all duration-200">
               <div className="aspect-square w-full mb-6 rounded-xl overflow-hidden bg-gray-100">
-                <img
+                <Image
                   src={product.image}
                   alt={product.name}
+                  width={300}
+                  height={300}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -812,9 +817,11 @@ export default function AdminPage() {
           <div className="p-8 flex-1">
             {/* Logo and Header */}
             <div className="mb-12">
-              <img 
+              <Image 
                 src="/Stitch Please Ish Black.png" 
                 alt="Stitch Please Logo" 
+                width={120}
+                height={96}
                 className="h-24 w-auto mx-auto mb-6"
               />
               <h1 className="text-2xl font-bold text-gray-900 text-center">Admin Panel</h1>
@@ -914,9 +921,11 @@ export default function AdminPage() {
                   <div className="flex items-center gap-6">
                     {editProduct.image && (
                       <div className="w-24 h-24 rounded-xl overflow-hidden border border-gray-200">
-                        <img
+                        <Image
                           src={editProduct.image}
                           alt="Product preview"
+                          width={96}
+                          height={96}
                           className="w-full h-full object-cover"
                         />
                       </div>

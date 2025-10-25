@@ -53,25 +53,25 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm font-medium hover:text-primary/80">
+            <Link href="/" className="text-lg font-medium hover:text-primary/80 px-4 py-4">
               Home
             </Link>
 
-
-            <Link href="/shop" className="text-sm font-medium hover:text-primary/80">
+ 
+            <Link href="/shop" className="text-lg font-medium hover:text-primary/80 px-4 py-4">
               Shop
             </Link>
 
-            <Link href="/services" className="text-sm font-medium hover:text-primary/80">
+            <Link href="/services" className="text-lg font-medium hover:text-primary/80 px-4 py-4">
               Services
             </Link>
 
-            <Link href="/appointments" className="text-sm font-medium hover:text-primary/80 flex items-center gap-2">
-              <span className="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded-sm font-medium">New</span>
+            <Link href="/appointments" className="text-lg font-medium hover:text-primary/80 flex items-center gap-2 px-4 py-4">
+              <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-sm font-medium">New</span>
               Mobile Embroidery
             </Link>
 
-            <Link href="/about" className="text-sm font-medium hover:text-primary/80">
+            <Link href="/about" className="text-lg font-medium hover:text-primary/80 px-4 py-4">
               About Us
             </Link>
           </nav>
@@ -80,13 +80,12 @@ export function Header() {
           <div className="hidden md:flex items-center">
             <Button
               variant="ghost"
-              size="icon"
-              className="relative text-[#0A5565] hover:text-[#0A5565]/90"
+              className="relative text-[#0A5565] hover:text-[#0A5565]/90 p-2 h-10 w-10 [&_svg]:!size-6"
               onClick={handleCartClick}
             >
               <ShoppingCart className="h-6 w-6" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                   {itemCount}
                 </span>
               )}
@@ -104,42 +103,42 @@ export function Header() {
             <SheetContent side="right" className="w-[320px] sm:w-[400px]">
               <SheetHeader>
               </SheetHeader>
-              <nav className="flex flex-col gap-8 mt-8">
-                <Link href="/" className="text-sm font-medium hover:text-primary/80 py-2">
+              <nav className="flex flex-col gap-4 mt-8">
+                <Link href="/" className="text-xl font-medium hover:text-primary/80 px-4 py-4">
                   Home
                 </Link>
 
-                <Link href="/shop" className="text-sm font-medium hover:text-primary/80 py-2">
+                <Link href="/shop" className="text-xl font-medium hover:text-primary/80 px-4 py-4">
                   Shop
                 </Link>
 
-                <Link href="/services" className="text-sm font-medium hover:text-primary/80 py-2">
+                <Link href="/services" className="text-xl font-medium hover:text-primary/80 px-4 py-4">
                   Services
                 </Link>
 
-                <Link href="/appointments" className="text-sm font-medium hover:text-primary/80 py-2 flex items-center gap-2">
-                  <span className="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded-sm font-medium">New</span>
+                <Link href="/appointments" className="text-xl font-medium hover:text-primary/80 px-4 py-4 flex items-center gap-2">
+                  <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-sm font-medium">New</span>
                   Mobile Embroidery
                 </Link>
                 
-                <Link href="/about" className="text-sm font-medium hover:text-primary/80 py-2">
+                <Link href="/about" className="text-xl font-medium hover:text-primary/80 px-4 py-4">
                   About Us
                 </Link>
 
                 <div className="flex items-center justify-center mt-8 pt-8 border-t">
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="relative text-[#0A5565] hover:text-[#0A5565]/90"
+                    className="relative text-[#0A5565] hover:text-[#0A5565]/90 p-2 h-10 w-10 [&_svg]:!size-6"
                     onClick={handleCartClick}
                   >
                     <ShoppingCart className="h-6 w-6" />
                     {itemCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                         {itemCount}
                       </span>
                     )}
                   </Button>
+                  <span className="ml-4 text-lg font-medium text-[#0A5565]">Cart ({itemCount})</span>
                 </div>
               </nav>
             </SheetContent>
