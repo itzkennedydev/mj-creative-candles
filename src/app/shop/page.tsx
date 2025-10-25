@@ -60,7 +60,7 @@ export default function ShopPage() {
               <div className="flex-1">
                 <div className="mb-6 md:mb-8">
                   <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">Products</h2>
-                  <p className="text-gray-600">Showing 1 product</p>
+                  <p className="text-gray-600">Showing 2 products</p>
                 </div>
                 <ProductGrid />
               </div>

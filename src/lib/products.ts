@@ -11,5 +11,27 @@ export const products: Product[] = [
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["White", "Black", "Navy", "Gray"]
+  },
+  {
+    id: 2,
+    name: "Black T-Shirt",
+    description: "Comfortable 50-50 cotton poly blend black t-shirt, perfect for custom embroidery",
+    price: 22.00,
+    image: "/placeholder-black-tshirt.jpg",
+    category: "Apparel",
+    inStock: true,
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["Black"]
+  },
+  {
+    id: 3,
+    name: "Black Hoodie",
+    description: "Warm and cozy 50-50 cotton poly blend black hoodie, ideal for custom embroidery",
+    price: 35.00,
+    image: "/placeholder-black-hoodie.jpg",
+    category: "Apparel",
+    inStock: true,
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["Black"]
   }
 ];

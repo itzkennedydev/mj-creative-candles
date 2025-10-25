@@ -23,6 +23,8 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [activeSection, setActiveSection] = useState("products");
+  const [orders, setOrders] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<number | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editProduct, setEditProduct] = useState({
@@ -38,7 +40,7 @@ export default function AdminPage() {
   const editFileInputRef = useRef<HTMLInputElement>(null);
   
   const [settings, setSettings] = useState<AdminSettings>({
-    taxRate: 8.0,
+    taxRate: 8.5,
     shippingEnabled: true,
     pickupOnly: false,
     freeShippingThreshold: 50,
@@ -60,6 +62,7 @@ export default function AdminPage() {
 
   const sidebarItems = [
     { id: "products", label: "Products", icon: Package },
+    { id: "orders", label: "Orders", icon: Package },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -71,6 +74,27 @@ export default function AdminPage() {
       setIsAuthenticated(true);
     }
   }, []);
+
+  const fetchOrders = async () => {
+    setOrdersLoading(true);
+    try {
+      const response = await fetch('/api/orders');
+      const data = await response.json();
+      if (data.success) {
+        setOrders(data.orders);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && activeSection === 'orders') {
+      fetchOrders();
+    }
+  }, [isAuthenticated, activeSection]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -519,6 +543,126 @@ export default function AdminPage() {
     </div>
   );
 
+  const renderOrders = () => (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold text-gray-900">Orders</h2>
+        <Button
+          onClick={fetchOrders}
+          disabled={ordersLoading}
+          className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 py-3"
+        >
+          {ordersLoading ? "Loading..." : "Refresh"}
+        </Button>
+      </div>
+
+      {ordersLoading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading orders...</p>
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">No orders found</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {orders.map((order) => (
+            <div key={order._id} className="bg-white border border-gray-200 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Order #{order.orderNumber}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString()}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-gray-900">${order.total.toFixed(2)}</p>
+                  <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    order.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                    order.status === 'shipped' ? 'bg-purple-100 text-purple-800' :
+                    order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Customer</h4>
+                  <p className="text-sm text-gray-600">
+                    {order.customer.firstName} {order.customer.lastName}
+                  </p>
+                  <p className="text-sm text-gray-600">{order.customer.email}</p>
+                  <p className="text-sm text-gray-600">{order.customer.phone}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Shipping</h4>
+                  <p className="text-sm text-gray-600">
+                    {order.shipping.street}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {order.shipping.city}, {order.shipping.state} {order.shipping.zipCode}
+                  </p>
+                  <p className="text-sm text-gray-600">{order.shipping.country}</p>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <h4 className="font-medium text-gray-900 mb-2">Items</h4>
+                <div className="space-y-2">
+                  {order.items.map((item: any, index: number) => (
+                    <div key={index} className="flex justify-between text-sm">
+                      <span className="text-gray-600">
+                        {item.productName} {item.selectedSize && `(${item.selectedSize})`} {item.selectedColor && `- ${item.selectedColor}`}
+                      </span>
+                      <span className="text-gray-900">
+                        {item.quantity} × ${item.productPrice.toFixed(2)} = ${(item.quantity * item.productPrice).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="text-gray-900">${order.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600">Tax</span>
+                  <span className="text-gray-900">${order.tax.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600">Shipping</span>
+                  <span className="text-gray-900">
+                    {order.shippingCost === 0 ? "Free" : `$${order.shippingCost.toFixed(2)}`}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600">Payment Method</span>
+                  <span className="text-gray-900 capitalize">{order.paymentMethod}</span>
+                </div>
+                {order.notes && (
+                  <div className="mt-2">
+                    <span className="text-sm text-gray-600">Notes: </span>
+                    <span className="text-sm text-gray-900">{order.notes}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   const renderSettings = () => (
     <div className="space-y-12">
       {/* Tax Settings */}
@@ -697,6 +841,7 @@ export default function AdminPage() {
             <div className="py-12">
               {/* Content */}
               {activeSection === "products" && renderProducts()}
+              {activeSection === "orders" && renderOrders()}
               {activeSection === "settings" && (
                 <div className="space-y-8">
                   {renderSettings()}

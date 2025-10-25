@@ -17,15 +17,26 @@ const ProductsContext = createContext<ProductsContextType | undefined>(undefined
 // Initial products data
 const initialProducts: Product[] = [
   {
-    id: 1,
-    name: "Custom Embroidered T-Shirt",
-    price: 25.00,
-    inStock: true,
-    description: "High-quality cotton t-shirt with custom embroidery",
-    image: "/categories/Tops.jpeg",
+    id: 2,
+    name: "Black T-Shirt",
+    description: "Comfortable 50-50 cotton poly blend black t-shirt, perfect for custom embroidery",
+    price: 22.00,
+    image: "/placeholder-black-tshirt.png",
     category: "Apparel",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["White", "Black", "Navy"]
+    inStock: true,
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["Black"]
+  },
+  {
+    id: 3,
+    name: "Black Hoodie",
+    description: "Warm and cozy 50-50 cotton poly blend black hoodie, ideal for custom embroidery",
+    price: 35.00,
+    image: "/placeholder-black-hoodie.png",
+    category: "Apparel",
+    inStock: true,
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["Black"]
   }
 ];
 
