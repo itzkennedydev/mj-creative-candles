@@ -1,5 +1,9 @@
 import { MongoClient } from "mongodb";
 import { attachDatabasePool } from "@vercel/functions";
+import { config } from 'dotenv';
+
+// Load environment variables
+config({ path: '.env.local' });
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Please add your MongoDB URI to .env.local');

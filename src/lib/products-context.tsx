@@ -1,69 +1,121 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { Product } from "./types";
 
 interface ProductsContextType {
   products: Product[];
-  addProduct: (product: Omit<Product, "id">) => void;
-  updateProduct: (id: number, product: Partial<Product>) => void;
-  deleteProduct: (id: number) => void;
-  getProduct: (id: number) => Product | undefined;
+  addProduct: (product: Omit<Product, "id">) => Promise<void>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  getProduct: (id: string) => Product | undefined;
+  loading: boolean;
+  error: string | null;
 }
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
 
-// Initial products data
-const initialProducts: Product[] = [
-  {
-    id: 2,
-    name: "Black T-Shirt",
-    description: "Comfortable 50-50 cotton poly blend black t-shirt, perfect for custom embroidery",
-    price: 22.00,
-    image: "/placeholder-black-tshirt.png",
-    category: "Apparel",
-    inStock: true,
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["Black"]
-  },
-  {
-    id: 3,
-    name: "Black Hoodie",
-    description: "Warm and cozy 50-50 cotton poly blend black hoodie, ideal for custom embroidery",
-    price: 35.00,
-    image: "/placeholder-black-hoodie.png",
-    category: "Apparel",
-    inStock: true,
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["Black"]
-  }
-];
-
 export function ProductsProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const addProduct = (productData: Omit<Product, "id">) => {
-    const newProduct: Product = {
-      ...productData,
-      id: Math.max(...products.map(p => p.id), 0) + 1
-    };
-    setProducts(prev => [...prev, newProduct]);
+  // Fetch products from API
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch('/api/products');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      
+      const data = await response.json() as Product[];
+      setProducts(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch products');
+      console.error('Error fetching products:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateProduct = (id: number, productData: Partial<Product>) => {
-    setProducts(prev => 
-      prev.map(product => 
-        product.id === id ? { ...product, ...productData } : product
-      )
-    );
+  // Load products on mount
+  useEffect(() => {
+    void fetchProducts();
+  }, []);
+
+  const addProduct = async (productData: Omit<Product, "id">) => {
+    try {
+      setError(null);
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create product');
+      }
+
+      const newProduct = await response.json() as Product;
+      setProducts(prev => [...prev, newProduct]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create product');
+      throw err;
+    }
   };
 
-  const deleteProduct = (id: number) => {
-    setProducts(prev => prev.filter(product => product.id !== id));
+  const updateProduct = async (id: string, productData: Partial<Product>) => {
+    try {
+      setError(null);
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update product');
+      }
+
+      const updatedProduct = await response.json() as Product;
+      setProducts(prev => 
+        prev.map(product => 
+          product.id === id ? updatedProduct : product
+        )
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update product');
+      throw err;
+    }
   };
 
-  const getProduct = (id: number) => {
+  const deleteProduct = async (id: string) => {
+    try {
+      setError(null);
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+
+      setProducts(prev => prev.filter(product => product.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete product');
+      throw err;
+    }
+  };
+
+  const getProduct = (id: string) => {
     return products.find(product => product.id === id);
   };
 
@@ -73,7 +125,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       addProduct,
       updateProduct,
       deleteProduct,
-      getProduct
+      getProduct,
+      loading,
+      error
     }}>
       {children}
     </ProductsContext.Provider>
