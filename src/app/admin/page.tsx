@@ -804,13 +804,14 @@ export default function AdminPage() {
                     <select
                       value={order.status}
                       onChange={(e) => handleStatusChange(order._id!.toString(), e.target.value)}
-                      className={`w-full sm:w-auto pl-4 pr-10 py-2.5 text-sm font-semibold rounded-lg border-2 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 appearance-none h-10 ${
+                      className={`w-full sm:w-auto pl-4 pr-10 text-sm font-semibold rounded-lg border-2 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 appearance-none h-10 ${
                         order.status === 'pending' ? 'bg-yellow-50 text-yellow-800 border-yellow-300 hover:bg-yellow-100 focus:ring-yellow-200' :
                         order.status === 'processing' ? 'bg-blue-50 text-blue-800 border-blue-300 hover:bg-blue-100 focus:ring-blue-200' :
                         order.status === 'ready_for_pickup' ? 'bg-green-50 text-green-800 border-green-300 hover:bg-green-100 focus:ring-green-200' :
                         order.status === 'delivered' ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 focus:ring-emerald-200' :
                         'bg-red-50 text-red-800 border-red-300 hover:bg-red-100 focus:ring-red-200'
                       }`}
+                      style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
                     >
                       <option value="pending">Pending</option>
                       <option value="processing">Processing</option>
