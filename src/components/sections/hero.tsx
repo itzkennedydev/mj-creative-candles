@@ -49,14 +49,16 @@ export function Hero() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-4">
               <Button 
-                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 h-auto rounded-xl font-medium shadow-lg shadow-[#74CADC]/20 w-full sm:w-auto"
+                size="lg"
+                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium shadow-lg shadow-[#74CADC]/20 w-full sm:w-auto"
                 onClick={() => router.push('/shop')}
               >
                 Shop
               </Button>
               <Button 
+                size="lg"
                 variant="ghost"
-                className="bg-gray-100 hover:bg-gray-200 text-[#0A5565] text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 h-auto rounded-xl font-medium w-full sm:w-auto"
+                className="bg-gray-100 hover:bg-gray-200 text-[#0A5565] font-medium w-full sm:w-auto"
                 onClick={() => window.open("https://maps.google.com/?q=415+13th+St,+Moline+IL+61265", "_blank")}
               >
                 Get Directions

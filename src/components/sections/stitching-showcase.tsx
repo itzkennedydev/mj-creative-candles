@@ -61,7 +61,7 @@ export function StitchingShowcase() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="space-y-4 w-full lg:w-[55%] lg:pl-24"
+          className="space-y-4 w-full lg:w-[55%] lg:pl-24 text-center lg:text-left"
         >
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}

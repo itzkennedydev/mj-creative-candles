@@ -11,15 +11,15 @@ export function CtaContent() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center py-8 md:py-24">
       <motion.div 
-        className="space-y-6"
+        className="space-y-6 text-center lg:text-left"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
       >
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1]">
-          Speed and Precision <br className="hidden sm:block" />
-          in Every Seam
+          Speed and Precision <br className="sm:hidden" />
+          in Every Seam <br className="hidden sm:block" />
         </h2>
         <motion.p 
           className="text-muted-foreground text-base md:text-lg max-w-xl leading-[1.75]"

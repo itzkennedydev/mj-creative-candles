@@ -36,10 +36,10 @@ export function WhyChoose() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-[60px] font-bold text-center mb-4 px-8"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-4 px-8 leading-tight"
           >
             Why choose
-            <span className="block mt-4">
+            <span className="block mt-1">
               Stitch Please?
             </span>
           </motion.h2>
@@ -50,7 +50,7 @@ export function WhyChoose() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4 }}
-            className="text-[#1d1d1f]/60 text-center max-w-[90%] sm:max-w-xl md:max-w-2xl mx-auto text-xs sm:text-sm md:text-base mb-8 px-8"
+            className="text-[#1d1d1f]/60 text-center max-w-[95%] sm:max-w-xl md:max-w-2xl mx-auto text-base md:text-lg mb-8 px-4 leading-[1.75]"
           >
             Our personalized collaboration, swift turnaround, and commitment to impeccable craftsmanship make us the ideal choice for those who seek excellence in every stitch.
           </motion.p>
