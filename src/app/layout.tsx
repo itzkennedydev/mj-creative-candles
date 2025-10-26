@@ -46,7 +46,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
-      <body className="antialiased min-h-screen flex flex-col" suppressHydrationWarning>
+      <body className="antialiased min-h-screen flex flex-col overflow-x-hidden" suppressHydrationWarning>
         <QueryProvider>
           <ProductsProvider>
             <CartProvider>

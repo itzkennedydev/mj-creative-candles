@@ -1,3 +1,5 @@
+"use client";
+
 import { Hero } from "~/components/sections/hero";
 import { BrandsSection } from "~/components/sections/brands";
 import { Categories } from "~/components/sections/categories";
@@ -19,6 +21,19 @@ export default function Home() {
       <Gallery />
       {/* Other sections */}
       <EventPopup />
+      
+      {/* Debug button - remove this after testing */}
+      <div className="fixed bottom-4 right-4 z-[10000]">
+        <button 
+          onClick={() => {
+            localStorage.removeItem('event-popup-dismissed');
+            window.location.reload();
+          }}
+          className="bg-red-500 text-white px-3 py-1 text-xs rounded"
+        >
+          Reset Popup
+        </button>
+      </div>
     </div>
   );
 }

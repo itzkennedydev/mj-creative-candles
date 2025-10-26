@@ -10,9 +10,14 @@ export function EventPopup() {
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
+  // Debug: Force show for testing
+  // const [isVisible, setIsVisible] = useState(true);
+  // const [isDismissed, setIsDismissed] = useState(false);
+
   useEffect(() => {
     // Check if popup was previously dismissed
     const dismissed = localStorage.getItem('event-popup-dismissed');
+    console.log('EventPopup: dismissed check:', dismissed);
     if (dismissed) {
       setIsDismissed(true);
       return;
@@ -20,11 +25,13 @@ export function EventPopup() {
 
     // Show popup after 2 seconds
     const timer = setTimeout(() => {
+      console.log('EventPopup: showing popup');
       setIsVisible(true);
     }, 2000);
 
     // Auto-hide after 15 seconds (13 seconds after appearing)
     const autoHideTimer = setTimeout(() => {
+      console.log('EventPopup: auto-hiding popup');
       setIsVisible(false);
     }, 15000);
 
@@ -40,11 +47,16 @@ export function EventPopup() {
     localStorage.setItem('event-popup-dismissed', 'true');
   };
 
-  if (isDismissed || !isVisible) return null;
+  if (isDismissed || !isVisible) {
+    console.log('EventPopup: not rendering, isDismissed:', isDismissed, 'isVisible:', isVisible);
+    return null;
+  }
+
+  console.log('EventPopup: rendering popup');
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-4" style={{ margin: 0 }}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative animate-in fade-in-0 zoom-in-95 duration-300">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[9999] flex items-center justify-center px-4 py-4" style={{ margin: 0, width: '100vw', height: '100vh' }}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative animate-in fade-in-0 zoom-in-95 duration-300 mx-2">
         {/* Close Button */}
         <button
           onClick={handleDismiss}
