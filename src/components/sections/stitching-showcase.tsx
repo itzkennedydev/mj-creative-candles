@@ -41,7 +41,7 @@ export function StitchingShowcase() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="absolute bottom-[-8%] right-[-4%] w-2/5 overflow-hidden rounded-lg shadow-xl"
+            className="absolute bottom-[-8%] right-0 w-2/5 overflow-hidden rounded-lg shadow-xl"
           >
             <div className="shadow-[0_16px_40px_rgba(8,_112,_184,_0.7)]">
               <Image

@@ -38,7 +38,7 @@ export function BrandsSection() {
 
   return (
     <section className="pt-4 bg-white overflow-hidden">
-      <div className="container px-8 mx-auto">
+      <div className="container mx-auto">
         <h2 className="text-base text-[#475467] text-center mb-8 font-medium">
           Brands Sporting Our Personal Touches
         </h2>
@@ -48,7 +48,7 @@ export function BrandsSection() {
           
           <div 
             ref={scrollRef}
-            className="flex gap-8 items-center overflow-hidden whitespace-nowrap"
+            className="flex gap-8 items-center overflow-hidden whitespace-nowrap w-full"
           >
             {[...brandImages, ...brandImages].map((brand, index) => (
               <div
