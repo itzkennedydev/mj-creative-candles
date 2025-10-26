@@ -21,7 +21,7 @@ export function Hero() {
             className="order-2 lg:order-1 space-y-8 sm:space-y-6 md:space-y-8 text-center lg:text-left"
           >
 {/* Main Heading */}
-<h1 className="text-4xl sm:text-5xl md:text-4xl lg:text-5xl font-bold text-[#1d1d1f] leading-tight">
+<h1 className="text-3xl sm:text-5xl md:text-4xl lg:text-5xl font-bold text-[#1d1d1f] leading-tight">
   {/* Mobile - Better line breaks */}
   <span className="md:hidden">
     Bring Your <span className="text-[#0A5565]">Ideas</span> to Life<br />
