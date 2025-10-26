@@ -2,7 +2,6 @@
 
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
-import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -53,7 +52,6 @@ export function Hero() {
                 onClick={() => router.push('/shop')}
               >
                 Shop
-                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button 
                 variant="ghost"

@@ -3,7 +3,6 @@
 import Image from "next/image"
 import { Container } from "~/components/ui/container"
 import { Button } from "~/components/ui/button"
-import { ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 
@@ -92,7 +91,6 @@ export function WhyChoose() {
                   }}
                 >
                   Shop
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </motion.span>
               </Button>
             </motion.div>
