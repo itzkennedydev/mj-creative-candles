@@ -758,111 +758,198 @@ export default function AdminPage() {
           <p className="text-gray-500 text-lg">No orders found</p>
         </div>
       ) : (
-        <div className="space-y-4 md:space-y-6">
+        <div className="space-y-6">
           {orders.map((order) => (
-            <div key={order._id?.toString() ?? order.orderNumber} className="bg-white border border-gray-200 rounded-xl p-4 md:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
-                <div>
-                  <h3 className="text-base md:text-lg font-semibold text-gray-900">
-                    Order #{order.orderNumber}
-                  </h3>
-                  <p className="text-xs md:text-sm text-gray-500">
-                    {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString()}
+            <div key={order._id?.toString() ?? order.orderNumber} className="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
+              {/* Header Section */}
+              <div className="flex flex-col lg:flex-row lg:items-start justify-between mb-6 gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Order #{order.orderNumber}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-gray-500 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {new Date(order.createdAt).toLocaleDateString('en-US', { 
+                      weekday: 'short', 
+                      year: 'numeric', 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })} at {new Date(order.createdAt).toLocaleTimeString('en-US', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
                   </p>
                 </div>
-                <div className="text-left sm:text-right">
-                  <p className="text-lg font-bold text-gray-900">${order.total.toFixed(2)}</p>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mt-3">
-                    <div className="relative">
-                      <select
-                        value={order.status}
-                        onChange={(e) => handleStatusChange(order._id!.toString(), e.target.value)}
-                        className={`w-full sm:w-auto pl-3 pr-12 py-2 text-sm font-medium rounded-md border transition-colors cursor-pointer focus:outline-none focus:ring-1 appearance-none ${
-                          order.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 focus:ring-yellow-300' :
-                          order.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 focus:ring-blue-300' :
-                          order.status === 'ready_for_pickup' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 focus:ring-green-300' :
-                          order.status === 'delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 focus:ring-emerald-300' :
-                          'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 focus:ring-red-300'
-                        }`}
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="ready_for_pickup">Ready for Pickup</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
+                
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <div className="relative">
+                    <select
+                      value={order.status}
+                      onChange={(e) => handleStatusChange(order._id!.toString(), e.target.value)}
+                      className={`w-full sm:w-auto pl-4 pr-10 py-2.5 text-sm font-medium rounded-lg border-2 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 appearance-none ${
+                        order.status === 'pending' ? 'bg-yellow-50 text-yellow-800 border-yellow-300 hover:bg-yellow-100 focus:ring-yellow-200' :
+                        order.status === 'processing' ? 'bg-blue-50 text-blue-800 border-blue-300 hover:bg-blue-100 focus:ring-blue-200' :
+                        order.status === 'ready_for_pickup' ? 'bg-green-50 text-green-800 border-green-300 hover:bg-green-100 focus:ring-green-200' :
+                        order.status === 'delivered' ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 focus:ring-emerald-200' :
+                        'bg-red-50 text-red-800 border-red-300 hover:bg-red-100 focus:ring-red-200'
+                      }`}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="ready_for_pickup">Ready for Pickup</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
                     </div>
-                    {order.status === 'processing' && (
-                      <Button
-                        onClick={() => handlePickupReady(order)}
-                        className="w-full sm:w-auto px-3 py-2 text-sm font-medium bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] rounded-md transition-colors"
-                      >
-                        Mark Ready
-                      </Button>
-                    )}
+                  </div>
+                  {order.status === 'processing' && (
+                    <Button
+                      onClick={() => handlePickupReady(order)}
+                      className="w-full sm:w-auto px-4 py-2.5 text-sm font-semibold bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] rounded-lg transition-all duration-200 hover:scale-105"
+                    >
+                      Mark Ready
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Content Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                {/* Customer Information */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <h4 className="font-semibold text-gray-900">Customer</h4>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-900">
+                      {order.customer.firstName} {order.customer.lastName}
+                    </p>
+                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      {order.customer.email}
+                    </p>
+                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      {order.customer.phone}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Pickup Information */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <h4 className="font-semibold text-gray-900">Pickup</h4>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-900">Pickup Only Service</p>
+                    <p className="text-sm text-gray-600">Customer will be contacted for pickup arrangement</p>
+                  </div>
+                </div>
+
+                {/* Payment Information */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <h4 className="font-semibold text-gray-900">Payment</h4>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-900 capitalize">{order.paymentMethod}</p>
+                    <p className="text-sm text-gray-600">Payment completed</p>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Customer</h4>
-                  <p className="text-sm text-gray-600">
-                    {order.customer.firstName} {order.customer.lastName}
-                  </p>
-                  <p className="text-sm text-gray-600">{order.customer.email}</p>
-                  <p className="text-sm text-gray-600">{order.customer.phone}</p>
+              {/* Items Section */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  <h4 className="font-semibold text-gray-900">Order Items</h4>
                 </div>
-
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Pickup</h4>
-                  <p className="text-sm text-gray-600">Pickup Only Service</p>
-                  <p className="text-sm text-gray-600">Customer will be contacted for pickup arrangement</p>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="space-y-3">
+                    {order.items.map((item, index: number) => (
+                      <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">
+                            {item.productName}
+                            {item.selectedSize && (
+                              <span className="ml-2 px-2 py-1 text-xs font-medium bg-[#74CADC] text-[#0A5565] rounded-md">
+                                {item.selectedSize}
+                              </span>
+                            )}
+                            {item.selectedColor && (
+                              <span className="ml-2 px-2 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-md">
+                                {item.selectedColor}
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-gray-500">Quantity: {item.quantity}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-gray-900">
+                            ${(item.quantity * item.productPrice).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ${item.productPrice.toFixed(2)} each
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-4">
-                <h4 className="font-medium text-gray-900 mb-2">Items</h4>
+              {/* Order Summary */}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4">
+                <h4 className="font-semibold text-gray-900 mb-3">Order Summary</h4>
                 <div className="space-y-2">
-                  {order.items.map((item, index: number) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span className="text-gray-600">
-                        {item.productName} {item.selectedSize && `(${item.selectedSize})`} {item.selectedColor && `- ${item.selectedColor}`}
-                      </span>
-                      <span className="text-gray-900">
-                        {item.quantity} × ${item.productPrice.toFixed(2)} = ${(item.quantity * item.productPrice).toFixed(2)}
-                      </span>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-medium text-gray-900">${order.subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Tax</span>
+                    <span className="font-medium text-gray-900">${order.tax.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Pickup</span>
+                    <span className="font-medium text-green-600">Free</span>
+                  </div>
+                  <div className="border-t border-gray-300 pt-2 mt-2">
+                    <div className="flex justify-between text-base font-bold">
+                      <span className="text-gray-900">Total</span>
+                      <span className="text-gray-900">${order.total.toFixed(2)}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900">${order.subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-900">${order.tax.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Pickup</span>
-                  <span className="text-gray-900">Free</span>
-                </div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Payment Method</span>
-                  <span className="text-gray-900 capitalize">{order.paymentMethod}</span>
+                  </div>
                 </div>
                 {order.notes && (
-                  <div className="mt-2">
-                    <span className="text-sm text-gray-600">Notes: </span>
-                    <span className="text-sm text-gray-900">{order.notes}</span>
+                  <div className="mt-4 pt-4 border-t border-gray-300">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Notes:</span> {order.notes}
+                    </p>
                   </div>
                 )}
               </div>

@@ -15,7 +15,7 @@ interface OrderUpdateResponse {
 }
 
 // Fetch orders with pagination and search
-export function useOrders(page: number = 1, searchQuery: string = '') {
+export function useOrders(page = 1, searchQuery = '') {
   return useQuery({
     queryKey: ['orders', page, searchQuery],
     queryFn: async (): Promise<OrdersResponse> => {
@@ -29,7 +29,7 @@ export function useOrders(page: number = 1, searchQuery: string = '') {
       if (!response.ok) {
         throw new Error('Failed to fetch orders');
       }
-      return response.json();
+      return response.json() as Promise<OrdersResponse>;
     },
     staleTime: 30 * 1000, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
@@ -58,7 +58,7 @@ export function useUpdateOrderStatus() {
     },
     onSuccess: () => {
       // Invalidate and refetch orders
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      void queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 }
@@ -89,11 +89,11 @@ export function useSendPickupNotification() {
         throw new Error('Failed to send pickup notification');
       }
 
-      return response.json();
+      return response.json() as Promise<OrderUpdateResponse>;
     },
     onSuccess: () => {
       // Invalidate and refetch orders
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      void queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 }
@@ -114,7 +114,7 @@ export function useSendStatusEmail() {
         throw new Error('Failed to send status email');
       }
 
-      return response.json();
+      return response.json() as Promise<OrderUpdateResponse>;
     },
   });
 }
