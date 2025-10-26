@@ -71,7 +71,7 @@ export default function AboutPage() {
 
             <Button 
               size="lg"
-              className="w-full bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
+              className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-lg"
               onClick={() => router.push('/shop')}
             >
               Start Your Project
@@ -111,7 +111,7 @@ export default function AboutPage() {
                 <Button 
                   type="submit"
                   size="lg"
-                  className="bg-[#0A5565] hover:bg-[#0A5565]/90 text-white whitespace-nowrap"
+                  className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] whitespace-nowrap"
                 >
                   Subscribe
                   <Mail className="ml-2 h-5 w-5" />

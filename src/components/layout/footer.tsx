@@ -19,12 +19,12 @@ const footerLinks = {
 
 // Business hours
 const businessHours = [
-  { day: "Monday", hours: "1–3 PM" },
-  { day: "Tuesday", hours: "1–3 PM" },
+  { day: "Monday", hours: "10am - 4:30pm" },
+  { day: "Tuesday", hours: "10am - 4:30pm" },
   { day: "Wednesday", hours: "Closed" },
-  { day: "Thursday", hours: "Closed" },
-  { day: "Friday", hours: "1–3 PM" },
-  { day: "Saturday", hours: "Closed" },
+  { day: "Thursday", hours: "10am - 4:30pm" },
+  { day: "Friday", hours: "10am - 4:30pm" },
+  { day: "Saturday", hours: "every other Saturday 10am - 2pm" },
   { day: "Sunday", hours: "Closed" },
 ];
 

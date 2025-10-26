@@ -53,7 +53,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
           
           <div className="space-y-6">
             <div className="flex items-start gap-4">
-              <div className="bg-[#0A5565]/10 p-2 rounded-lg">
+              <div className="bg-[#74CADC]/20 p-2 rounded-lg">
                 <CheckCircle className="h-6 w-6 text-[#0A5565]" />
               </div>
               <div>
@@ -63,7 +63,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
             </div>
             
             <div className="flex items-start gap-4">
-              <div className="bg-[#0A5565]/10 p-2 rounded-lg">
+              <div className="bg-[#74CADC]/20 p-2 rounded-lg">
                 <Users className="h-6 w-6 text-[#0A5565]" />
               </div>
               <div>
@@ -73,7 +73,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
             </div>
             
             <div className="flex items-start gap-4">
-              <div className="bg-[#0A5565]/10 p-2 rounded-lg">
+              <div className="bg-[#74CADC]/20 p-2 rounded-lg">
                 <Calendar className="h-6 w-6 text-[#0A5565]" />
               </div>
               <div>
@@ -95,7 +95,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                   <div key={i} className="flex-1">
                     <div 
                       className={`h-1 rounded-full transition-all duration-300
-                      ${i <= step ? "bg-[#0A5565]" : "bg-gray-200"}`}
+                      ${i <= step ? "bg-[#74CADC]" : "bg-gray-200"}`}
                     />
                   </div>
                 ))}
@@ -120,8 +120,8 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                       onClick={() => handleSelect("eventType", type)}
                       className={`p-4 rounded-xl border transition-all duration-200 text-left
                         ${formData.eventType === type 
-                          ? "border-[#0A5565] bg-[#0A5565]/5" 
-                          : "border-gray-200 hover:border-[#0A5565] hover:bg-[#0A5565]/5"}`}
+                          ? "border-[#74CADC] bg-[#74CADC]/10" 
+                          : "border-gray-200 hover:border-[#74CADC] hover:bg-[#74CADC]/10"}`}
                     >
                       <span className="font-medium text-gray-900">{type}</span>
                     </button>
@@ -145,8 +145,8 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                       onClick={() => handleSelect("attendees", count)}
                       className={`p-4 rounded-xl border transition-all duration-200 text-left
                         ${formData.attendees === count 
-                          ? "border-[#0A5565] bg-[#0A5565]/5" 
-                          : "border-gray-200 hover:border-[#0A5565] hover:bg-[#0A5565]/5"}`}
+                          ? "border-[#74CADC] bg-[#74CADC]/10" 
+                          : "border-gray-200 hover:border-[#74CADC] hover:bg-[#74CADC]/10"}`}
                     >
                       <div className="flex items-center gap-3">
                         <Users className="h-5 w-5 text-[#0A5565]" />
@@ -173,8 +173,8 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                       onClick={() => handleSelect("location", location)}
                       className={`p-4 rounded-xl border transition-all duration-200 text-left
                         ${formData.location === location 
-                          ? "border-[#0A5565] bg-[#0A5565]/5" 
-                          : "border-gray-200 hover:border-[#0A5565] hover:bg-[#0A5565]/5"}`}
+                          ? "border-[#74CADC] bg-[#74CADC]/10" 
+                          : "border-gray-200 hover:border-[#74CADC] hover:bg-[#74CADC]/10"}`}
                     >
                       <div className="flex items-center gap-3">
                         <MapPin className="h-5 w-5 text-[#0A5565]" />
@@ -201,8 +201,8 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                       onClick={() => handleSelect("date", timeframe)}
                       className={`p-4 rounded-xl border transition-all duration-200 text-left
                         ${formData.date === timeframe 
-                          ? "border-[#0A5565] bg-[#0A5565]/5" 
-                          : "border-gray-200 hover:border-[#0A5565] hover:bg-[#0A5565]/5"}`}
+                          ? "border-[#74CADC] bg-[#74CADC]/10" 
+                          : "border-gray-200 hover:border-[#74CADC] hover:bg-[#74CADC]/10"}`}
                     >
                       <div className="flex items-center gap-3">
                         <Calendar className="h-5 w-5 text-[#0A5565]" />
@@ -218,7 +218,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
             {step === 5 && (
               <div className="space-y-8">
                 <div className="text-center">
-                  <div className="inline-block p-4 bg-[#0A5565]/10 rounded-full mb-4">
+                  <div className="inline-block p-4 bg-[#74CADC]/20 rounded-full mb-4">
                     <Clock className="h-10 w-10 text-[#0A5565]" />
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">Select a time to discuss your event</h2>
@@ -251,7 +251,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                   <p className="text-gray-600 mb-4">Connect with Calendly to schedule your consultation</p>
                   <Button 
                     size="lg" 
-                    className="w-full bg-[#0A5565] hover:bg-[#074651] text-white font-medium"
+                    className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium"
                     onClick={onClose}
                   >
                     Schedule Consultation
@@ -278,7 +278,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
             {step < 5 && (
               <Button 
                 onClick={handleNext}
-                className="bg-[#0A5565] hover:bg-[#074651] text-white"
+                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]"
               >
                 Continue
                 <ArrowRight className="ml-2 h-5 w-5" />

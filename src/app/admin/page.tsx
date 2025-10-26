@@ -405,19 +405,23 @@ export default function AdminPage() {
   // Login form if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="max-w-md w-full p-8">
-          <div className="text-center mb-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl p-8 border border-gray-200">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 mx-auto mb-6 relative">
+              <Image 
+                src="/Stitch Please Ish Black.png" 
+                alt="Stitch Please Logo" 
+                width={80}
+                height={80}
+                className="w-full h-full object-contain"
+              />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Admin Access</h1>
             <p className="text-lg text-gray-500">Enter your password to access the admin panel</p>
           </div>
           
-          <form onSubmit={handleLogin} className="space-y-8">
+          <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label htmlFor="password" className="block text-base font-medium text-gray-900 mb-3">
                 Password
@@ -427,29 +431,32 @@ export default function AdminPage() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-colors"
+                className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
                 placeholder="Enter your password"
                 required
               />
               {passwordError && (
-                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{passwordError}</p>
+                <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-600 font-medium">{passwordError}</p>
                 </div>
               )}
             </div>
             
             <Button
               type="submit"
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white py-4 text-lg font-medium rounded-lg transition-colors"
+              className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-4 text-lg font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
             >
               Access Admin Panel
             </Button>
           </form>
           
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-400">
-              Secure admin access for authorized personnel only
-            </p>
+          <div className="mt-6 text-center">
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span>Secure admin access for authorized personnel only</span>
+            </div>
           </div>
         </div>
       </div>
@@ -646,7 +653,7 @@ export default function AdminPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
-            <div key={product.id} className="group bg-gray-50 border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:bg-white transition-all duration-200 ease-in-out">
+            <div key={product.id} className="group">
               <div className="aspect-square w-full mb-6 rounded-xl overflow-hidden bg-gray-100">
                 <Image
                   src={product.image}
@@ -938,7 +945,7 @@ export default function AdminPage() {
               </div>
 
               {/* Order Summary */}
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4">
+              <div className="rounded-xl py-4 px-2">
                 <h4 className="font-semibold text-gray-900 mb-3">Order Summary</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">

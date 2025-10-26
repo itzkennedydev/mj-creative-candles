@@ -100,7 +100,7 @@ export default function ServicesPage() {
                 <TabsTrigger
                   key={category.name}
                   value={category.name}
-                  className="data-[state=active]:bg-[#0A5565] data-[state=active]:text-white border border-zinc-200 hover:border-[#0A5565] px-4 py-2 rounded-xl"
+                  className="data-[state=active]:bg-[#74CADC] data-[state=active]:text-[#0A5565] border border-zinc-200 hover:border-[#74CADC] px-4 py-2 rounded-xl"
                 >
                   {category.name}
                 </TabsTrigger>
@@ -119,7 +119,7 @@ export default function ServicesPage() {
                         className="p-4 rounded-xl bg-white hover:bg-white/80 transition-colors group cursor-pointer border border-zinc-100"
                       >
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-[#0A5565]/10 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-[#74CADC]/20 flex items-center justify-center">
                             <span className="text-[#0A5565] text-sm font-medium">{i + 1}</span>
                           </div>
                           <span className="text-[#1d1d1f]/80 font-medium">{item}</span>
@@ -142,7 +142,7 @@ export default function ServicesPage() {
               </div>
               <Button 
                 size="lg"
-                className="bg-[#0A5565] hover:bg-[#0A5565]/90 text-white"
+                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]"
                 onClick={() => window.open("tel:3093736017", "_blank")}
               >
                 <Phone className="mr-2 h-5 w-5" />
@@ -193,7 +193,7 @@ export default function ServicesPage() {
                 <Button 
                   type="submit"
                   size="lg"
-                  className="bg-[#0A5565] hover:bg-[#0A5565]/90 text-white whitespace-nowrap"
+                  className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] whitespace-nowrap"
                 >
                   Subscribe
                   <Mail className="ml-2 h-5 w-5" />

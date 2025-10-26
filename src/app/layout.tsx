@@ -2,14 +2,13 @@ import "~/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
-import { Header } from "~/components/layout/header";
-import { Footer } from "~/components/layout/footer";
 import { ProductsProvider } from "~/lib/products-context";
 import { CartProvider } from "~/lib/cart-context";
 import { ToastProvider } from "~/lib/toast-context";
 import { ToastContainer } from "~/components/ui/toast";
 import QueryProvider from "~/lib/query-client";
 import Script from "next/script";
+import { ConditionalLayout } from "../components/layout/conditional-layout";
 
 export const metadata: Metadata = {
   title: "Stitch, Please! | Custom Embroidery & Design Services",
@@ -52,11 +51,9 @@ export default function RootLayout({
           <ProductsProvider>
             <CartProvider>
               <ToastProvider>
-                <Header />
-                <main className="flex-1">
+                <ConditionalLayout>
                   {children}
-                </main>
-                <Footer />
+                </ConditionalLayout>
                 <ToastContainer />
               </ToastProvider>
             </CartProvider>
