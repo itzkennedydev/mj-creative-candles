@@ -5,8 +5,11 @@ import { Container } from "~/components/ui/container"
 import { Button } from "~/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
 
 export function WhyChoose() {
+  const router = useRouter();
+
   return (
     <section className="relative bg-[#F7F7F7] overflow-hidden">
       <Container>
@@ -75,7 +78,7 @@ export function WhyChoose() {
               <Button 
                 size="lg"
                 className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium text-sm sm:text-base transition-colors duration-200"
-                onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
+                onClick={() => router.push('/shop')}
               >
                 <motion.span
                   className="flex items-center"

@@ -5,6 +5,7 @@ import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
 import { Mail, ArrowRight, Facebook, Instagram } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const testimonials = [
   {
@@ -26,6 +27,8 @@ const testimonials = [
 ];
 
 export default function AboutPage() {
+  const router = useRouter();
+
   return (
     <Container>
       <div className="py-16 space-y-16">
@@ -69,7 +72,7 @@ export default function AboutPage() {
             <Button 
               size="lg"
               className="w-full bg-[#0A5565] hover:bg-[#0A5565]/90 text-white text-lg"
-              onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
+              onClick={() => router.push('/shop')}
             >
               Start Your Project
               <ArrowRight className="ml-2 h-5 w-5" />

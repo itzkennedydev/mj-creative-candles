@@ -5,8 +5,11 @@ import { Button } from "~/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export function Hero() {
+  const router = useRouter();
+
   return (
     <section className="relative py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
       <Container>
@@ -47,7 +50,7 @@ export function Hero() {
             <div className="flex flex-wrap gap-4">
               <Button 
                 className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-base px-6 py-3 h-auto rounded-xl font-medium shadow-lg shadow-[#74CADC]/20"
-                onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
+                onClick={() => router.push('/shop')}
               >
                 Shop
                 <ArrowRight className="ml-2 h-5 w-5" />

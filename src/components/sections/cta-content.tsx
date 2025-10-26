@@ -3,8 +3,11 @@
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { Button } from "~/components/ui/button"
+import { useRouter } from "next/navigation"
 
 export function CtaContent() {
+  const router = useRouter();
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center py-8 md:py-24">
       <motion.div 
@@ -38,7 +41,7 @@ export function CtaContent() {
           <Button 
             size="lg" 
             className="w-full sm:w-auto bg-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/90"
-            onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
+            onClick={() => router.push('/shop')}
           >
             Get Started
           </Button>

@@ -4,10 +4,13 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { Button } from "~/components/ui/button"
 import { Container } from "~/components/ui/container"
+import { useRouter } from "next/navigation"
 
 const MotionImage = motion(Image)
 
 export function StitchingShowcase() {
+  const router = useRouter();
+
   return (
     <Container>
       <div className="flex flex-col lg:flex-row items-center gap-8 py-8 md:py-16">
@@ -101,7 +104,7 @@ export function StitchingShowcase() {
             <Button 
               size="lg" 
               className="w-full sm:w-auto bg-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/90"
-              onClick={() => window.open("https://stores.inksoft.com/StitchPlease_Custom_Embroidery/shop/design-studio/select-product", "_blank")}
+              onClick={() => router.push('/shop')}
             >
               Get Started
             </Button>

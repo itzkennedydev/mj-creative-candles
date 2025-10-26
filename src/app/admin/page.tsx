@@ -458,10 +458,15 @@ export default function AdminPage() {
 
 
   const renderProducts = () => (
-    <div className="space-y-6 md:space-y-12">
+    <div className="space-y-6 md:space-y-8">
       {/* Add New Product Form */}
-      <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200">
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-8">Add New Product</h2>
+      <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-gray-300 transition-all duration-200 ease-in-out">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+            <Package className="h-5 w-5 text-gray-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Add New Product</h2>
+        </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
           {/* Left Column - Basic Info */}
@@ -632,11 +637,16 @@ export default function AdminPage() {
       </div>
 
       {/* Existing Products */}
-      <div>
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-8">Current Products</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+      <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-gray-300 transition-all duration-200 ease-in-out">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+            <Package className="h-5 w-5 text-gray-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Current Products</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
-            <div key={product.id} className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200">
+            <div key={product.id} className="group bg-gray-50 border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:bg-white transition-all duration-200 ease-in-out">
               <div className="aspect-square w-full mb-6 rounded-xl overflow-hidden bg-gray-100">
                 <Image
                   src={product.image}
@@ -649,36 +659,40 @@ export default function AdminPage() {
               
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">{product.name}</h4>
-                  <p className="text-gray-600 line-clamp-2 mb-3">{product.description}</p>
-                  <p className="text-2xl font-bold text-gray-900">${product.price.toFixed(2)}</p>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">{product.name}</h4>
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">{product.description}</p>
+                  <p className="text-xl font-bold text-gray-900">${product.price.toFixed(2)}</p>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {product.sizes && product.sizes.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      <span className="text-sm text-gray-500 font-medium">Sizes:</span>
-                      {product.sizes.map((size) => (
-                        <span key={size} className="px-2 py-1 text-xs font-medium bg-[#74CADC] text-[#0A5565] rounded-md">
-                          {size}
-                        </span>
-                      ))}
+                    <div>
+                      <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">Sizes</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {product.sizes.map((size) => (
+                          <span key={size} className="px-2 py-1 text-xs font-medium bg-[#74CADC] text-[#0A5565] rounded-md">
+                            {size}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
                   {product.colors && product.colors.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      <span className="text-sm text-gray-500 font-medium">Colors:</span>
-                      {product.colors.map((color) => (
-                        <span key={color} className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-md">
-                          {color}
-                        </span>
-                      ))}
+                    <div>
+                      <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">Colors</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {product.colors.map((color) => (
+                          <span key={color} className="px-2 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-md">
+                            {color}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
                 
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <span className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                  <span className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
                     product.inStock 
                       ? 'bg-green-50 text-green-700 border border-green-200' 
                       : 'bg-red-50 text-red-700 border border-red-200'
@@ -689,13 +703,13 @@ export default function AdminPage() {
                   <div className="flex gap-2">
                     <Button
                       onClick={() => handleEditProduct(product)}
-                      className="p-3 bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] border border-[#74CADC] hover:border-[#74CADC]/90 transition-all duration-200"
+                      className="p-2 bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] border border-[#74CADC] hover:border-[#74CADC]/90 transition-all duration-200"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                       onClick={() => handleDeleteProduct(product.id)}
-                      className="p-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 hover:border-red-300 transition-all duration-200"
+                      className="p-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 hover:border-red-300 transition-all duration-200"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -1013,16 +1027,19 @@ export default function AdminPage() {
   );
 
   const renderSettings = () => (
-    <div className="space-y-12">
+    <div className="space-y-6 md:space-y-8">
       {/* Tax Settings */}
-      <div className="bg-white rounded-xl p-8 border border-gray-200">
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900">Tax Settings</h2>
+      <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-gray-300 transition-all duration-200 ease-in-out">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+            <Settings className="h-5 w-5 text-gray-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Tax Settings</h2>
         </div>
         
         <div className="space-y-6">
           <div>
-            <label className="block text-base font-medium text-gray-900 mb-3">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               Tax Rate (%)
             </label>
             <input
@@ -1030,33 +1047,36 @@ export default function AdminPage() {
               step="0.1"
               value={settings.taxRate}
               onChange={(e) => setSettings({...settings, taxRate: parseFloat(e.target.value)})}
-              className="w-full px-4 py-4 text-lg border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
             />
           </div>
         </div>
       </div>
 
       {/* Shipping Settings */}
-      <div className="bg-white rounded-xl p-8 border border-gray-200">
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900">Shipping Settings</h2>
+      <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-gray-300 transition-all duration-200 ease-in-out">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+            <Package className="h-5 w-5 text-gray-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Shipping Settings</h2>
         </div>
         
         <div className="space-y-8">
           {/* Pickup Only Toggle */}
-          <div className="flex items-center justify-between p-6 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
             <div>
-              <h3 className="text-lg font-medium text-gray-900">Pickup Only Mode</h3>
-              <p className="text-base text-gray-600 mt-1">Disable shipping, only allow pickup</p>
+              <h3 className="text-base font-semibold text-gray-900">Pickup Only Mode</h3>
+              <p className="text-sm text-gray-600 mt-1">Disable shipping, only allow pickup</p>
             </div>
             <button
               onClick={() => setSettings({...settings, pickupOnly: !settings.pickupOnly})}
-              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 ${
                 settings.pickupOnly ? 'bg-[#74CADC]' : 'bg-gray-300'
               }`}
             >
               <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-200 ${
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
                   settings.pickupOnly ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
@@ -1065,29 +1085,10 @@ export default function AdminPage() {
 
           {!settings.pickupOnly && (
             <>
-              {/* Shipping Enabled Toggle */}
-              <div className="flex items-center justify-between p-6 bg-gray-50 rounded-lg">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">Enable Shipping</h3>
-                  <p className="text-base text-gray-600 mt-1">Allow customers to ship orders</p>
-                </div>
-                <button
-                  onClick={() => setSettings({...settings, shippingEnabled: !settings.shippingEnabled})}
-                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 ${
-                    settings.shippingEnabled ? 'bg-[#74CADC]' : 'bg-gray-300'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-200 ${
-                      settings.shippingEnabled ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
 
               {/* Shipping Cost */}
               <div>
-                <label className="block text-base font-medium text-gray-900 mb-3">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Shipping Cost ($)
                 </label>
                 <input
@@ -1095,13 +1096,13 @@ export default function AdminPage() {
                   step="0.01"
                   value={settings.shippingCost}
                   onChange={(e) => setSettings({...settings, shippingCost: parseFloat(e.target.value)})}
-                  className="w-full px-4 py-4 text-lg border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
+                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
                 />
               </div>
 
               {/* Free Shipping Threshold */}
               <div>
-                <label className="block text-base font-medium text-gray-900 mb-3">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Free Shipping Threshold ($)
                 </label>
                 <input
@@ -1109,7 +1110,7 @@ export default function AdminPage() {
                   step="0.01"
                   value={settings.freeShippingThreshold}
                   onChange={(e) => setSettings({...settings, freeShippingThreshold: parseFloat(e.target.value)})}
-                  className="w-full px-4 py-4 text-lg border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
+                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
                 />
               </div>
             </>
@@ -1117,14 +1118,14 @@ export default function AdminPage() {
 
           {/* Pickup Instructions */}
           <div>
-            <label className="block text-base font-medium text-gray-900 mb-3">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               Pickup Instructions
             </label>
             <textarea
               value={settings.pickupInstructions}
               onChange={(e) => setSettings({...settings, pickupInstructions: e.target.value})}
               rows={4}
-              className="w-full px-4 py-4 text-lg border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200 resize-none"
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200 resize-none"
               placeholder="Instructions for customers on how to pickup their orders..."
             />
           </div>
@@ -1240,20 +1241,23 @@ export default function AdminPage() {
                 {renderSettings()}
                 
                 {/* Save Button */}
-                <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Save Settings</h3>
-                      <p className="text-sm text-gray-600 mt-1">Save your configuration changes</p>
+                <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:border-gray-300 transition-all duration-200 ease-in-out">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Save className="h-5 w-5 text-gray-600" />
                     </div>
-                    <Button
-                      onClick={handleSaveSettings}
-                      className="w-full sm:w-auto bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 py-3"
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Settings
-                    </Button>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Save Settings</h3>
+                      <p className="text-sm text-gray-600">Save your configuration changes</p>
+                    </div>
                   </div>
+                  <Button
+                    onClick={handleSaveSettings}
+                    className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 py-3 transition-all duration-200"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Settings
+                  </Button>
                 </div>
               </div>
             )}
