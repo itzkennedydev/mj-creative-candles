@@ -119,7 +119,7 @@ export function Footer() {
           {/* Copyright */}
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
             <p>
-              © {new Date().getFullYear()} Stitch Please. All rights reserved. Crafted with ❤️ by{" "}
+              © {new Date().getFullYear()} Stitch Please. All rights reserved. Created with ❤️ by{" "}
               <a 
                 href="https://www.sovereigncreative.agency"
                 target="_blank"
