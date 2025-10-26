@@ -10,21 +10,22 @@ export function Hero() {
   const router = useRouter();
 
   return (
-    <section className="relative py-8 sm:py-12 md:py-16 lg:py-24 bg-gradient-to-b from-white to-gray-50">
+    <section className={`relative py-8 sm:py-12 md:py-16 lg:py-24 ${true ? 'bg-gradient-to-b from-white to-gray-50' : 'bg-white'}`}>
       <Container>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 lg:gap-16 items-center min-h-[24rem] sm:min-h-[28rem] md:min-h-[32rem]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-8 md:gap-12 lg:gap-16 items-center min-h-[24rem] sm:min-h-[28rem] md:min-h-[32rem]">
           {/* Content Side */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7 }}
-            className="order-2 lg:order-1 space-y-4 sm:space-y-6 md:space-y-8"
+            className="order-2 lg:order-1 space-y-8 sm:space-y-6 md:space-y-8 text-center lg:text-left"
           >
 {/* Main Heading */}
-<h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#1d1d1f] leading-tight">
-  {/* Mobile - Single line for "Bring Your Ideas to Life at Stitch Please" */}
+<h1 className="text-4xl sm:text-5xl md:text-4xl lg:text-5xl font-bold text-[#1d1d1f] leading-tight">
+  {/* Mobile - Better line breaks */}
   <span className="md:hidden">
-    Bring Your <span className="text-[#0A5565]">Ideas</span> to Life at <span className="text-[#0A5565] bg-[#74CADC]/40 px-2">Stitch Please</span>
+    Bring Your <span className="text-[#0A5565]">Ideas</span> to Life<br />
+    at <span className="text-[#0A5565] bg-[#74CADC]/40 px-2">Stitch Please</span>
   </span>
   
   {/* Desktop version with two lines */}
@@ -46,7 +47,7 @@ export function Hero() {
             </p>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-4">
               <Button 
                 className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 h-auto rounded-xl font-medium shadow-lg shadow-[#74CADC]/20 w-full sm:w-auto"
                 onClick={() => router.push('/shop')}
@@ -63,10 +64,10 @@ export function Hero() {
             </div>
             
             {/* Trust Indicators */}
-            <div className="pt-2 sm:pt-4">
-              <p className="text-xs sm:text-sm text-[#1d1d1f]/50 mb-3 sm:mb-4">Trusted by local businesses and individuals</p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-8">
-                <div className="flex items-center">
+            <div className="pt-8 sm:pt-4">
+              <p className="text-xs sm:text-sm text-[#1d1d1f]/50 mb-4 sm:mb-4">Trusted by local businesses and individuals</p>
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-4 md:gap-8 justify-center lg:justify-start">
+                <div className="flex items-center justify-center lg:justify-start">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-[#74CADC]" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
