@@ -21,7 +21,7 @@ export function NotificationBar() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-5 w-5 shrink-0 text-[#74CADC] hover:bg-[#74CADC]/20 hover:text-[#74CADC]"
+            className="h-5 w-5 shrink-0 text-black hover:bg-gray-200 hover:text-black"
             onClick={() => setIsVisible(false)}
           >
             <X className="h-4 w-4" />
