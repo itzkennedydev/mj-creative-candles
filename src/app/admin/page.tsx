@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
-import { Settings, Package, Save, Edit, Trash2, Upload, X } from "lucide-react";
+import { Settings, Package, Save, Edit, Trash2, Upload, X, Menu } from "lucide-react";
 import { useProducts } from "~/lib/products-context";
 import { useToast } from "~/lib/toast-context";
 import type { Product } from "~/lib/types";
@@ -26,7 +25,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [activeSection, setActiveSection] = useState("products");
+  const [activeSection, setActiveSection] = useState("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,6 +39,7 @@ export default function AdminPage() {
   const [customMessage, setCustomMessage] = useState("");
   const [editingProduct, setEditingProduct] = useState<number | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [editProduct, setEditProduct] = useState({
     name: "",
     price: 0,
@@ -87,6 +87,20 @@ export default function AdminPage() {
       setIsAuthenticated(true);
     }
   }, []);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showMobileMenu && !(event.target as Element).closest('.mobile-menu')) {
+        setShowMobileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMobileMenu]);
 
   const fetchOrders = async (page = 1, search = "") => {
     setOrdersLoading(true);
@@ -159,6 +173,23 @@ export default function AdminPage() {
           description: `Order status updated to ${newStatus}`,
           type: "success"
         });
+        
+        // Send status update email for specific statuses
+        if (['processing', 'delivered', 'cancelled'].includes(newStatus)) {
+          try {
+            await fetch('/api/orders/send-status-email', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ orderId, status: newStatus }),
+            });
+          } catch (emailError) {
+            console.error('Error sending status email:', emailError);
+            // Don't show error to user as status was updated successfully
+          }
+        }
+        
         // Refresh orders
         void fetchOrders(currentPage, searchQuery);
       } else {
@@ -244,6 +275,20 @@ export default function AdminPage() {
       });
     }
   };
+
+  const getActiveSectionTitle = () => {
+    switch (activeSection) {
+      case 'products':
+        return 'Products';
+      case 'orders':
+        return 'Orders';
+      case 'settings':
+        return 'Settings';
+      default:
+        return 'Admin Panel';
+    }
+  };
+
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -469,12 +514,12 @@ export default function AdminPage() {
 
 
   const renderProducts = () => (
-    <div className="space-y-12">
+    <div className="space-y-6 md:space-y-12">
       {/* Add New Product Form */}
-      <div className="bg-white rounded-xl p-8 border border-gray-200">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-8">Add New Product</h2>
+      <div className="bg-white rounded-xl p-4 md:p-8 border border-gray-200">
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-8">Add New Product</h2>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
           {/* Left Column - Basic Info */}
           <div className="space-y-8">
             {/* Product Image */}
@@ -644,10 +689,10 @@ export default function AdminPage() {
 
       {/* Existing Products */}
       <div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-8">Current Products</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6 md:mb-8">Current Products</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
           {products.map((product) => (
-            <div key={product.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-all duration-200">
+            <div key={product.id} className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200">
               <div className="aspect-square w-full mb-6 rounded-xl overflow-hidden bg-gray-100">
                 <Image
                   src={product.image}
@@ -721,34 +766,33 @@ export default function AdminPage() {
   );
 
   const renderOrders = () => (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-gray-900">Orders</h2>
+    <div className="space-y-6 md:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Button
           onClick={() => fetchOrders(currentPage, searchQuery)}
           disabled={ordersLoading}
-          className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 py-3"
+          className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-4 md:px-6 py-2 md:py-3 w-full sm:w-auto"
         >
           {ordersLoading ? "Loading..." : "Refresh"}
         </Button>
       </div>
 
       {/* Search Bar */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
         <div className="flex-1">
           <input
             type="text"
-            placeholder="Search orders by customer name, email, or order number..."
+            placeholder="Search orders..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC]"
+            className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC]"
           />
         </div>
         {searchQuery && (
           <Button
             onClick={() => handleSearch("")}
             variant="ghost"
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm"
           >
             Clear
           </Button>
@@ -770,44 +814,49 @@ export default function AdminPage() {
           <p className="text-gray-500 text-lg">No orders found</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {orders.map((order) => (
-            <div key={order._id?.toString() ?? order.orderNumber} className="bg-white border border-gray-200 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
+            <div key={order._id?.toString() ?? order.orderNumber} className="bg-white border border-gray-200 rounded-xl p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-base md:text-lg font-semibold text-gray-900">
                     Order #{order.orderNumber}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs md:text-sm text-gray-500">
                     {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString()}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right">
                   <p className="text-lg font-bold text-gray-900">${order.total.toFixed(2)}</p>
-                  <div className="flex items-center gap-3 mt-3">
-                    <select
-                      value={order.status}
-                      onChange={(e) => handleStatusChange(order._id!.toString(), e.target.value)}
-                      className={`pl-3 pr-8 py-2 text-sm font-medium rounded-md border transition-colors cursor-pointer focus:outline-none focus:ring-1 ${
-                        order.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 focus:ring-yellow-300' :
-                        order.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 focus:ring-blue-300' :
-                        order.status === 'ready_for_pickup' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 focus:ring-green-300' :
-                        order.status === 'shipped' ? 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 focus:ring-purple-300' :
-                        order.status === 'delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 focus:ring-emerald-300' :
-                        'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 focus:ring-red-300'
-                      }`}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="processing">Processing</option>
-                      <option value="ready_for_pickup">Ready for Pickup</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mt-3">
+                    <div className="relative">
+                      <select
+                        value={order.status}
+                        onChange={(e) => handleStatusChange(order._id!.toString(), e.target.value)}
+                        className={`w-full sm:w-auto pl-3 pr-12 py-2 text-sm font-medium rounded-md border transition-colors cursor-pointer focus:outline-none focus:ring-1 appearance-none ${
+                          order.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 focus:ring-yellow-300' :
+                          order.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 focus:ring-blue-300' :
+                          order.status === 'ready_for_pickup' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 focus:ring-green-300' :
+                          order.status === 'delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 focus:ring-emerald-300' :
+                          'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 focus:ring-red-300'
+                        }`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="ready_for_pickup">Ready for Pickup</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
                     {order.status === 'processing' && (
                       <Button
                         onClick={() => handlePickupReady(order)}
-                        className="px-3 py-2 text-sm font-medium bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] rounded-md transition-colors"
+                        className="w-full sm:w-auto px-3 py-2 text-sm font-medium bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] rounded-md transition-colors"
                       >
                         Mark Ready
                       </Button>
@@ -816,7 +865,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Customer</h4>
                   <p className="text-sm text-gray-600">
@@ -880,23 +929,23 @@ export default function AdminPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs md:text-sm text-gray-500 text-center sm:text-left">
               Showing {((currentPage - 1) * ordersPerPage) + 1} to {Math.min(currentPage * ordersPerPage, totalOrders)} of {totalOrders} orders
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
               <Button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1 || ordersLoading}
                 variant="ghost"
-                className="px-3 py-2"
+                className="px-2 md:px-3 py-2 text-sm"
               >
-                Previous
+                Prev
               </Button>
               
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
                   const page = i + 1;
                   const isActive = page === currentPage;
                   
@@ -905,7 +954,7 @@ export default function AdminPage() {
                       key={page}
                       onClick={() => handlePageChange(page)}
                       disabled={ordersLoading}
-                      className={`px-3 py-2 ${
+                      className={`px-2 md:px-3 py-2 text-sm ${
                         isActive 
                           ? 'bg-[#74CADC] text-[#0A5565]' 
                           : 'text-gray-600 hover:text-gray-900'
@@ -921,7 +970,7 @@ export default function AdminPage() {
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages || ordersLoading}
                 variant="ghost"
-                className="px-3 py-2"
+                className="px-2 md:px-3 py-2 text-sm"
               >
                 Next
               </Button>
@@ -1054,89 +1103,130 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 fixed inset-0 z-50">
-      <div className="flex h-full">
-        {/* Sidebar */}
-        <div className="w-72 bg-white border-r border-gray-200 h-full flex flex-col">
-          <div className="p-8 flex-1">
-            {/* Logo and Header */}
-            <div className="mb-12">
-              <Image 
-                src="/Stitch Please Ish Black.png" 
-                alt="Stitch Please Logo" 
-                width={120}
-                height={96}
-                className="h-24 w-auto mx-auto mb-6"
-              />
-              <h1 className="text-2xl font-bold text-gray-900 text-center">Admin Panel</h1>
-            </div>
-            
-            <nav className="space-y-3">
-              {sidebarItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveSection(item.id)}
-                    className={`w-full flex items-center gap-4 px-4 py-3 text-left rounded-lg transition-all duration-200 ${
-                      activeSection === item.id
-                        ? 'bg-gray-50 text-gray-900 border border-gray-200'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="font-medium">{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+    <div className="min-h-screen bg-gray-50 fixed inset-0 z-50 overflow-y-auto">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between sticky top-0 z-40">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            className="mobile-menu p-2 text-gray-600 hover:text-gray-900"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <h2 className="text-lg font-semibold text-gray-900">{getActiveSectionTitle()}</h2>
+        </div>
+        <Button
+          onClick={() => setIsAuthenticated(false)}
+          className="px-3 py-2 text-sm bg-red-50 hover:bg-red-100 text-red-700"
+        >
+          Logout
+        </Button>
+      </div>
+
+      {/* Mobile Navigation Menu */}
+      {showMobileMenu && (
+        <div className="mobile-menu md:hidden bg-white border-b border-gray-200 px-4 py-4 sticky top-16 z-30">
+          <div className="space-y-2">
+            {sidebarItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveSection(item.id);
+                    setShowMobileMenu(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all duration-200 ${
+                    activeSection === item.id
+                      ? 'bg-[#74CADC] text-[#0A5565] font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block fixed left-0 top-0 w-64 lg:w-72 h-full bg-white border-r border-gray-200 z-30">
+        <div className="p-8 h-full flex flex-col">
+          {/* Logo and Header */}
+          <div className="mb-12">
+            <Image 
+              src="/Stitch Please Ish Black.png" 
+              alt="Stitch Please Logo" 
+              width={120}
+              height={96}
+              className="h-24 w-auto mx-auto mb-6"
+            />
+            <h1 className="text-2xl font-bold text-gray-900 text-center">Admin Panel</h1>
           </div>
           
-          {/* Logout Button at Bottom */}
-          <div className="p-8 border-t border-gray-100">
+          <nav className="space-y-3 flex-1">
+            {sidebarItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id)}
+                  className={`w-full flex items-center gap-4 px-4 py-3 text-left rounded-lg transition-all duration-200 ${
+                    activeSection === item.id
+                      ? 'bg-[#74CADC] text-[#0A5565] font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+          
+          <div className="border-t border-gray-200 pt-4">
             <Button
-              onClick={handleLogout}
-              className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 flex items-center gap-3 py-3 border border-gray-200 hover:border-gray-300 transition-all duration-200"
+              onClick={() => setIsAuthenticated(false)}
+              className="w-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 hover:border-red-300 px-6 py-3 transition-all duration-200"
             >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
               <span className="font-medium">Logout</span>
             </Button>
           </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto">
-          <Container>
-            <div className="py-12">
-              {/* Content */}
-              {activeSection === "products" && renderProducts()}
-              {activeSection === "orders" && renderOrders()}
-              {activeSection === "settings" && (
-                <div className="space-y-8">
-                  {renderSettings()}
-                  
-                  {/* Save Button */}
-                  <div className="bg-white rounded-lg p-6 border border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Save Settings</h3>
-                        <p className="text-sm text-gray-500">Save all your configuration changes</p>
-                      </div>
-                      <Button
-                        onClick={handleSaveSettings}
-                        className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-8 py-4 text-lg font-medium transition-all duration-200"
-                      >
-                        <Save className="h-5 w-5 mr-3" />
-                        <span className="font-medium">Save All Settings</span>
-                      </Button>
+      {/* Main Content */}
+      <div className="md:ml-64 lg:ml-72">
+        <div className="px-4 md:px-8">
+          <div className="py-4 md:py-12">
+            {/* Content */}
+            {activeSection === "products" && renderProducts()}
+            {activeSection === "orders" && renderOrders()}
+            {activeSection === "settings" && (
+              <div className="space-y-6 md:space-y-8">
+                {renderSettings()}
+                
+                {/* Save Button */}
+                <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Save Settings</h3>
+                      <p className="text-sm text-gray-600 mt-1">Save your configuration changes</p>
                     </div>
+                    <Button
+                      onClick={handleSaveSettings}
+                      className="w-full sm:w-auto bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 py-3"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Settings
+                    </Button>
                   </div>
                 </div>
-              )}
-            </div>
-          </Container>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -1332,10 +1422,10 @@ export default function AdminPage() {
 
       {/* Pickup Notification Modal */}
       {showPickupModal && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 w-full max-w-md">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Mark Order Ready for Pickup</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-4 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h2 className="text-lg md:text-2xl font-semibold text-gray-900">Mark Order Ready for Pickup</h2>
               <Button
                 onClick={() => setShowPickupModal(false)}
                 className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-700"
@@ -1344,7 +1434,7 @@ export default function AdminPage() {
               </Button>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               <div>
                 <p className="text-sm text-gray-600 mb-2">Order #{selectedOrder.orderNumber}</p>
                 <p className="text-sm text-gray-600">
@@ -1361,7 +1451,7 @@ export default function AdminPage() {
                   value={pickupTime}
                   onChange={(e) => setPickupTime(e.target.value)}
                   min={new Date().toISOString().slice(0, 16)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC]"
+                  className="w-full px-3 py-2 text-sm md:text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC]"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -1378,24 +1468,24 @@ export default function AdminPage() {
                   onChange={(e) => setCustomMessage(e.target.value)}
                   rows={3}
                   placeholder="Add any special instructions, notes, or additional information for the customer..."
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] resize-none"
+                  className="w-full px-3 py-2 text-sm md:text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] resize-none"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   This message will be included in the pickup notification email
                 </p>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button
                   onClick={handleSendPickupNotification}
-                  className="flex-1 bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]"
+                  className="flex-1 bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-2 md:py-3"
                 >
                   Send Notification
                 </Button>
                 <Button
                   onClick={() => setShowPickupModal(false)}
                   variant="ghost"
-                  className="flex-1 text-gray-600 hover:text-gray-900"
+                  className="flex-1 text-gray-600 hover:text-gray-900 py-2 md:py-3"
                 >
                   Cancel
                 </Button>
