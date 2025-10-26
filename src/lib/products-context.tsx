@@ -87,7 +87,3 @@ export function useProducts() {
   }
   return context;
 }
-
-
-// Monday, Tuesday, Thursday, Friday 10am - 4:30pm 
-// every other Saturday 10am - 2pm 

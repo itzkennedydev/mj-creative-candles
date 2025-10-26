@@ -5,6 +5,7 @@ import { CtaSection } from "~/components/sections/cta"
 import { StitchingShowcase } from "~/components/sections/stitching-showcase"
 import { WhyChoose } from "~/components/sections/why-choose"
 import { Gallery } from "~/components/sections/gallery"
+import { EventPopup } from "~/components/event-popup";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
       <WhyChoose />
       <Gallery />
       {/* Other sections */}
+      <EventPopup />
     </div>
   );
 }

@@ -29,7 +29,7 @@ export function Header() {
   return (
     <>
       <NotificationBar />
-      <header className="pt-4 md:pt-8">
+      <header className="pt-0 md:pt-0">
         <Container className="min-h-[64px] py-2 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center">
@@ -64,6 +64,10 @@ export function Header() {
 
             <Link href="/services" className="text-lg font-medium hover:text-primary/80 px-4 py-4">
               Services
+            </Link>
+
+            <Link href="/events/stitch-sniff-holiday" className="text-lg font-medium hover:text-primary/80 px-4 py-4">
+              Events
             </Link>
 
             <Link href="/appointments" className="text-lg font-medium hover:text-primary/80 flex items-center gap-2 px-4 py-4">
@@ -114,6 +118,10 @@ export function Header() {
 
                 <Link href="/services" className="text-xl font-medium hover:text-primary/80 px-4 py-4">
                   Services
+                </Link>
+
+                <Link href="/events/stitch-sniff-holiday" className="text-xl font-medium hover:text-primary/80 px-4 py-4">
+                  Events
                 </Link>
 
                 <Link href="/appointments" className="text-xl font-medium hover:text-primary/80 px-4 py-4 flex items-center gap-2">
