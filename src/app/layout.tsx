@@ -8,6 +8,7 @@ import { ProductsProvider } from "~/lib/products-context";
 import { CartProvider } from "~/lib/cart-context";
 import { ToastProvider } from "~/lib/toast-context";
 import { ToastContainer } from "~/components/ui/toast";
+import QueryProvider from "~/lib/query-client";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -47,18 +48,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
       <body className="antialiased min-h-screen flex flex-col" suppressHydrationWarning>
-        <ProductsProvider>
-          <CartProvider>
-            <ToastProvider>
-              <Header />
-              <main className="flex-1">
-                {children}
-              </main>
-              <Footer />
-              <ToastContainer />
-            </ToastProvider>
-          </CartProvider>
-        </ProductsProvider>
+        <QueryProvider>
+          <ProductsProvider>
+            <CartProvider>
+              <ToastProvider>
+                <Header />
+                <main className="flex-1">
+                  {children}
+                </main>
+                <Footer />
+                <ToastContainer />
+              </ToastProvider>
+            </CartProvider>
+          </ProductsProvider>
+        </QueryProvider>
         <Script
           src="https://www.instagram.com/embed.js"
           strategy="lazyOnload"

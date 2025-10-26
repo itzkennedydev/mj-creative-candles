@@ -8,6 +8,7 @@ import { useProducts } from "~/lib/products-context";
 import { useToast } from "~/lib/toast-context";
 import type { Product } from "~/lib/types";
 import type { Order } from "~/lib/order-types";
+import { useOrders, useUpdateOrderStatus, useSendPickupNotification, useSendStatusEmail } from "~/lib/hooks/use-orders";
 
 interface AdminSettings {
   taxRate: number;
@@ -26,12 +27,19 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [activeSection, setActiveSection] = useState("orders");
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [ordersLoading, setOrdersLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalOrders, setTotalOrders] = useState(0);
+  
+  // TanStack Query hooks
+  const { data: ordersData, isLoading: ordersLoading, refetch: refetchOrders } = useOrders(currentPage, searchQuery);
+  const updateOrderStatus = useUpdateOrderStatus();
+  const sendPickupNotification = useSendPickupNotification();
+  const sendStatusEmail = useSendStatusEmail();
+  
+  // Extract data from query result
+  const orders = ordersData?.orders ?? [];
+  const totalPages = ordersData?.totalPages ?? 1;
+  const totalOrders = ordersData?.total ?? 0;
   const ordersPerPage = 10;
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showPickupModal, setShowPickupModal] = useState(false);
@@ -102,50 +110,19 @@ export default function AdminPage() {
     };
   }, [showMobileMenu]);
 
-  const fetchOrders = async (page = 1, search = "") => {
-    setOrdersLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: ordersPerPage.toString(),
-        ...(search && { search })
-      });
-      
-      const response = await fetch(`/api/orders?${params}`);
-      const data = await response.json() as { 
-        success: boolean; 
-        orders: Order[];
-        total: number;
-        totalPages: number;
-      };
-      
-      if (data.success) {
-        setOrders(data.orders);
-        setTotalOrders(data.total);
-        setTotalPages(data.totalPages);
-        setCurrentPage(page);
-      }
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    } finally {
-      setOrdersLoading(false);
-    }
-  };
+  // Remove old fetchOrders function - now handled by TanStack Query
 
-  useEffect(() => {
-    if (isAuthenticated && activeSection === 'orders') {
-      void fetchOrders(1, searchQuery);
-    }
-  }, [isAuthenticated, activeSection, searchQuery]);
+  // Remove useEffect - TanStack Query handles data fetching automatically
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-    void fetchOrders(1, query);
+    // TanStack Query will automatically refetch when searchQuery changes
   };
 
   const handlePageChange = (page: number) => {
-    void fetchOrders(page, searchQuery);
+    setCurrentPage(page);
+    // TanStack Query will automatically refetch when currentPage changes
   };
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
@@ -159,41 +136,23 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await fetch(`/api/orders/${orderId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
+      // Update order status using TanStack Query mutation
+      await updateOrderStatus.mutateAsync({ orderId, status: newStatus });
+      
+      addToast({
+        title: "Status Updated",
+        description: `Order status updated to ${newStatus}`,
+        type: "success"
       });
-
-      if (response.ok) {
-        addToast({
-          title: "Status Updated",
-          description: `Order status updated to ${newStatus}`,
-          type: "success"
-        });
-        
-        // Send status update email for specific statuses
-        if (['processing', 'delivered', 'cancelled'].includes(newStatus)) {
-          try {
-            await fetch('/api/orders/send-status-email', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ orderId, status: newStatus }),
-            });
-          } catch (emailError) {
-            console.error('Error sending status email:', emailError);
-            // Don't show error to user as status was updated successfully
-          }
+      
+      // Send status update email for specific statuses
+      if (['processing', 'delivered', 'cancelled'].includes(newStatus)) {
+        try {
+          await sendStatusEmail.mutateAsync({ orderId, status: newStatus });
+        } catch (emailError) {
+          console.error('Error sending status email:', emailError);
+          // Don't show error to user as status was updated successfully
         }
-        
-        // Refresh orders
-        void fetchOrders(currentPage, searchQuery);
-      } else {
-        throw new Error('Failed to update status');
       }
     } catch (error) {
       console.error('Error updating order status:', error);
@@ -227,45 +186,34 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await fetch('/api/orders/send-pickup-notification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orderId: selectedOrder._id?.toString(),
-          pickupTime,
-          customMessage
-        }),
+      // Send pickup notification using TanStack Query mutation
+      if (!selectedOrder._id) {
+        throw new Error('Order ID is required');
+      }
+      await sendPickupNotification.mutateAsync({
+        orderId: selectedOrder._id.toString(),
+        pickupTime,
+        customMessage
       });
 
-      if (response.ok) {
-        addToast({
-          title: "Notification Sent",
-          description: "Pickup notification sent to customer",
-          type: "success"
-        });
-        setShowPickupModal(false);
-        // Update order status to ready for pickup directly
-        try {
-          const statusResponse = await fetch(`/api/orders/${selectedOrder._id?.toString()}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ status: 'ready_for_pickup' }),
-          });
-          
-          if (statusResponse.ok) {
-            // Refresh orders
-            void fetchOrders(currentPage, searchQuery);
-          }
-        } catch (error) {
-          console.error('Error updating order status:', error);
-        }
-      } else {
-        throw new Error('Failed to send notification');
-      }
+      addToast({
+        title: "Notification Sent",
+        description: "Pickup notification sent to customer",
+        type: "success"
+      });
+      setShowPickupModal(false);
+      
+      // Update order status to ready_for_pickup
+      await updateOrderStatus.mutateAsync({ 
+        orderId: selectedOrder._id.toString(), 
+        status: 'ready_for_pickup' 
+      });
+
+      addToast({
+        title: "Status Updated",
+        description: "Order status updated to ready for pickup",
+        type: "success"
+      });
     } catch (error) {
       console.error('Error sending pickup notification:', error);
       addToast({
@@ -301,11 +249,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('admin_authenticated');
-    setPassword("");
-  };
+  // Remove unused handleLogout function
 
   const handleSaveSettings = () => {
     // TODO: Save to database/API
@@ -769,7 +713,7 @@ export default function AdminPage() {
     <div className="space-y-6 md:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Button
-          onClick={() => fetchOrders(currentPage, searchQuery)}
+          onClick={() => refetchOrders()}
           disabled={ordersLoading}
           className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-4 md:px-6 py-2 md:py-3 w-full sm:w-auto"
         >
