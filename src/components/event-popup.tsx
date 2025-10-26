@@ -23,10 +23,10 @@ export function EventPopup() {
       setIsVisible(true);
     }, 2000);
 
-    // Auto-hide after 8 seconds
+    // Auto-hide after 15 seconds (13 seconds after appearing)
     const autoHideTimer = setTimeout(() => {
       setIsVisible(false);
-    }, 10000);
+    }, 15000);
 
     return () => {
       clearTimeout(timer);
@@ -43,7 +43,7 @@ export function EventPopup() {
   if (isDismissed || !isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ margin: 0, padding: 0 }}>
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-4" style={{ margin: 0 }}>
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative animate-in fade-in-0 zoom-in-95 duration-300">
         {/* Close Button */}
         <button
