@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Order } from '~/lib/order-types';
+import { env } from '~/env.js';
 
 interface OrdersResponse {
   success: boolean;
@@ -25,7 +26,11 @@ export function useOrders(page = 1, searchQuery = '') {
         ...(searchQuery && { search: searchQuery }),
       });
 
-      const response = await fetch(`/api/orders?${params}`);
+      const response = await fetch(`/api/orders?${params}`, {
+        headers: {
+          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD,
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch orders');
       }
@@ -46,6 +51,7 @@ export function useUpdateOrderStatus() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD,
         },
         body: JSON.stringify({ status }),
       });
@@ -81,6 +87,7 @@ export function useSendPickupNotification() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD,
         },
         body: JSON.stringify({ orderId, pickupTime, customMessage }),
       });
@@ -106,6 +113,7 @@ export function useSendStatusEmail() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD,
         },
         body: JSON.stringify({ orderId, status }),
       });

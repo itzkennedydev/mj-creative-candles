@@ -4,9 +4,20 @@ import clientPromise from '~/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { sendStatusUpdateEmail } from '~/lib/email-service';
 import type { Order } from '~/lib/order-types';
+import { authenticateRequest } from '~/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate request
+    const auth = await authenticateRequest(request);
+    
+    if (!auth.isAuthenticated || !auth.isAdmin) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 401 }
+      );
+    }
+    
     const body = await request.json() as {
       orderId: string;
       status: string;

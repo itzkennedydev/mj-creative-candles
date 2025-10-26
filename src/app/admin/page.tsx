@@ -7,7 +7,6 @@ import {
   Settings, 
   Package, 
   Save, 
-  Edit, 
   Trash2, 
   Upload, 
   X, 
@@ -38,7 +37,7 @@ interface AdminSettings {
 }
 
 export default function AdminPage() {
-  const { products, addProduct, updateProduct, deleteProduct, loading: productsLoading, error: productsError } = useProducts();
+  const { products, updateProduct, deleteProduct, loading: productsLoading, error: productsError } = useProducts();
   const { addToast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -79,7 +78,6 @@ export default function AdminPage() {
     colors: [] as string[],
     image: ""
   });
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
   
   const [settings, setSettings] = useState<AdminSettings>({
@@ -90,18 +88,6 @@ export default function AdminPage() {
     shippingCost: 9.99,
     pickupInstructions: "Please call (309) 373-6017 to schedule pickup. Available Monday-Friday 9AM-5PM."
   });
-
-
-  const [newProduct, setNewProduct] = useState({
-    name: "",
-    price: 0,
-    description: "",
-    inStock: true,
-    sizes: [] as string[],
-    colors: [] as string[],
-    image: ""
-  });
-
 
   const sidebarItems = [
     { 
@@ -309,14 +295,28 @@ export default function AdminPage() {
   };
 
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === "3+v7mad288ts") {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('admin_authenticated', 'true');
-      setPasswordError("");
-    } else {
-      setPasswordError("Invalid password. Please try again.");
+    
+    try {
+      const response = await fetch('/api/auth/verify-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      if (response.ok) {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('admin_authenticated', 'true');
+        setPasswordError("");
+      } else {
+        const data = await response.json();
+        setPasswordError(data.error || "Invalid password. Please try again.");
+      }
+    } catch (error) {
+      setPasswordError("Authentication failed. Please try again.");
     }
   };
 
@@ -332,47 +332,6 @@ export default function AdminPage() {
     });
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Create a preview URL
-    const imageUrl = URL.createObjectURL(file);
-    
-    // Set image for new product
-    setNewProduct({ ...newProduct, image: imageUrl });
-  };
-
-  const handleAddProduct = async () => {
-    if (!newProduct.name || newProduct.price <= 0) {
-      addToast({
-        title: "Required Fields",
-        description: "Please fill in all required fields",
-        type: "warning"
-      });
-      return;
-    }
-    
-    try {
-      await addProduct({
-        ...newProduct,
-        image: newProduct.image || "/placeholder-product.jpg",
-        category: "Apparel"
-      });
-      setNewProduct({ name: "", price: 0, description: "", inStock: true, sizes: [], colors: [], image: "" });
-      addToast({
-        title: "Product Added",
-        description: "Product has been added successfully!",
-        type: "success"
-      });
-    } catch (error) {
-      addToast({
-        title: "Error",
-        description: "Failed to add product. Please try again.",
-        type: "error"
-      });
-    }
-  };
 
   const handleEditProduct = (product: Product) => {
     // Set the editing product first
@@ -410,14 +369,14 @@ export default function AdminPage() {
           description: "Product has been updated successfully!",
           type: "success"
         });
-      } catch (error) {
-        addToast({
-          title: "Error",
-          description: "Failed to update product. Please try again.",
-          type: "error"
-        });
-        return;
-      }
+    } catch {
+      addToast({
+        title: "Error",
+        description: "Failed to update product. Please try again.",
+        type: "error"
+      });
+      return;
+    }
     }
     setEditingProduct(null);
     setIsEditingMode(false);
@@ -442,7 +401,7 @@ export default function AdminPage() {
           description: "Product has been deleted successfully!",
           type: "success"
         });
-      } catch (error) {
+      } catch {
         addToast({
           title: "Error",
           description: "Failed to delete product. Please try again.",
@@ -450,26 +409,6 @@ export default function AdminPage() {
         });
       }
     }
-  };
-
-  const addSize = (size: string) => {
-    if (!newProduct.sizes.includes(size)) {
-      setNewProduct({ ...newProduct, sizes: [...newProduct.sizes, size] });
-    }
-  };
-
-  const removeSize = (size: string) => {
-    setNewProduct({ ...newProduct, sizes: newProduct.sizes.filter(s => s !== size) });
-  };
-
-  const addColor = (color: string) => {
-    if (!newProduct.colors.includes(color)) {
-      setNewProduct({ ...newProduct, colors: [...newProduct.colors, color] });
-    }
-  };
-
-  const removeColor = (color: string) => {
-    setNewProduct({ ...newProduct, colors: newProduct.colors.filter(c => c !== color) });
   };
 
   const addEditSize = (size: string) => {

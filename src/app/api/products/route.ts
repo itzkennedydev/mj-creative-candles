@@ -2,8 +2,9 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
 import type { Product } from '~/lib/types';
+import { authenticateRequest } from '~/lib/auth';
 
-// GET /api/products - Fetch all products
+// GET /api/products - Fetch all products (PUBLIC - for customer store)
 export async function GET() {
   try {
     const client = await clientPromise;
@@ -22,9 +23,19 @@ export async function GET() {
   }
 }
 
-// POST /api/products - Create a new product
+// POST /api/products - Create a new product (ADMIN ONLY)
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate request
+    const auth = await authenticateRequest(request);
+    
+    if (!auth.isAuthenticated || !auth.isAdmin) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json() as Partial<Product>;
     
     // Validate required fields

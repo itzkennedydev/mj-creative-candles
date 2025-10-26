@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
 import { sendOrderConfirmationEmail } from '~/lib/email-service';
 import type { CreateOrderRequest, Order } from '~/lib/order-types';
+import { authenticateRequest } from '~/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -78,6 +79,15 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Authenticate request
+    const auth = await authenticateRequest(request);
+    
+    if (!auth.isAuthenticated || !auth.isAdmin) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 401 }
+      );
+    }
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const ordersCollection = db.collection<Order>('orders');

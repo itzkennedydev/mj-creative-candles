@@ -3,12 +3,23 @@ import { NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
 import type { Order } from '~/lib/order-types';
 import { ObjectId } from 'mongodb';
+import { authenticateRequest } from '~/lib/auth';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Authenticate request
+    const auth = await authenticateRequest(request);
+    
+    if (!auth.isAuthenticated || !auth.isAdmin) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 401 }
+      );
+    }
+    
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const ordersCollection = db.collection<Order>('orders');
@@ -42,6 +53,16 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Authenticate request
+    const auth = await authenticateRequest(request);
+    
+    if (!auth.isAuthenticated || !auth.isAdmin) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 401 }
+      );
+    }
+    
     const body = await request.json() as { status?: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled'; notes?: string };
     const { status, notes } = body;
 
@@ -83,42 +104,29 @@ export async function PUT(
   }
 }
 
-export async function PATCH(
+export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const body = await request.json() as { 
-      status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed'; 
-      paymentIntentId?: string;
-      notes?: string;
-    };
-    const { status, paymentIntentId, notes } = body;
-
+    // Authenticate request
+    const auth = await authenticateRequest(request);
+    
+    if (!auth.isAuthenticated || !auth.isAdmin) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 401 }
+      );
+    }
+    
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const ordersCollection = db.collection<Order>('orders');
 
-    const updateData: { 
-      updatedAt: Date; 
-      status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed';
-      paymentIntentId?: string;
-      notes?: string;
-    } = {
-      updatedAt: new Date()
-    };
-
-    if (status) updateData.status = status;
-    if (paymentIntentId) updateData.paymentIntentId = paymentIntentId;
-    if (notes !== undefined) updateData.notes = notes;
-
     const { id } = await params;
-    const result = await ordersCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateData }
-    );
+    const result = await ordersCollection.deleteOne({ _id: new ObjectId(id) });
 
-    if (result.matchedCount === 0) {
+    if (result.deletedCount === 0) {
       return NextResponse.json(
         { error: 'Order not found' },
         { status: 404 }
@@ -127,13 +135,13 @@ export async function PATCH(
 
     return NextResponse.json({
       success: true,
-      message: 'Order updated successfully'
+      message: 'Order deleted successfully'
     });
 
   } catch (error) {
-    console.error('Error updating order:', error);
+    console.error('Error deleting order:', error);
     return NextResponse.json(
-      { error: 'Failed to update order' },
+      { error: 'Failed to delete order' },
       { status: 500 }
     );
   }
