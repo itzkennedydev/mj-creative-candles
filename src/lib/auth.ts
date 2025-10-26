@@ -1,5 +1,5 @@
 // src/lib/auth.ts
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { env } from '~/env.js';
 
 export interface AuthResult {
@@ -34,7 +34,7 @@ export async function authenticateRequest(request: NextRequest): Promise<AuthRes
       isAdmin: false,
       error: 'Invalid authentication'
     };
-  } catch (error) {
+  } catch {
     return {
       isAuthenticated: false,
       isAdmin: false,
@@ -43,8 +43,8 @@ export async function authenticateRequest(request: NextRequest): Promise<AuthRes
   }
 }
 
-export function requireAdminAuth(handler: (request: NextRequest, ...args: any[]) => Promise<Response>) {
-  return async (request: NextRequest, ...args: any[]) => {
+export function requireAdminAuth(handler: (request: NextRequest, ...args: unknown[]) => Promise<Response>) {
+  return async (request: NextRequest, ...args: unknown[]) => {
     const auth = await authenticateRequest(request);
     
     if (!auth.isAuthenticated || !auth.isAdmin) {

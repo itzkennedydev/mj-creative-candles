@@ -312,10 +312,10 @@ export default function AdminPage() {
         sessionStorage.setItem('admin_authenticated', 'true');
         setPasswordError("");
       } else {
-        const data = await response.json();
-        setPasswordError(data.error || "Invalid password. Please try again.");
+        const data = await response.json() as { error?: string };
+        setPasswordError(data.error ?? "Invalid password. Please try again.");
       }
-    } catch (error) {
+    } catch {
       setPasswordError("Authentication failed. Please try again.");
     }
   };
