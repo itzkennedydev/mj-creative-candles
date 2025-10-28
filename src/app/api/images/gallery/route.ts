@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
 
     const mappedImages = images.map((image) => ({
       id: image._id?.toString() ?? '',
+      imageId: image._id?.toString() ?? '', // Add imageId for ProductImage interface
       dataUri: image.data,
       mimeType: image.mimeType,
       filename: image.filename,
