@@ -57,13 +57,13 @@ export default function ShopPage() {
                 <ShopSidebar />
               </div>
               
-              {/* Mobile Sidebar Toggle */}
-              <div className="lg:hidden mb-4">
+              {/* Mobile Sidebar Toggle - Temporarily Hidden */}
+              {/* <div className="lg:hidden mb-4">
                 <button className="w-full bg-gray-100 rounded-lg p-4 text-left">
                   <span className="font-medium">Filters</span>
                   <span className="ml-2 text-sm text-gray-500">Tap to open</span>
                 </button>
-              </div>
+              </div> */}
               
               <div className="flex-1">
                 <ProductsHeader />
