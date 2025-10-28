@@ -8,6 +8,14 @@ import "./src/env.js";
 const nextConfig = {
   images: {
     domains: ['scontent.cdninstagram.com', 'scontent-iad3-1.cdninstagram.com', 'scontent-iad3-2.cdninstagram.com', 'via.placeholder.com'],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
+  },
+  // Enable compression
+  compress: true,
+  // Experimental optimizations
+  experimental: {
+    optimizeCss: true,
   },
 };
 
