@@ -2276,7 +2276,31 @@ export default function AdminPage() {
                         </div>
                         <div className="absolute top-2 right-2">
                           <Button
-                            onClick={() => setEditProduct({...editProduct, image: ""})}
+                            onClick={() => {
+                              // If there are additional images, make the first one the primary
+                              if (editProduct.images && editProduct.images.length > 0) {
+                                const newPrimary = editProduct.images[0];
+                                setEditProduct({
+                                  ...editProduct,
+                                  image: newPrimary.dataUri,
+                                  imageId: newPrimary.imageId,
+                                  images: editProduct.images.slice(1) // Remove the now-primary image from additional
+                                });
+                                addToast({
+                                  title: "Primary Image Updated",
+                                  description: "Next image has been set as primary",
+                                  type: "success"
+                                });
+                              } else {
+                                // No additional images, just clear the primary
+                                setEditProduct({...editProduct, image: "", imageId: ""});
+                                addToast({
+                                  title: "Image Removed",
+                                  description: "Primary image has been removed",
+                                  type: "success"
+                                });
+                              }
+                            }}
                             className="bg-red-500 hover:bg-red-600 text-white p-1.5 md:p-2 rounded-lg"
                           >
                             <X className="h-3 w-3 md:h-4 md:w-4" />
