@@ -25,12 +25,18 @@ export function ProductCard({ product }: ProductCardProps) {
   // Set default selections when component mounts if there's only one option
   useEffect(() => {
     if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-      setSelectedSize(product.sizes[0]);
+      const firstSize = product.sizes[0];
+      if (firstSize) {
+        setSelectedSize(firstSize);
+      }
     }
     if (product.colors && product.colors.length > 0 && !selectedColor) {
-      setSelectedColor(product.colors[0]);
+      const firstColor = product.colors[0];
+      if (firstColor) {
+        setSelectedColor(firstColor);
+      }
     }
-  }, [product.sizes, product.colors]);
+  }, [product.sizes, product.colors, selectedSize, selectedColor]);
 
   const handleAddToCart = () => {
     if (product.sizes && product.sizes.length > 1 && !selectedSize) {
