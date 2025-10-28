@@ -48,26 +48,28 @@ export default function ShopPage() {
           </Container>
         </div>
 
-        {/* Main Content with Sidebar */}
+        {/* Main Content - Centered for better display with few products */}
         <Container>
           <div className="py-8 md:py-20">
-            <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
-              {/* Sidebar - Hidden on mobile, shown on desktop */}
-              <div className="hidden lg:block w-72">
-                <ShopSidebar />
-              </div>
-              
-              {/* Mobile Sidebar Toggle - Temporarily Hidden */}
-              {/* <div className="lg:hidden mb-4">
-                <button className="w-full bg-gray-100 rounded-lg p-4 text-left">
-                  <span className="font-medium">Filters</span>
-                  <span className="ml-2 text-sm text-gray-500">Tap to open</span>
-                </button>
-              </div> */}
-              
-              <div className="flex-1">
-                <ProductsHeader />
-                <ProductGrid />
+            <div className="max-w-7xl mx-auto">
+              <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
+                {/* Sidebar - Hidden on mobile, shown on desktop */}
+                <div className="hidden lg:block w-72 flex-shrink-0">
+                  <ShopSidebar />
+                </div>
+                
+                {/* Mobile Sidebar Toggle - Temporarily Hidden */}
+                {/* <div className="lg:hidden mb-4">
+                  <button className="w-full bg-gray-100 rounded-lg p-4 text-left">
+                    <span className="font-medium">Filters</span>
+                    <span className="ml-2 text-sm text-gray-500">Tap to open</span>
+                  </button>
+                </div> */}
+                
+                <div className="flex-1 min-w-0">
+                  <ProductsHeader />
+                  <ProductGrid />
+                </div>
               </div>
             </div>
           </div>
