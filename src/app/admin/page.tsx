@@ -674,35 +674,47 @@ export default function AdminPage() {
   };
 
   const handleDeleteImage = async (image: ProductImage) => {
-    if (confirm(`Are you sure you want to delete this image?`)) {
-      try {
-        const response = await fetch(`/api/images/${image.imageId}`, {
-          method: 'DELETE',
-          headers: {
-            'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to delete image');
-        }
-
-        // Refresh gallery after deletion
-        await refetchGallery();
-
-        addToast({
-          title: "Image Deleted",
-          description: "Image has been deleted successfully",
-          type: "success"
-        });
-      } catch (err) {
-        console.error('Error deleting image:', err);
-        addToast({
-          title: "Error",
-          description: "Failed to delete image. Please try again.",
-          type: "error"
-        });
+    // Check if image is being used in products
+    const isUsed = products.some(p => p.imageId === image.imageId || p.images?.some(img => img.imageId === image.imageId));
+    
+    if (isUsed) {
+      const confirmMessage = `This image is currently being used in ${products.filter(p => p.imageId === image.imageId || p.images?.some(img => img.imageId === image.imageId)).length} product(s). Deleting it will remove it from all products. Are you sure you want to delete it?`;
+      if (!confirm(confirmMessage)) {
+        return;
       }
+    } else {
+      if (!confirm(`Are you sure you want to delete this image?`)) {
+        return;
+      }
+    }
+    
+    try {
+      const response = await fetch(`/api/images/${image.imageId}`, {
+        method: 'DELETE',
+        headers: {
+          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete image');
+      }
+
+      // Refresh gallery after deletion
+      await refetchGallery();
+
+      addToast({
+        title: "Image Deleted",
+        description: "Image has been deleted successfully",
+        type: "success"
+      });
+    } catch (err) {
+      console.error('Error deleting image:', err);
+      addToast({
+        title: "Error",
+        description: "Failed to delete image. Please try again.",
+        type: "error"
+      });
     }
   };
 
