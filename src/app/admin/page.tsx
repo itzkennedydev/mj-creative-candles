@@ -559,12 +559,14 @@ export default function AdminPage() {
 
   const handleGalleryImageClick = (image: ProductImage) => {
     if (image && image.dataUri && image.imageId) {
+      console.log('Gallery image clicked:', image);
+      
       // Set the image in the product form
-      setEditProduct({ 
-        ...editProduct, 
+      setEditProduct((prev) => ({ 
+        ...prev, 
         image: image.dataUri, 
         imageId: image.imageId 
-      });
+      }));
       
       // If we're in a modal, close it
       if (showAssetGallery) {
@@ -575,7 +577,11 @@ export default function AdminPage() {
       setActiveSection('products');
       setIsEditingMode(false);
       setEditingProduct(null);
-      setShowEditModal(true);
+      
+      // Small delay to ensure state updates before opening modal
+      setTimeout(() => {
+        setShowEditModal(true);
+      }, 100);
       
       addToast({
         title: "Image Selected",
