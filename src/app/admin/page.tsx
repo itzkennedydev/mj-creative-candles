@@ -581,22 +581,25 @@ export default function AdminPage() {
     }
 
     if (imageSelectionMode === 'primary') {
-      // Set first selected image as primary
+      // Set first selected image as primary, and add the rest as additional images
       const primaryImage = selectedImages[0];
+      const additionalImages = selectedImages.slice(1); // All images except the first
+      
       if (primaryImage) {
-        console.log('Setting primary image:', primaryImage);
+        console.log('Setting primary image:', primaryImage, 'and adding additional:', additionalImages);
         setEditProduct(prev => {
           const updated = { 
             ...prev, 
             image: primaryImage.dataUri, 
-            imageId: primaryImage.imageId 
+            imageId: primaryImage.imageId,
+            images: additionalImages.length > 0 ? [...(prev.images || []), ...additionalImages] : prev.images
           };
-          console.log('Updated editProduct for primary:', updated);
+          console.log('Updated editProduct:', updated);
           return updated;
         });
         addToast({
-          title: "Primary Image Set",
-          description: "Image has been set as primary",
+          title: "Images Added",
+          description: `Primary image set and ${additionalImages.length} additional image(s) added`,
           type: "success"
         });
       }
