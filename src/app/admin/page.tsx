@@ -2264,27 +2264,49 @@ export default function AdminPage() {
                   <div className="space-y-4">
                     {/* Additional Images Preview - moved to top */}
                     {(editProduct.images && editProduct.images.length > 0) && (
-                      <div className="mb-4">
+                      <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <label className="block text-sm font-medium text-gray-700 mb-3">
                           Additional Product Images ({editProduct.images.length})
+                          <span className="text-xs text-gray-500 ml-2">Drag to reorder, click to set as primary</span>
                         </label>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                          {editProduct.images.map((img) => (
+                          {editProduct.images.map((img, idx) => (
                             <div key={img.id} className="relative group">
                               <Image
                                 src={img.dataUri}
                                 alt={img.filename}
                                 width={100}
                                 height={100}
-                                className="w-full h-20 object-cover rounded-lg border border-gray-300"
+                                className="w-full h-20 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-[#74CADC] transition-all"
+                                onClick={() => {
+                                  // Set as primary image
+                                  const newImages = editProduct.images.filter(i => i.id !== img.id);
+                                  setEditProduct(prev => ({
+                                    ...prev,
+                                    image: img.dataUri,
+                                    imageId: img.imageId,
+                                    images: newImages
+                                  }));
+                                  addToast({
+                                    title: "Primary Image Updated",
+                                    description: "Image has been set as primary",
+                                    type: "success"
+                                  });
+                                }}
                               />
                               <button
                                 type="button"
-                                onClick={() => handleRemoveProductImage(img.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveProductImage(img.id);
+                                }}
                                 className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                               >
                                 <X className="h-3 w-3" />
                               </button>
+                              <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
+                                {idx + 1}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -2393,16 +2415,6 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
-                    
-                    {/* Debug info */}
-                    {process.env.NODE_ENV === 'development' && (
-                      <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
-                        Debug: images.length = {editProduct.images?.length ?? 0}
-                        {editProduct.images && editProduct.images.length > 0 && (
-                          <div>Images: {JSON.stringify(editProduct.images.map(img => ({ id: img.id, filename: img.filename })))}</div>
-                        )}
-                      </div>
-                    )}
                     
                     {/* Image Guidelines */}
                     <div className="text-sm text-gray-500">
