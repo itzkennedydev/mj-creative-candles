@@ -1,10 +1,19 @@
+export interface ProductImage {
+  id: string;
+  imageId: string;
+  dataUri: string;
+  mimeType: string;
+  filename: string;
+}
+
 export interface Product {
   id: string; // Changed from number to string for MongoDB ObjectId
   name: string;
   description: string;
   price: number;
-  image: string; // Can be a URI, data URI (base64), or file path
-  imageId?: string; // Optional MongoDB image document ID
+  image: string; // Primary image - Can be a URI, data URI (base64), or file path
+  imageId?: string; // Optional MongoDB image document ID for primary image
+  images?: ProductImage[]; // Array of additional images
   category: string;
   inStock: boolean;
   sizes?: string[];

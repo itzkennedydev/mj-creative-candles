@@ -23,10 +23,11 @@ import {
 } from "lucide-react";
 import { useProducts } from "~/lib/products-context";
 import { useToast } from "~/lib/toast-context";
-import type { Product } from "~/lib/types";
+import type { Product, ProductImage } from "~/lib/types";
 import type { Order } from "~/lib/order-types";
 import { useOrders, useUpdateOrderStatus, useSendPickupNotification, useSendStatusEmail } from "~/lib/hooks/use-orders";
 import { env } from "~/env";
+import { Image as ImageIcon } from "lucide-react";
 
 interface AdminSettings {
   taxRate: number;
@@ -82,6 +83,9 @@ export default function AdminPage() {
   });
   const editFileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [showAssetGallery, setShowAssetGallery] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<ProductImage[]>([]);
+  const [galleryPage, setGalleryPage] = useState(1);
   
   const [settings, setSettings] = useState<AdminSettings>({
     taxRate: 8.5,
@@ -349,7 +353,7 @@ export default function AdminPage() {
       sizes: product.sizes ?? [],
       colors: product.colors ?? [],
       image: product.image ?? "",
-      imageId: product.imageId ? product.imageId : ""
+      imageId: product.imageId ?? ""
     });
     // Finally open the modal
     setShowEditModal(true);
@@ -493,6 +497,43 @@ export default function AdminPage() {
     if (file) {
       await handleImageUpload(file);
     }
+  };
+
+  const fetchGalleryImages = async () => {
+    try {
+      const response = await fetch(`/api/images/gallery?page=${galleryPage}&limit=50`, {
+        headers: {
+          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json() as { images: ProductImage[] };
+        setGalleryImages(data.images);
+      }
+    } catch (err) {
+      console.error('Error fetching gallery images:', err);
+    }
+  };
+
+  const handleOpenGallery = () => {
+    setShowAssetGallery(true);
+    void fetchGalleryImages();
+  };
+
+  const handleSelectGalleryImage = (image: ProductImage) => {
+    if (image && image.dataUri && image.imageId) {
+      setEditProduct({ 
+        ...editProduct, 
+        image: image.dataUri, 
+        imageId: image.imageId 
+      });
+    setShowAssetGallery(false);
+    addToast({
+      title: "Image Selected",
+      description: "Image has been added to product",
+      type: "success"
+    });
   };
 
   const handleDeleteProduct = async (id: string) => {
@@ -2003,14 +2044,24 @@ export default function AdminPage() {
                               </p>
                               <p className="text-sm text-gray-500 mb-4">or</p>
                             </div>
-                            <Button
-                              type="button"
-                              onClick={() => editFileInputRef.current?.click()}
-                              className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-medium transition-all duration-200 flex items-center justify-center"
-                            >
-                              <Upload className="h-4 w-4 mr-2" />
-                              Browse Files
-                            </Button>
+                            <div className="flex flex-col gap-3">
+                              <Button
+                                type="button"
+                                onClick={() => editFileInputRef.current?.click()}
+                                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-medium transition-all duration-200 flex items-center justify-center"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Browse Files
+                              </Button>
+                              <Button
+                                type="button"
+                                onClick={handleOpenGallery}
+                                className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-300 hover:border-gray-400 px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-medium transition-all duration-200 flex items-center justify-center"
+                              >
+                                <ImageIcon className="h-4 w-4 mr-2" />
+                                Choose from Gallery
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -2021,6 +2072,7 @@ export default function AdminPage() {
                       <p>• Recommended size: 800x800px or larger</p>
                       <p>• Supported formats: JPG, PNG, WebP</p>
                       <p>• Maximum file size: 5MB</p>
+                      <p>• Or choose from previously uploaded images</p>
                     </div>
                   </div>
                 </div>
@@ -2390,6 +2442,58 @@ export default function AdminPage() {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Asset Gallery Modal */}
+      {showAssetGallery && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 md:p-8 w-full max-w-7xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6 md:mb-8">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+                Asset Gallery
+              </h2>
+              <Button
+                onClick={() => setShowAssetGallery(false)}
+                className="p-2 md:p-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 transition-all duration-200"
+              >
+                <X className="h-4 w-4 md:h-5 md:w-5" />
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {galleryImages.map((image) => {
+                if (!image || !image.id) return null;
+                return (
+                <button
+                  key={image.id}
+                  onClick={() => handleSelectGalleryImage(image)}
+                  className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50"
+                >
+                  <Image
+                    src={image.dataUri ?? ''}
+                    alt={image.filename ?? 'Gallery image'}
+                    width={200}
+                    height={200}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ImageIcon className="h-8 w-8 text-white" />
+                    </div>
+                  </div>
+                </button>
+                );
+              })}
+            </div>
+
+            {galleryImages.length === 0 && (
+              <div className="text-center py-12">
+                <ImageIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500">No images in gallery yet</p>
+              </div>
+            )}
           </div>
         </div>
       )}
