@@ -528,12 +528,13 @@ export default function AdminPage() {
         image: image.dataUri, 
         imageId: image.imageId 
       });
-    setShowAssetGallery(false);
-    addToast({
-      title: "Image Selected",
-      description: "Image has been added to product",
-      type: "success"
-    });
+      setShowAssetGallery(false);
+      addToast({
+        title: "Image Selected",
+        description: "Image has been added to product",
+        type: "success"
+      });
+    }
   };
 
   const handleDeleteProduct = async (id: string) => {
