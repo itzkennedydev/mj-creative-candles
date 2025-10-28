@@ -28,9 +28,10 @@ export function useGallery() {
   return useQuery({
     queryKey: ['gallery'],
     queryFn: fetchGalleryImages,
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
-    retry: 2,
+    staleTime: 10 * 60 * 1000, // Consider data fresh for 10 minutes
+    gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
+    retry: 1, // Only retry once
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
 }
 
