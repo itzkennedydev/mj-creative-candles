@@ -14,7 +14,7 @@ interface ImageDocument {
 // GET - Retrieve image by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await authenticateRequest(request);
@@ -22,11 +22,12 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const imagesCollection = db.collection<ImageDocument>('images');
 
-    const image = await imagesCollection.findOne({ _id: params.id });
+    const image = await imagesCollection.findOne({ _id: id });
 
     if (!image) {
       return NextResponse.json({ error: 'Image not found' }, { status: 404 });
@@ -49,7 +50,7 @@ export async function GET(
 // DELETE - Delete image by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await authenticateRequest(request);
@@ -57,32 +58,33 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
     }
 
+    const { id } = await params;
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const imagesCollection = db.collection<ImageDocument>('images');
 
     // Check if image exists
-    const image = await imagesCollection.findOne({ _id: params.id });
+    const image = await imagesCollection.findOne({ _id: id });
     if (!image) {
       return NextResponse.json({ error: 'Image not found' }, { status: 404 });
     }
 
     // Delete the image
-    await imagesCollection.deleteOne({ _id: params.id });
+    await imagesCollection.deleteOne({ _id: id });
 
     // Also remove this image from any products that reference it
     const productsCollection = db.collection('products');
     
     // Remove from primary imageId
     await productsCollection.updateMany(
-      { imageId: params.id },
+      { imageId: id },
       { $unset: { imageId: "" }, $set: { image: "" } }
     );
 
     // Remove from images array
     await productsCollection.updateMany(
       {},
-      { $pull: { images: { imageId: params.id } } }
+      { $pull: { images: { imageId: id } } }
     );
 
     return NextResponse.json({ success: true, message: 'Image deleted successfully' });
