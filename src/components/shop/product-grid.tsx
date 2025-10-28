@@ -44,19 +44,8 @@ export function ProductGrid() {
     );
   }
   
-  // Responsive grid based on product count
-  const getGridClass = () => {
-    if (products.length <= 2) {
-      return "grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto";
-    }
-    if (products.length <= 4) {
-      return "grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto";
-    }
-    return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 auto-rows-fr";
-  };
-
   return (
-    <div className={getGridClass()}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 auto-rows-fr">
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
