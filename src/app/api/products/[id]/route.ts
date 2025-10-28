@@ -43,6 +43,7 @@ export async function PUT(
     if (body.price !== undefined) updateData.price = body.price;
     if (body.image !== undefined) updateData.image = body.image;
     if (body.imageId !== undefined) updateData.imageId = body.imageId;
+    if (body.images !== undefined) updateData.images = body.images; // Include images array
     if (body.category !== undefined) updateData.category = body.category;
     if (body.inStock !== undefined) updateData.inStock = body.inStock;
     if (body.sizes !== undefined) updateData.sizes = body.sizes;
@@ -72,6 +73,7 @@ export async function PUT(
         price: updatedProduct.price,
         image: updatedProduct.image,
         imageId: updatedProduct.imageId,
+        images: updatedProduct.images ?? [], // Include images array
         category: updatedProduct.category,
         inStock: updatedProduct.inStock,
         sizes: updatedProduct.sizes,
