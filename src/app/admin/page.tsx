@@ -94,6 +94,7 @@ export default function AdminPage() {
   const [imageSelectionMode, setImageSelectionMode] = useState<'primary' | 'additional'>('primary');
   const [selectedImages, setSelectedImages] = useState<ProductImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isProcessingProduct, setIsProcessingProduct] = useState(false);
   
   // Get gallery images from TanStack Query (with caching)
   const galleryImages = galleryData?.images ?? [];
@@ -391,6 +392,7 @@ export default function AdminPage() {
       return;
     }
     
+    setIsProcessingProduct(true);
     try {
       if (editingProduct) {
         // Update existing product
@@ -431,6 +433,8 @@ export default function AdminPage() {
         description: `Failed to ${editingProduct ? 'update' : 'create'} product. Please try again.`,
         type: "error"
       });
+    } finally {
+      setIsProcessingProduct(false);
     }
   };
 
@@ -2672,9 +2676,17 @@ export default function AdminPage() {
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
                   <Button
                     onClick={handleUpdateProduct}
-                    className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-medium transition-all duration-200 flex-1 sm:flex-none"
+                    disabled={isProcessingProduct}
+                    className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-medium transition-all duration-200 flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    {isEditingMode ? "Update Product" : "Create Product"}
+                    {isProcessingProduct ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#0A5565] mr-2"></div>
+                        {isEditingMode ? "Updating..." : "Creating..."}
+                      </>
+                    ) : (
+                      isEditingMode ? "Update Product" : "Create Product"
+                    )}
                   </Button>
                   <Button
                     onClick={() => setShowEditModal(false)}
