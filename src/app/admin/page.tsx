@@ -559,15 +559,27 @@ export default function AdminPage() {
 
   const handleGalleryImageClick = (image: ProductImage) => {
     if (image && image.dataUri && image.imageId) {
+      // Set the image in the product form
       setEditProduct({ 
         ...editProduct, 
         image: image.dataUri, 
         imageId: image.imageId 
       });
-      setShowAssetGallery(false);
+      
+      // If we're in a modal, close it
+      if (showAssetGallery) {
+        setShowAssetGallery(false);
+      }
+      
+      // Switch to products tab and open the modal
+      setActiveSection('products');
+      setIsEditingMode(false);
+      setEditingProduct(null);
+      setShowEditModal(true);
+      
       addToast({
         title: "Image Selected",
-        description: "Image has been added to product",
+        description: "Image has been added to product form",
         type: "success"
       });
     }
