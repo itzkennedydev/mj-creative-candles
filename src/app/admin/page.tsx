@@ -78,9 +78,10 @@ export default function AdminPage() {
     sizes: [] as string[],
     colors: [] as string[],
     image: "",
-    imageId: "" as string | undefined
+    imageId: ""
   });
   const editFileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
   
   const [settings, setSettings] = useState<AdminSettings>({
     taxRate: 8.5,
@@ -348,7 +349,7 @@ export default function AdminPage() {
       sizes: product.sizes ?? [],
       colors: product.colors ?? [],
       image: product.image ?? "",
-      imageId: product.imageId
+      imageId: product.imageId ? product.imageId : ""
     });
     // Finally open the modal
     setShowEditModal(true);
@@ -405,10 +406,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleEditImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const handleImageUpload = async (file: File) => {
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
@@ -468,6 +466,32 @@ export default function AdminPage() {
         description: "Failed to upload image. Please try again.",
         type: "error"
       });
+    }
+  };
+
+  const handleEditImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      await handleImageUpload(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      await handleImageUpload(file);
     }
   };
 
@@ -1921,8 +1945,19 @@ export default function AdminPage() {
                       </div>
                     )}
                     
-                    {/* Upload Section */}
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                    {/* Drop Zone */}
+                    <div
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`border-2 border-dashed rounded-xl p-8 md:p-12 transition-all duration-200 text-center ${
+                        isDragging
+                          ? 'border-[#74CADC] bg-[#74CADC]/10'
+                          : editProduct.image
+                          ? 'border-gray-200 bg-gray-50'
+                          : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
+                      }`}
+                    >
                       <input
                         ref={editFileInputRef}
                         type="file"
@@ -1930,19 +1965,53 @@ export default function AdminPage() {
                         onChange={handleEditImageUpload}
                         className="hidden"
                       />
-                      <Button
-                        type="button"
-                        onClick={() => editFileInputRef.current?.click()}
-                        className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 px-4 md:px-6 py-2 md:py-3 transition-all duration-200 flex items-center justify-center"
-                      >
-                        <Upload className="h-4 w-4 mr-2 md:mr-3" />
-                        <span className="font-medium text-sm md:text-base">{editProduct.image ? "Change Image" : "Upload Image"}</span>
-                      </Button>
                       
-                      {editProduct.image && (
-                        <div className="flex items-center justify-center sm:justify-start gap-2">
-                          <div className="w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full"></div>
-                          <span className="text-xs md:text-sm text-gray-600 font-medium">Primary Image</span>
+                      {editProduct.image ? (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-center gap-2 text-green-600">
+                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span className="text-sm font-medium">Image uploaded successfully</span>
+                          </div>
+                          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center">
+                            <Button
+                              type="button"
+                              onClick={() => editFileInputRef.current?.click()}
+                              className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 hover:border-gray-400 px-4 md:px-6 py-2 md:py-3 transition-all duration-200 flex items-center justify-center"
+                            >
+                              <Upload className="h-4 w-4 mr-2 md:mr-3" />
+                              <span className="font-medium text-sm md:text-base">Change Image</span>
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={() => editFileInputRef.current?.click()}
+                              variant="outline"
+                              className="text-gray-600"
+                            >
+                              Or drag and drop
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex flex-col items-center justify-center space-y-3">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                              <Upload className="h-8 w-8 text-gray-400" />
+                            </div>
+                            <div>
+                              <p className="text-base md:text-lg font-medium text-gray-900 mb-2">
+                                {isDragging ? 'Drop image here' : 'Drag and drop an image here'}
+                              </p>
+                              <p className="text-sm text-gray-500 mb-4">or</p>
+                            </div>
+                            <Button
+                              type="button"
+                              onClick={() => editFileInputRef.current?.click()}
+                              className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-medium transition-all duration-200 flex items-center justify-center"
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Browse Files
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>
