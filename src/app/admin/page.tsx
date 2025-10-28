@@ -1825,16 +1825,31 @@ export default function AdminPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Asset Gallery</h1>
             <p className="text-gray-600 mt-2">Manage your uploaded images and assets</p>
+            {selectedImages.length > 0 && (
+              <p className="text-sm text-[#74CADC] mt-1">
+                {selectedImages.length} image{selectedImages.length > 1 ? 's' : ''} selected
+              </p>
+            )}
           </div>
-          <Button
-            variant="outline"
-            onClick={handleRefreshGallery}
-            disabled={galleryLoading}
-            className="flex items-center gap-2"
-          >
-            <Activity className="h-4 w-4" />
-            {galleryLoading ? "Loading..." : "Refresh"}
-          </Button>
+          <div className="flex items-center gap-3">
+            {selectedImages.length > 0 && (
+              <Button
+                onClick={handleConfirmGallerySelection}
+                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-4 py-2"
+              >
+                Create Product ({selectedImages.length})
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={handleRefreshGallery}
+              disabled={galleryLoading}
+              className="flex items-center gap-2"
+            >
+              <Activity className="h-4 w-4" />
+              {galleryLoading ? "Loading..." : "Refresh"}
+            </Button>
+          </div>
         </div>
 
         {/* Gallery Grid */}
