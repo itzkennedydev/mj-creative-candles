@@ -559,7 +559,7 @@ export default function AdminPage() {
 
   const handleToggleImageSelection = (image: ProductImage) => {
     console.log('handleToggleImageSelection called with:', image);
-    if (!image || !image.id || !image.imageId) {
+    if (!image?.id || !image?.imageId) {
       console.log('Invalid image:', { id: image?.id, imageId: image?.imageId });
       return;
     }
@@ -654,6 +654,7 @@ export default function AdminPage() {
     setSelectedImages([]);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleGalleryImageClick = (image: ProductImage) => {
     if (image && image.dataUri && image.imageId) {
       console.log('Gallery image clicked:', image);

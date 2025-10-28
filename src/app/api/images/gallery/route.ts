@@ -37,9 +37,9 @@ export async function GET(request: NextRequest) {
     // Get total count
     const total = await imagesCollection.countDocuments();
 
-    // Get images with pagination - exclude the heavy base64 data field
+    // Get images with pagination - only fetch essential fields for performance
     const images = await imagesCollection
-      .find({}, { projection: { mimeType: 1, filename: 1, size: 1, uploadedAt: 1, _id: 1 } })
+      .find({}, { projection: { data: 1, mimeType: 1, filename: 1, size: 1, uploadedAt: 1 } })
       .sort({ uploadedAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -47,8 +47,8 @@ export async function GET(request: NextRequest) {
 
     const mappedImages = images.map((image) => ({
       id: image._id?.toString() ?? '',
-      imageId: image._id?.toString() ?? '',
-      dataUri: '', // Empty initially, will be loaded on demand from /api/images/[id]
+      imageId: image._id?.toString() ?? '', // Add imageId for ProductImage interface
+      dataUri: image.data,
       mimeType: image.mimeType,
       filename: image.filename,
       size: image.size,

@@ -80,6 +80,9 @@ export async function GET(request: NextRequest) {
 
     // Extract base64 data from data URI
     const base64Data = image.data.split(',')[1];
+    if (!base64Data) {
+      return NextResponse.json({ error: 'Invalid image data' }, { status: 400 });
+    }
     const buffer = Buffer.from(base64Data, 'base64');
 
     // Optimize image with Sharp - use fast preset for speed

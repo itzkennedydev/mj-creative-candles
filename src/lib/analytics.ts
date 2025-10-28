@@ -1,5 +1,5 @@
 // Google Analytics 4 setup
-export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID;
+export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID ?? '';
 
 // Track page views
 export const pageview = (url: string) => {

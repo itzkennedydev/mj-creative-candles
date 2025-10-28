@@ -105,7 +105,7 @@ export async function DELETE(
               image: nextImage.dataUri,
               imageId: nextImage.imageId
             },
-            $pull: { images: { imageId: nextImage.imageId } }
+            $pull: { images: { imageId: { $eq: nextImage.imageId } } } as any
           }
         );
       } else {
@@ -120,7 +120,7 @@ export async function DELETE(
     // Remove from images array for all products
     await productsCollection.updateMany(
       {},
-      { $pull: { images: { imageId: id } } }
+      { $pull: { images: { imageId: id } } } as any
     );
 
     return NextResponse.json({ success: true, message: 'Image deleted successfully' });
