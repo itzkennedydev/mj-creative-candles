@@ -1692,40 +1692,68 @@ export default function AdminPage() {
 
   const renderGallery = () => {
     console.log('Rendering gallery, images:', galleryImages.length, 'loading:', galleryLoading);
-    return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Asset Gallery</h1>
-          <p className="text-gray-600 mt-2">Manage your uploaded images and assets</p>
-        </div>
-        <Button
-          variant="outline"
-          onClick={fetchGalleryImages}
-          disabled={galleryLoading}
-          className="flex items-center gap-2"
-        >
-          <Activity className="h-4 w-4" />
-          {galleryLoading ? "Loading..." : "Refresh"}
-        </Button>
-      </div>
-
-      {/* Gallery Grid */}
-      {galleryLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#74CADC] mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading images...</p>
+    
+    // Show loading state during initial fetch or if we don't have images yet
+    if (galleryLoading || galleryImages.length === 0) {
+      return (
+        <div className="space-y-8">
+          {/* Page Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Asset Gallery</h1>
+              <p className="text-gray-600 mt-2">Manage your uploaded images and assets</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={fetchGalleryImages}
+              disabled={galleryLoading}
+              className="flex items-center gap-2"
+            >
+              <Activity className="h-4 w-4" />
+              {galleryLoading ? "Loading..." : "Refresh"}
+            </Button>
           </div>
+
+          {/* Loading or Empty State */}
+          {galleryLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#74CADC] mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading images...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <ImageIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+              <p className="text-lg text-gray-600">No images in gallery yet</p>
+              <p className="text-sm text-gray-500 mt-2">Upload images to get started</p>
+            </div>
+          )}
         </div>
-      ) : galleryImages.length === 0 ? (
-        <div className="text-center py-20">
-          <ImageIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-          <p className="text-lg text-gray-600">No images in gallery yet</p>
-          <p className="text-sm text-gray-500 mt-2">Upload images to get started</p>
+      );
+    }
+    
+    // Show images
+    return (
+      <div className="space-y-8">
+        {/* Page Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Asset Gallery</h1>
+            <p className="text-gray-600 mt-2">Manage your uploaded images and assets</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={fetchGalleryImages}
+            disabled={galleryLoading}
+            className="flex items-center gap-2"
+          >
+            <Activity className="h-4 w-4" />
+            {galleryLoading ? "Loading..." : "Refresh"}
+          </Button>
         </div>
-      ) : (
+
+        {/* Gallery Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {galleryImages.map((image) => {
             if (!image || !image.id) return null;
@@ -1754,8 +1782,7 @@ export default function AdminPage() {
             );
           })}
         </div>
-      )}
-    </div>
+      </div>
     );
   };
 
