@@ -115,11 +115,11 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-white h-full flex flex-col">
       {/* Product Image */}
       <div 
         ref={imageContainerRef}
-        className="aspect-square relative mb-6 rounded-lg overflow-hidden"
+        className="aspect-square relative mb-6 rounded-lg overflow-hidden flex-shrink-0"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -182,10 +182,10 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
       
       {/* Product Details */}
-      <div className="space-y-4 md:space-y-6">
-        <div>
-          <h3 className="text-lg md:text-xl font-medium text-gray-900 mb-2">{product.name}</h3>
-          <p className="text-sm md:text-base text-gray-600">{product.description}</p>
+      <div className="space-y-4 md:space-y-6 flex-1 flex flex-col">
+        <div className="flex-shrink-0">
+          <h3 className="text-lg md:text-xl font-medium text-gray-900 mb-2 line-clamp-2">{product.name}</h3>
+          <p className="text-sm md:text-base text-gray-600 line-clamp-3">{product.description}</p>
         </div>
         
         <div className="text-xl md:text-2xl font-medium text-gray-900">
@@ -194,7 +194,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Size Selection */}
         {product.sizes && product.sizes.length > 0 && (
-          <div>
+          <div className="flex-shrink-0">
             <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Size</label>
             <div className="flex flex-wrap gap-1 md:gap-2">
               {product.sizes.map((size) => (
@@ -216,7 +216,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Color Selection */}
         {product.colors && product.colors.length > 0 && (
-          <div>
+          <div className="flex-shrink-0">
             <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Color</label>
             <div className="flex flex-wrap gap-1 md:gap-2">
               {product.colors.map((color) => (
@@ -237,7 +237,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Quantity Selector */}
-        <div>
+        <div className="flex-shrink-0">
           <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Quantity</label>
           <div className="flex items-center gap-2 md:gap-3">
             <button
@@ -259,14 +259,16 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Add to Cart Button */}
-        <Button
-          onClick={handleAddToCart}
-          disabled={!product.inStock}
-          className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-2 md:py-3 text-sm md:text-base font-medium"
-        >
-          <ShoppingCart className="h-4 w-4 mr-2" />
-          Add to Cart
-        </Button>
+        <div className="mt-auto pt-4">
+          <Button
+            onClick={handleAddToCart}
+            disabled={!product.inStock}
+            className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-2 md:py-3 text-sm md:text-base font-medium"
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Add to Cart
+          </Button>
+        </div>
       </div>
     </div>
   );
