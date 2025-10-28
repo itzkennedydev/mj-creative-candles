@@ -16,8 +16,15 @@ export function ProductCard({ product }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addItem } = useCart();
   const { addToast } = useToast();
+
+  // Create array of all images including primary
+  const allImages = product.image ? [
+    { src: product.image, isPrimary: true },
+    ...(product.images || []).map(img => ({ src: img.dataUri, isPrimary: false }))
+  ] : (product.images || []).map(img => ({ src: img.dataUri, isPrimary: false }));
 
   // Calculate price with XXL surcharge
   const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : 0);
@@ -68,15 +75,32 @@ export function ProductCard({ product }: ProductCardProps) {
     <div className="bg-white">
       {/* Product Image */}
       <div className="aspect-square relative mb-6 rounded-lg overflow-hidden">
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          className="object-cover"
-        />
+        {allImages.length > 0 && (
+          <Image
+            src={allImages[currentImageIndex]?.src ?? '/placeholder.jpg'}
+            alt={product.name}
+            fill
+            className="object-cover"
+          />
+        )}
         {!product.inStock && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <span className="text-white font-medium">Out of Stock</span>
+          </div>
+        )}
+        
+        {/* Image Navigation Dots */}
+        {allImages.length > 1 && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+            {allImages.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentImageIndex(idx)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  currentImageIndex === idx ? 'bg-white w-8' : 'bg-white/50'
+                }`}
+              />
+            ))}
           </div>
         )}
       </div>
