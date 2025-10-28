@@ -602,8 +602,11 @@ export default function AdminPage() {
       return;
     }
 
-    if (imageSelectionMode === 'primary') {
-      // Set first selected image as primary, and add the rest as additional images
+    // Check if primary image already exists
+    const hasPrimaryImage = !!editProduct.image;
+    
+    if (imageSelectionMode === 'primary' && !hasPrimaryImage) {
+      // No primary image exists, so set the first as primary
       const primaryImage = selectedImages[0];
       const additionalImages = selectedImages.slice(1); // All images except the first
       
