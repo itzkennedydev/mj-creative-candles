@@ -119,14 +119,12 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       products: transformedProducts,
-      pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages,
-        hasNextPage,
-        hasPrevPage
-      }
+      totalCount,
+      page,
+      limit,
+      totalPages,
+      hasNextPage,
+      hasPrevPage
     });
     
   } catch (error) {
