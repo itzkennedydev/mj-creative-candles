@@ -1856,10 +1856,13 @@ export default function AdminPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {galleryImages.map((image) => {
             if (!image || !image.id) return null;
+            const isSelected = selectedImages.some(img => img.imageId === image.imageId);
             return (
-              <div key={image.id} className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50">
+              <div key={image.id} className={`group relative aspect-square rounded-lg overflow-hidden border-4 transition-all duration-200 bg-gray-50 ${
+                isSelected ? 'border-[#74CADC]' : 'border-gray-200 hover:border-gray-300'
+              }`}>
                 <button
-                  onClick={() => handleGalleryImageClick(image)}
+                  onClick={() => handleToggleImageSelection(image)}
                   className="w-full h-full relative"
                 >
                   <Image
@@ -1869,11 +1872,20 @@ export default function AdminPage() {
                     height={200}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ImageIcon className="h-8 w-8 text-white" />
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-[#74CADC]/30 flex items-center justify-center">
+                      <div className="bg-[#74CADC] rounded-full p-3">
+                        <CheckCircle className="h-8 w-8 text-white" />
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  {!isSelected && (
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ImageIcon className="h-8 w-8 text-white" />
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     {image.filename}
                   </div>
