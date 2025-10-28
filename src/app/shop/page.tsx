@@ -1,15 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container } from "~/components/ui/container";
 import { ProductGrid } from "~/components/shop/product-grid";
 import { ShopSidebar } from "~/components/shop/shop-sidebar";
 import { ProductsHeader } from "~/components/shop/products-header";
 import { Search } from "lucide-react";
 import { FloatingCart } from "~/components/shop/floating-cart";
+import { usePrefetchProducts } from "~/lib/hooks/use-products";
 
 export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const prefetchProducts = usePrefetchProducts();
+
+  // Prefetch products as soon as component mounts
+  useEffect(() => {
+    prefetchProducts();
+  }, [prefetchProducts]);
 
   return (
     <div className="min-h-screen bg-white">
