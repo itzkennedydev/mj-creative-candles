@@ -37,16 +37,16 @@ export async function GET(request: NextRequest) {
     // Get total count
     const total = await imagesCollection.countDocuments();
 
-    // Get images with pagination
+    // Get images with pagination - only fetch essential fields for performance
     const images = await imagesCollection
-      .find({})
+      .find({}, { projection: { data: 1, mimeType: 1, filename: 1, size: 1, uploadedAt: 1 } })
       .sort({ uploadedAt: -1 })
       .skip(skip)
       .limit(limit)
       .toArray();
 
     const mappedImages = images.map((image) => ({
-      id: image._id?.toString(),
+      id: image._id?.toString() ?? '',
       dataUri: image.data,
       mimeType: image.mimeType,
       filename: image.filename,

@@ -540,9 +540,10 @@ export default function AdminPage() {
     }
   };
 
-  const handleOpenGallery = () => {
+  const handleOpenGallery = async () => {
     setShowAssetGallery(true);
-    void fetchGalleryImages();
+    setGalleryLoading(true); // Start loading immediately
+    await fetchGalleryImages();
   };
 
   const handleSelectGalleryImage = (image: ProductImage) => {
@@ -2618,36 +2619,47 @@ export default function AdminPage() {
               </Button>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {galleryImages.map((image) => {
-                if (!image || !image.id) return null;
-                return (
-                  <button
-                    key={image.id}
-                    onClick={() => handleSelectGalleryImage(image)}
-                    className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50"
-                  >
-                    <Image
-                      src={image.dataUri ?? ''}
-                      alt={image.filename ?? 'Gallery image'}
-                      width={200}
-                      height={200}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ImageIcon className="h-8 w-8 text-white" />
+            {galleryLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#74CADC] mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading images...</p>
+                </div>
+              </div>
+            ) : galleryImages.length === 0 ? (
+              <div className="text-center py-20">
+                <ImageIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                <p className="text-lg text-gray-600">No images in gallery yet</p>
+                <p className="text-sm text-gray-500 mt-2">Upload images to get started</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {galleryImages.map((image) => {
+                  if (!image || !image.id) return null;
+                  return (
+                    <button
+                      key={image.id}
+                      onClick={() => handleSelectGalleryImage(image)}
+                      className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50"
+                    >
+                      <Image
+                        src={image.dataUri ?? ''}
+                        alt={image.filename ?? 'Gallery image'}
+                        width={200}
+                        height={200}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ImageIcon className="h-8 w-8 text-white" />
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {galleryImages.length === 0 && (
-              <div className="text-center py-12">
-                <ImageIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-500">No images in gallery yet</p>
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {image.filename}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
