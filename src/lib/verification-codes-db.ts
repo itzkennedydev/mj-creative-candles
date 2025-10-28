@@ -10,7 +10,7 @@ interface VerificationCode {
 export async function storeVerificationCode(email: string, code: string): Promise<void> {
   try {
     const client = await clientPromise;
-    const db = client.db('stitchplease');
+    const db = client.db('stitch_orders');
     const collection = db.collection<VerificationCode>('verification_codes');
     
     const expiresAt = new Date(Date.now() + (10 * 60 * 1000)); // 10 minutes
@@ -36,7 +36,7 @@ export async function storeVerificationCode(email: string, code: string): Promis
 export async function verifyVerificationCode(email: string, code: string): Promise<boolean> {
   try {
     const client = await clientPromise;
-    const db = client.db('stitchplease');
+    const db = client.db('stitch_orders');
     const collection = db.collection<VerificationCode>('verification_codes');
     
     console.log(`🔍 Verifying code for ${email}: ${code}`);

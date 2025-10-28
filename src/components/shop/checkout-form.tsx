@@ -26,6 +26,39 @@ export function CheckoutForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!customerInfo.firstName.trim() || !customerInfo.lastName.trim() || 
+        !customerInfo.email.trim() || !customerInfo.phone.trim()) {
+      addToast({
+        title: 'Validation Error',
+        description: 'Please fill in all required fields',
+        type: 'error'
+      });
+      return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customerInfo.email)) {
+      addToast({
+        title: 'Invalid Email',
+        description: 'Please enter a valid email address',
+        type: 'error'
+      });
+      return;
+    }
+    
+    // Validate cart has items
+    if (cartItems.length === 0) {
+      addToast({
+        title: 'Empty Cart',
+        description: 'Your cart is empty',
+        type: 'error'
+      });
+      return;
+    }
+    
     setIsProcessing(true);
     
     try {
@@ -80,50 +113,55 @@ export function CheckoutForm() {
 
       const result = await response.json() as { success: boolean; orderNumber?: string; orderId?: string; error?: string };
 
-      if (result.success && result.orderId) {
-        // Create Stripe Checkout session
-        const checkoutResponse = await fetch('/api/stripe/create-checkout-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            orderId: result.orderId,
-            items: orderItems,
-            subtotal,
-            tax,
-            total,
-            customerEmail: customerInfo.email
-          })
-        });
+      if (!response.ok) {
+        throw new Error(result.error ?? `HTTP ${response.status}: ${response.statusText}`);
+      }
 
-        const checkoutResult = await checkoutResponse.json() as { sessionId?: string; url?: string; error?: string };
-        
-        if (checkoutResult.url) {
-          // Redirect to Stripe Checkout
-          window.location.href = checkoutResult.url;
-        } else {
-          throw new Error('Failed to create checkout session');
-        }
-      } else {
+      if (!result.success || !result.orderId) {
         throw new Error(result.error ?? 'Failed to create order');
+      }
+
+      // Create Stripe Checkout session
+      const checkoutResponse = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: result.orderId,
+          items: orderItems,
+          subtotal,
+          tax,
+          total,
+          customerEmail: customerInfo.email
+        })
+      });
+
+      const checkoutResult = await checkoutResponse.json() as { sessionId?: string; url?: string; error?: string };
+      
+      if (checkoutResult.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = checkoutResult.url;
+      } else {
+        throw new Error('Failed to create checkout session');
       }
       
     } catch (error) {
       console.error("Checkout error:", error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       addToast({
-        title: "Order Error",
-        description: "There was an error processing your order. Please try again.",
-        type: "error"
+        title: 'Order Error',
+        description: errorMessage,
+        type: 'error'
       });
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-white" suppressHydrationWarning>
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" suppressHydrationWarning>
         {/* Customer Information */}
         <div>
           <h3 className="text-base md:text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
@@ -138,6 +176,7 @@ export function CheckoutForm() {
                 value={customerInfo.firstName}
                 onChange={(e) => setCustomerInfo({...customerInfo, firstName: e.target.value})}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                suppressHydrationWarning
               />
             </div>
             <div>
@@ -150,6 +189,7 @@ export function CheckoutForm() {
                 value={customerInfo.lastName}
                 onChange={(e) => setCustomerInfo({...customerInfo, lastName: e.target.value})}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                suppressHydrationWarning
               />
             </div>
             <div>
@@ -162,6 +202,7 @@ export function CheckoutForm() {
                 value={customerInfo.email}
                 onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                suppressHydrationWarning
               />
             </div>
             <div>
@@ -174,6 +215,7 @@ export function CheckoutForm() {
                 value={customerInfo.phone}
                 onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                suppressHydrationWarning
               />
             </div>
           </div>
@@ -182,18 +224,26 @@ export function CheckoutForm() {
         {/* Pickup Information */}
         <div>
           <h3 className="text-base md:text-lg font-medium text-gray-900 mb-4">Pickup Information</h3>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h4 className="text-sm font-medium text-blue-800">Pickup Only Service</h4>
-                <p className="text-sm text-blue-700 mt-1">
-                  All orders are for pickup only. We&apos;ll contact you to arrange a convenient pickup time once your order is ready.
-                </p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Pickup Location
+              </label>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h4 className="text-sm font-medium text-green-800">Local Pickup Available</h4>
+                    <p className="text-sm text-green-700 mt-1">
+                      Your order will be ready for pickup at our local location. 
+                      We&apos;ll contact you when your order is ready.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -235,6 +285,7 @@ export function CheckoutForm() {
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
                 placeholder="Any special instructions or notes for your order..."
+                suppressHydrationWarning
               />
             </div>
           </div>

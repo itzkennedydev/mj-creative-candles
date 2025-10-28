@@ -28,7 +28,6 @@ import type { Order } from "~/lib/order-types";
 import { useOrders, useUpdateOrderStatus, useSendPickupNotification, useSendStatusEmail } from "~/lib/hooks/use-orders";
 import { useGallery } from "~/lib/hooks/use-gallery";
 import { useQueryClient } from '@tanstack/react-query';
-import { env } from "~/env";
 import { Image as ImageIcon } from "lucide-react";
 
 interface AdminSettings {
@@ -49,8 +48,12 @@ export default function AdminPage() {
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [email, setEmail] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [error, setError] = useState("");
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState("orders");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -149,10 +152,24 @@ export default function AdminPage() {
 
   useEffect(() => {
     setMounted(true);
-    // Check if user is already authenticated (from sessionStorage)
-    const authStatus = sessionStorage.getItem('admin_authenticated');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
+    
+    // Check for existing authentication token
+    const token = sessionStorage.getItem('admin_token');
+    const expiresAt = sessionStorage.getItem('admin_expires_at');
+    
+    if (token && expiresAt) {
+      const expirationTime = new Date(expiresAt).getTime();
+      const currentTime = Date.now();
+      
+      if (currentTime < expirationTime) {
+        setAuthToken(token);
+        setIsAuthenticated(true);
+      } else {
+        // Token expired, clear session
+        sessionStorage.removeItem('admin_token');
+        sessionStorage.removeItem('admin_refresh_token');
+        sessionStorage.removeItem('admin_expires_at');
+      }
     }
   }, []);
 
@@ -324,29 +341,96 @@ export default function AdminPage() {
   };
 
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     
+    if (!email.trim()) {
+      setError("Please enter your email address");
+      return;
+    }
+
     try {
-      const response = await fetch('/api/auth/verify-password', {
+      const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email: email.trim() }),
       });
 
       if (response.ok) {
-        setIsAuthenticated(true);
-        sessionStorage.setItem('admin_authenticated', 'true');
-        setPasswordError("");
+        setIsCodeSent(true);
+        setError("");
       } else {
         const data = await response.json() as { error?: string };
-        setPasswordError(data.error ?? "Invalid password. Please try again.");
+        setError(data.error ?? "Failed to send verification code");
       }
     } catch {
-      setPasswordError("Authentication failed. Please try again.");
+      setError("Failed to send verification code. Please try again.");
     }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsVerifying(true);
+    
+    if (!verificationCode.trim()) {
+      setError("Please enter the verification code");
+      setIsVerifying(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/verify-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email: email.trim(), 
+          code: verificationCode.trim() 
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json() as { 
+          token?: string; 
+          refreshToken?: string; 
+          expiresAt?: string 
+        };
+        
+        if (data.token) {
+          setAuthToken(data.token);
+          setIsAuthenticated(true);
+          sessionStorage.setItem('admin_token', data.token);
+          sessionStorage.setItem('admin_refresh_token', data.refreshToken ?? '');
+          sessionStorage.setItem('admin_expires_at', data.expiresAt ?? '');
+          setError("");
+        } else {
+          setError("Invalid verification code");
+        }
+      } else {
+        const data = await response.json() as { error?: string };
+        setError(data.error ?? "Invalid verification code");
+      }
+    } catch {
+      setError("Verification failed. Please try again.");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setEmail("");
+    setVerificationCode("");
+    setIsCodeSent(false);
+    setAuthToken(null);
+    sessionStorage.removeItem('admin_token');
+    sessionStorage.removeItem('admin_refresh_token');
+    sessionStorage.removeItem('admin_expires_at');
   };
 
   // Remove unused handleLogout function
@@ -470,7 +554,7 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/upload', {
         method: 'POST',
         headers: {
-          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
+          'Authorization': `Bearer ${authToken}`,
         },
         body: formData,
       });
@@ -656,7 +740,7 @@ export default function AdminPage() {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleGalleryImageClick = (image: ProductImage) => {
-    if (image && image.dataUri && image.imageId) {
+    if (image?.dataUri && image?.imageId) {
       console.log('Gallery image clicked:', image);
       
       // Set the image in the product form
@@ -703,17 +787,17 @@ export default function AdminPage() {
       const response = await fetch(`/api/admin/gallery?id=${image.imageId}`, {
         method: 'DELETE',
         headers: {
-          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete image');
+        const errorData = await response.json() as { error?: string };
+        throw new Error(errorData.error ?? 'Failed to delete image');
       }
 
       // Invalidate and refetch gallery data immediately
-      queryClient.invalidateQueries({ queryKey: ['gallery'] });
+      void queryClient.invalidateQueries({ queryKey: ['gallery'] });
       await refetchGallery();
       
       addToast({
@@ -810,37 +894,91 @@ export default function AdminPage() {
               />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Admin Access</h1>
-            <p className="text-lg text-gray-500">Enter your password to access the admin panel</p>
+            <p className="text-lg text-gray-500">
+              {isCodeSent ? "Enter the verification code sent to your email" : "Enter your email to receive a verification code"}
+            </p>
           </div>
           
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label htmlFor="password" className="block text-base font-medium text-gray-900 mb-3">
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
-                placeholder="Enter your password"
-                required
-              />
-              {passwordError && (
-                <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-xl">
-                  <p className="text-sm text-red-600 font-medium">{passwordError}</p>
+          {!isCodeSent ? (
+            <form onSubmit={handleSendCode} className="space-y-6">
+              <div>
+                <label htmlFor="email" className="block text-base font-medium text-gray-900 mb-3">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
+                  placeholder="admin@stitchpleaseqc.com"
+                  required
+                />
+              </div>
+              
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-600 font-medium">{error}</p>
                 </div>
               )}
-            </div>
-            
-            <Button
-              type="submit"
-              className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-4 text-lg font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
-            >
-              Access Admin Panel
-            </Button>
-          </form>
+              
+              <Button
+                type="submit"
+                className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-4 text-lg font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
+              >
+                Send Verification Code
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyCode} className="space-y-6">
+              <div>
+                <label htmlFor="verificationCode" className="block text-base font-medium text-gray-900 mb-3">
+                  Verification Code
+                </label>
+                <input
+                  type="text"
+                  id="verificationCode"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200 text-center tracking-widest"
+                  placeholder="000000"
+                  maxLength={6}
+                  required
+                />
+                <p className="text-sm text-gray-500 mt-2 text-center">
+                  Code sent to: <span className="font-medium">{email}</span>
+                </p>
+              </div>
+              
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-600 font-medium">{error}</p>
+                </div>
+              )}
+              
+              <div className="space-y-3">
+                <Button
+                  type="submit"
+                  disabled={isVerifying}
+                  className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-4 text-lg font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isVerifying ? "Verifying..." : "Verify Code"}
+                </Button>
+                
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setIsCodeSent(false);
+                    setVerificationCode("");
+                    setError("");
+                  }}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 text-base font-medium rounded-xl transition-all duration-200"
+                >
+                  Back to Email
+                </Button>
+              </div>
+            </form>
+          )}
           
           <div className="mt-6 text-center">
             <div className="flex items-center justify-center gap-1 text-sm text-gray-400">
@@ -876,6 +1014,16 @@ export default function AdminPage() {
             >
               <Activity className="h-4 w-4" />
               Refresh Data
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
             </Button>
           </div>
         </div>
@@ -1931,7 +2079,7 @@ export default function AdminPage() {
         {/* Gallery Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {galleryImages.map((image) => {
-            if (!image || !image.id) return null;
+            if (!image?.id) return null;
             const isSelected = selectedImages.some(img => img.imageId === image.imageId);
             return (
               <div key={image.id} className={`group relative aspect-square rounded-lg overflow-hidden border-4 transition-all duration-200 bg-gray-50 ${
@@ -2996,7 +3144,7 @@ export default function AdminPage() {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {galleryImages.map((image) => {
-                  if (!image || !image.id) return null;
+                  if (!image?.id) return null;
                   const isSelected = selectedImages.some(img => img.imageId === image.imageId);
                   return (
                     <div key={image.id} className={`group relative aspect-square rounded-lg overflow-hidden border-4 transition-all duration-200 bg-gray-50 ${

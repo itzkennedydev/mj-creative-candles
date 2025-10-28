@@ -80,8 +80,8 @@ function generateVerificationEmailTemplate(code: string): string {
 export async function sendOrderConfirmationEmail(order: Order) {
   try {
     // Skip email sending during build time or if no API key
-    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'dummy-key-for-build') {
-      console.log('Skipping email sending - no valid Resend API key');
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping email sending - no valid Mailgun API key');
       return true;
     }
 
@@ -105,7 +105,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
       html: ownerEmailHtml
     });
 
-    console.log('Emails sent successfully via Mailgun');
+    console.log('Email notifications sent successfully');
     return true;
   } catch (error) {
     console.error('Error sending emails via Mailgun:', error);
@@ -291,8 +291,8 @@ export async function sendPickupReadyEmail({
 }) {
   try {
     // Skip email sending during build time or if no API key
-    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'dummy-key-for-build') {
-      console.log('Skipping pickup email sending - no valid Resend API key');
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping pickup email sending - no valid Mailgun API key');
       return true;
     }
 
@@ -458,8 +458,8 @@ export async function sendStatusUpdateEmail({
 }) {
   try {
     // Skip email sending during build time or if no API key
-    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'dummy-key-for-build') {
-      console.log('Skipping status email sending - no valid Resend API key');
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping status email sending - no valid Mailgun API key');
       return true;
     }
 
