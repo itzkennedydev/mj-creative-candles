@@ -18,7 +18,10 @@ export function rateLimit(
   maxRequests: number = 100,
   windowMs: number = 15 * 60 * 1000 // 15 minutes
 ): NextResponse | null {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || 
+             request.headers.get('x-real-ip') || 
+             request.headers.get('cf-connecting-ip') || 
+             'unknown';
   const now = Date.now();
   const windowStart = now - windowMs;
 
@@ -203,7 +206,10 @@ export function logSecurityEvent(
   event: string,
   details?: any
 ) {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || 
+             request.headers.get('x-real-ip') || 
+             request.headers.get('cf-connecting-ip') || 
+             'unknown';
   const userAgent = request.headers.get('user-agent') || 'unknown';
   
   console.log(`[SECURITY] ${event}`, {
