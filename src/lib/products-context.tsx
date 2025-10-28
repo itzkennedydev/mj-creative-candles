@@ -33,8 +33,14 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
         throw new Error('Failed to fetch products');
       }
       
-      const data = await response.json() as Product[];
-      setProducts(data);
+      interface ProductsResponseShape { products?: Product[] }
+      const raw = await response.json() as unknown;
+      const isProductsResponse = (val: unknown): val is ProductsResponseShape =>
+        typeof val === 'object' && val !== null && Array.isArray((val as { products?: unknown }).products);
+      const list: Product[] = Array.isArray(raw)
+        ? (raw as Product[])
+        : (isProductsResponse(raw) ? raw.products ?? [] : []);
+      setProducts(list);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch products');
       console.error('Error fetching products:', err);

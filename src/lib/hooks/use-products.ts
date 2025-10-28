@@ -2,8 +2,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Product } from '~/lib/types';
 
 interface ProductsResponse {
-  products: Product[];
-  total: number;
+  success?: boolean;
+  products?: Product[];
+  total?: number;
 }
 
 async function fetchProducts(): Promise<Product[]> {
@@ -13,7 +14,17 @@ async function fetchProducts(): Promise<Product[]> {
     throw new Error('Failed to fetch products');
   }
 
-  return await response.json() as Product[];
+  const data = await response.json() as unknown;
+  // Support both array and { success, products } shapes
+  if (Array.isArray(data)) {
+    return data as Product[];
+  }
+  const obj = data as ProductsResponse;
+  if (Array.isArray(obj.products)) {
+    return obj.products;
+  }
+  // Fallback to empty array to avoid runtime map errors
+  return [];
 }
 
 export function useProductsQuery() {
