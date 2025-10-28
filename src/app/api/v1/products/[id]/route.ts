@@ -3,14 +3,25 @@ import { NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+interface ProductImage {
+  id: string;
+  imageId: string;
+  dataUri: string;
+  mimeType: string;
+  filename: string;
+}
+
 interface Product {
   _id?: ObjectId;
   name: string;
   description: string;
   price: number;
   category: string;
-  images: string[];
+  images: ProductImage[] | string[]; // Support both formats during migration
   isActive: boolean;
+  inStock?: boolean;
+  sizes?: string[];
+  colors?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,19 +56,51 @@ export async function GET(
       );
     }
     
-    // Transform product to use 'id' instead of '_id' and 'image' instead of 'images'
-    const transformedProduct = {
-      id: product._id?.toString(),
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      category: product.category,
-      image: product.images && product.images.length > 0 ? product.images[0] : null,
-      images: product.images,
-      isActive: product.isActive,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt
-    };
+    // Transform product to use 'id' instead of '_id' and create proper ProductImage objects
+    const transformedProduct = (() => {
+      // Handle both old format (string array) and new format (ProductImage array)
+      let images: ProductImage[] = [];
+      let image = '';
+      let imageId: string | null = null;
+      
+      if (product.images && product.images.length > 0) {
+        if (typeof product.images[0] === 'string') {
+          // Old format: array of strings
+          const stringImages = product.images as string[];
+          images = stringImages.map((url: string, index: number) => ({
+            id: `img_${index}`,
+            imageId: `img_${index}`,
+            dataUri: url,
+            mimeType: 'image/jpeg',
+            filename: `image_${index}.jpg`
+          }));
+          image = stringImages[0] || '';
+          imageId = `img_0`;
+        } else {
+          // New format: array of ProductImage objects
+          images = product.images as ProductImage[];
+          image = images[0]?.dataUri || '';
+          imageId = images[0]?.imageId || null;
+        }
+      }
+      
+      return {
+        id: product._id?.toString(),
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        category: product.category,
+        image,
+        imageId,
+        images,
+        isActive: product.isActive,
+        inStock: product.inStock !== undefined ? product.inStock : true,
+        sizes: product.sizes || [],
+        colors: product.colors || [],
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt
+      };
+    })();
     
     return NextResponse.json({ product: transformedProduct });
     
