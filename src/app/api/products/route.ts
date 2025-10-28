@@ -28,7 +28,10 @@ export async function GET() {
       colors: product.colors
     }));
     
-    return NextResponse.json(mappedProducts);
+    return NextResponse.json({
+      success: true,
+      products: mappedProducts
+    });
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(

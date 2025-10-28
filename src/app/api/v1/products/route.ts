@@ -118,6 +118,7 @@ export async function GET(request: NextRequest) {
     const hasPrevPage = page > 1;
     
     return NextResponse.json({
+      success: true,
       products: transformedProducts,
       totalCount,
       page,
