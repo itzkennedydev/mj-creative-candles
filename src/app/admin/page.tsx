@@ -566,7 +566,12 @@ export default function AdminPage() {
   };
 
   const handleConfirmImageSelection = () => {
-    console.log('handleConfirmImageSelection called with:', { selectedImages, imageSelectionMode });
+    console.log('handleConfirmImageSelection called with:', { 
+      selectedImages, 
+      imageSelectionMode,
+      selectedImagesLength: selectedImages.length,
+      currentEditProductImages: editProduct.images?.length ?? 0
+    });
     
     if (selectedImages.length === 0) {
       addToast({
@@ -581,11 +586,16 @@ export default function AdminPage() {
       // Set first selected image as primary
       const primaryImage = selectedImages[0];
       if (primaryImage) {
-        setEditProduct(prev => ({ 
-          ...prev, 
-          image: primaryImage.dataUri, 
-          imageId: primaryImage.imageId 
-        }));
+        console.log('Setting primary image:', primaryImage);
+        setEditProduct(prev => {
+          const updated = { 
+            ...prev, 
+            image: primaryImage.dataUri, 
+            imageId: primaryImage.imageId 
+          };
+          console.log('Updated editProduct for primary:', updated);
+          return updated;
+        });
         addToast({
           title: "Primary Image Set",
           description: "Image has been set as primary",
@@ -594,10 +604,15 @@ export default function AdminPage() {
       }
     } else {
       // Add all selected images as additional images
-      setEditProduct(prev => ({ 
-        ...prev, 
-        images: [...(prev.images || []), ...selectedImages]
-      }));
+      console.log('Adding additional images:', selectedImages);
+      setEditProduct(prev => {
+        const updated = { 
+          ...prev, 
+          images: [...(prev.images || []), ...selectedImages]
+        };
+        console.log('Updated editProduct for additional:', updated);
+        return updated;
+      });
       addToast({
         title: "Images Added",
         description: `${selectedImages.length} image(s) added to product gallery`,
