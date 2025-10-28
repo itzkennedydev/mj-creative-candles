@@ -92,13 +92,28 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Get the base URL dynamically
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+      (request.headers.get('origin') ?? 
+       request.headers.get('referer')?.replace(/\/[^\/]*$/, '') ?? 
+       'http://localhost:3000');
+
+    console.log('🔗 Stripe checkout URLs:', {
+      baseUrl,
+      successUrl: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${baseUrl}/shop/checkout`,
+      origin: request.headers.get('origin'),
+      referer: request.headers.get('referer'),
+      nextPublicBaseUrl: process.env.NEXT_PUBLIC_BASE_URL
+    });
+
     // Create Stripe Checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/shop/checkout`,
+      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/shop/checkout`,
       customer_email: customerEmail,
       metadata: {
         orderId: orderId,
