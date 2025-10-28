@@ -566,6 +566,8 @@ export default function AdminPage() {
   };
 
   const handleConfirmImageSelection = () => {
+    console.log('handleConfirmImageSelection called with:', { selectedImages, imageSelectionMode });
+    
     if (selectedImages.length === 0) {
       addToast({
         title: "No Images Selected",
@@ -579,11 +581,11 @@ export default function AdminPage() {
       // Set first selected image as primary
       const primaryImage = selectedImages[0];
       if (primaryImage) {
-        setEditProduct({ 
-          ...editProduct, 
+        setEditProduct(prev => ({ 
+          ...prev, 
           image: primaryImage.dataUri, 
           imageId: primaryImage.imageId 
-        });
+        }));
         addToast({
           title: "Primary Image Set",
           description: "Image has been set as primary",
@@ -592,10 +594,10 @@ export default function AdminPage() {
       }
     } else {
       // Add all selected images as additional images
-      setEditProduct({ 
-        ...editProduct, 
-        images: [...editProduct.images, ...selectedImages]
-      });
+      setEditProduct(prev => ({ 
+        ...prev, 
+        images: [...(prev.images || []), ...selectedImages]
+      }));
       addToast({
         title: "Images Added",
         description: `${selectedImages.length} image(s) added to product gallery`,
