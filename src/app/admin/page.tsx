@@ -2588,12 +2588,22 @@ export default function AdminPage() {
               <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
                 Asset Gallery
               </h2>
-              <Button
-                onClick={() => setShowAssetGallery(false)}
-                className="p-2 md:p-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 transition-all duration-200"
-              >
-                <X className="h-4 w-4 md:h-5 md:w-5" />
-              </Button>
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={handleRefreshGallery}
+                  disabled={galleryLoading}
+                  variant="outline"
+                  className="p-2 md:p-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 transition-all duration-200"
+                >
+                  <Activity className="h-4 w-4 md:h-5 md:w-5" />
+                </Button>
+                <Button
+                  onClick={() => setShowAssetGallery(false)}
+                  className="p-2 md:p-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 transition-all duration-200"
+                >
+                  <X className="h-4 w-4 md:h-5 md:w-5" />
+                </Button>
+              </div>
             </div>
             
             {galleryLoading ? (
