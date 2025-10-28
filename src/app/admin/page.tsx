@@ -2302,8 +2302,24 @@ export default function AdminPage() {
                                 height={100}
                                 className="w-full h-20 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:border-[#74CADC] transition-all"
                                 onClick={() => {
-                                  // Set as primary image
-                                  const newImages = editProduct.images.filter(i => i.id !== img.id);
+                                  // Set as primary image - swap with current primary
+                                  const currentPrimaryImage = editProduct.image;
+                                  const currentPrimaryImageId = editProduct.imageId;
+                                  
+                                  // Create new images array with the old primary added back (if it exists)
+                                  let newImages = editProduct.images.filter(i => i.id !== img.id);
+                                  
+                                  // Add the old primary image back to the additional images (if it exists and is different)
+                                  if (currentPrimaryImage && currentPrimaryImageId && currentPrimaryImageId !== img.imageId) {
+                                    newImages = [...newImages, {
+                                      id: Date.now().toString(), // Temporary ID for the swapped image
+                                      imageId: currentPrimaryImageId,
+                                      dataUri: currentPrimaryImage,
+                                      mimeType: img.mimeType, // Use same mime type as a fallback
+                                      filename: `primary_image.png` // Fallback filename
+                                    }];
+                                  }
+                                  
                                   setEditProduct(prev => ({
                                     ...prev,
                                     image: img.dataUri,
