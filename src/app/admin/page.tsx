@@ -2826,7 +2826,12 @@ export default function AdminPage() {
                       isSelected ? 'border-[#74CADC]' : 'border-gray-200 hover:border-gray-300'
                     }`}>
                       <button
-                        onClick={() => handleToggleImageSelection(image)}
+                        onClick={(e) => {
+                          console.log('Button clicked for image:', image);
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleToggleImageSelection(image);
+                        }}
                         className="w-full h-full relative"
                       >
                         <Image
