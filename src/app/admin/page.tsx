@@ -463,11 +463,11 @@ export default function AdminPage() {
 
     setIsUploading(true);
     try {
-      // Upload to MongoDB
+      // Upload to public folder
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/images/upload', {
+      const response = await fetch('/api/admin/upload', {
         method: 'POST',
         headers: {
           'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
@@ -479,7 +479,7 @@ export default function AdminPage() {
         throw new Error('Failed to upload image');
       }
 
-      const uploadedImage = await response.json() as { dataUri: string; id: string; mimeType: string; filename: string; size: number };
+      const uploadedImage = await response.json() as { url: string; filename: string; mimeType: string; size: number };
       
       // Update with the uploaded image data
       // If there's already a primary image, add this as an additional image
@@ -489,8 +489,8 @@ export default function AdminPage() {
           ...editProduct, 
           images: [...(editProduct.images || []), {
             id: Date.now().toString(),
-            imageId: uploadedImage.id,
-            dataUri: uploadedImage.dataUri,
+            imageId: uploadedImage.filename,
+            dataUri: uploadedImage.url,
             mimeType: uploadedImage.mimeType,
             filename: uploadedImage.filename
           }]
@@ -501,7 +501,7 @@ export default function AdminPage() {
           type: "success"
         });
       } else {
-        setEditProduct({ ...editProduct, image: uploadedImage.dataUri, imageId: uploadedImage.id });
+        setEditProduct({ ...editProduct, image: uploadedImage.url, imageId: uploadedImage.filename });
         addToast({
           title: "Image Uploaded",
           description: "Image has been set as primary",
