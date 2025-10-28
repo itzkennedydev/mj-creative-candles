@@ -538,31 +538,29 @@ export default function AdminPage() {
       return;
     }
     
-    const isSelected = selectedImages.some(img => img.imageId === image.imageId);
-    console.log('isSelected:', isSelected, 'selectedImages:', selectedImages);
-    
-    if (isSelected) {
-      // Remove from selection
-      setSelectedImages(prev => {
+    setSelectedImages(prev => {
+      const isSelected = prev.some(img => img.imageId === image.imageId);
+      console.log('isSelected:', isSelected, 'current selectedImages length:', prev.length);
+      
+      if (isSelected) {
+        // Remove from selection
         const filtered = prev.filter(img => img.imageId !== image.imageId);
         console.log('Removed from selection. New length:', filtered.length);
         return filtered;
-      });
-    } else {
-      // Add to selection
-      const newImage: ProductImage = {
-        id: image.id,
-        imageId: image.imageId,
-        dataUri: image.dataUri,
-        mimeType: image.mimeType,
-        filename: image.filename
-      };
-      setSelectedImages(prev => {
+      } else {
+        // Add to selection
+        const newImage: ProductImage = {
+          id: image.id,
+          imageId: image.imageId,
+          dataUri: image.dataUri,
+          mimeType: image.mimeType,
+          filename: image.filename
+        };
         const updated = [...prev, newImage];
-        console.log('Added to selection. New length:', updated.length);
+        console.log('Added to selection. New length:', updated.length, 'updated array:', updated);
         return updated;
-      });
-    }
+      }
+    });
   };
 
   const handleConfirmImageSelection = () => {
