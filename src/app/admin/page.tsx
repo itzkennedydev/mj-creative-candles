@@ -91,6 +91,7 @@ export default function AdminPage() {
   const [showAssetGallery, setShowAssetGallery] = useState(false);
   const [imageSelectionMode, setImageSelectionMode] = useState<'primary' | 'additional'>('primary');
   const [selectedImages, setSelectedImages] = useState<ProductImage[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Get gallery images from TanStack Query (with caching)
   const galleryImages = galleryData?.images ?? [];
@@ -454,10 +455,8 @@ export default function AdminPage() {
       return;
     }
 
+    setIsUploading(true);
     try {
-      // Show preview
-      const imageUrl = URL.createObjectURL(file);
-
       // Upload to MongoDB
       const formData = new FormData();
       formData.append('file', file);
@@ -510,6 +509,8 @@ export default function AdminPage() {
         description: "Failed to upload image. Please try again.",
         type: "error"
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -2430,12 +2431,18 @@ export default function AdminPage() {
                         className="hidden"
                       />
                       
-                      {editProduct.image ? (
+                      {isUploading ? (
+                        <div className="flex flex-col items-center justify-center py-8">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#74CADC] mb-4"></div>
+                          <p className="text-gray-600">Uploading image...</p>
+                        </div>
+                      ) : editProduct.image ? (
                         <div className="space-y-4">
                           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center">
                             <Button
                               type="button"
                               onClick={() => editFileInputRef.current?.click()}
+                              disabled={isUploading}
                               className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 hover:border-gray-400 px-4 md:px-6 py-2 md:py-3 transition-all duration-200 flex items-center justify-center"
                             >
                               <Upload className="h-4 w-4 mr-2 md:mr-3" />
@@ -2447,6 +2454,7 @@ export default function AdminPage() {
                                 setImageSelectionMode('primary');
                                 handleOpenGallery('primary');
                               }}
+                              disabled={isUploading}
                               className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-300 hover:border-gray-400 px-4 md:px-6 py-2 md:py-3 transition-all duration-200 flex items-center justify-center"
                             >
                               <ImageIcon className="h-4 w-4 mr-2 md:mr-3" />
