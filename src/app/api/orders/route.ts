@@ -131,30 +131,52 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .toArray();
 
-    // Serialize orders properly for JSON response
+    // Transform orders to match iOS Order model
     const serializedOrders = orders.map(order => {
-      const serialized = {
-        ...order,
-        _id: order._id.toString(),
+      // Transform order items to match iOS OrderItem model
+      const transformedItems = order.items.map(item => ({
+        productId: item.productId || '',
+        productName: item.productName,
+        quantity: item.quantity,
+        price: item.productPrice,
+        customizations: item.selectedSize ? `Size: ${item.selectedSize}` : undefined
+      }));
+
+      return {
+        id: order._id.toString(),
+        customerName: `${order.customer.firstName} ${order.customer.lastName}`,
+        customerEmail: order.customer.email,
+        customerPhone: order.customer.phone,
+        items: transformedItems,
+        totalAmount: order.total,
+        status: order.status,
+        orderDate: order.createdAt instanceof Date ? order.createdAt.toISOString() : order.createdAt,
         createdAt: order.createdAt instanceof Date ? order.createdAt.toISOString() : order.createdAt,
         updatedAt: order.updatedAt instanceof Date ? order.updatedAt.toISOString() : order.updatedAt,
+        // Keep original fields for backward compatibility
+        _id: order._id.toString(),
+        orderNumber: order.orderNumber,
+        customer: order.customer,
+        shipping: order.shipping,
+        subtotal: order.subtotal,
+        tax: order.tax,
+        shippingCost: order.shippingCost,
+        total: order.total,
+        paymentMethod: order.paymentMethod,
+        notes: order.notes,
+        paidAt: order.paidAt ? (order.paidAt instanceof Date ? order.paidAt.toISOString() : order.paidAt) : undefined
       };
-      
-      if (order.paidAt) {
-        Object.assign(serialized, {
-          paidAt: order.paidAt instanceof Date ? order.paidAt.toISOString() : order.paidAt
-        });
-      }
-      
-      return serialized;
     });
 
     return NextResponse.json({
       success: true,
       orders: serializedOrders,
-      total: total,
+      totalCount: total,
+      page: page,
+      limit: limit,
       totalPages: totalPages,
-      currentPage: page
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1
     });
 
   } catch (error) {
