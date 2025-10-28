@@ -23,7 +23,9 @@ export interface Product {
 // Helper function to get optimized image URL
 export function getOptimizedImageUrl(imageId: string, dataUri: string, width: number = 800): string {
   // If we have an imageId, use the optimization endpoint
-  if (imageId && imageId !== '') {
+  if (imageId && imageId !== '' && imageId.length > 10) {
+    // Only use optimization endpoint if we have a valid MongoDB ObjectId
+    // This ensures old uploads without imageId still work
     return `/api/images/optimize?id=${imageId}&width=${width}&quality=75`;
   }
   // Otherwise, return the data URI as fallback

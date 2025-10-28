@@ -27,10 +27,20 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addToast } = useToast();
 
   // Create array of all images including primary with optimized URLs
+  // Only use optimization endpoint if we have an imageId, otherwise use the dataUri directly
+  const getImageUrl = (imageId: string, dataUri: string) => {
+    // If it's a data URI and we have an imageId, use the optimization endpoint
+    if (dataUri.startsWith('data:') && imageId) {
+      return getOptimizedImageUrl(imageId, dataUri, 600);
+    }
+    // Otherwise just return the dataUri as-is
+    return dataUri;
+  };
+
   const allImages = product.image ? [
-    { src: getOptimizedImageUrl(product.imageId || '', product.image, 600), isPrimary: true },
-    ...(product.images || []).map(img => ({ src: getOptimizedImageUrl(img.imageId, img.dataUri, 600), isPrimary: false }))
-  ] : (product.images || []).map(img => ({ src: getOptimizedImageUrl(img.imageId, img.dataUri, 600), isPrimary: false }));
+    { src: getImageUrl(product.imageId || '', product.image), isPrimary: true },
+    ...(product.images || []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }))
+  ] : (product.images || []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }));
 
   // Calculate price with XXL surcharge
   const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : 0);
