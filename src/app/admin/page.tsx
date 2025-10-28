@@ -2470,30 +2470,6 @@ export default function AdminPage() {
                 </div>
 
 
-                {/* Description */}
-                <div>
-                  <label className="block text-base font-medium text-gray-900 mb-3">
-                    Description
-                  </label>
-                  <textarea
-                    value={editProduct.description}
-                    onChange={(e) => setEditProduct({...editProduct, description: e.target.value})}
-                    rows={3}
-                    className="w-full px-3 md:px-4 py-3 md:py-4 text-base md:text-lg border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all duration-200 resize-none"
-                    placeholder="Product description"
-                  />
-                </div>
-
-                {/* Stock Status */}
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={editProduct.inStock}
-                    onChange={(e) => setEditProduct({...editProduct, inStock: e.target.checked})}
-                    className="w-5 h-5 rounded border-gray-300 text-gray-900 focus:ring-gray-300"
-                  />
-                  <span className="text-base font-medium text-gray-700">In Stock</span>
-                </div>
               </div>
 
               {/* Right Column - Sizes & Colors */}
@@ -2525,6 +2501,31 @@ export default function AdminPage() {
                     className="w-full px-3 md:px-4 py-3 md:py-4 text-base md:text-lg border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all duration-200"
                     placeholder="0.00"
                   />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-base font-medium text-gray-900 mb-3">
+                    Description
+                  </label>
+                  <textarea
+                    value={editProduct.description}
+                    onChange={(e) => setEditProduct({...editProduct, description: e.target.value})}
+                    rows={3}
+                    className="w-full px-3 md:px-4 py-3 md:py-4 text-base md:text-lg border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all duration-200 resize-none"
+                    placeholder="Product description"
+                  />
+                </div>
+
+                {/* Stock Status */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={editProduct.inStock}
+                    onChange={(e) => setEditProduct({...editProduct, inStock: e.target.checked})}
+                    className="w-5 h-5 rounded border-gray-300 text-gray-900 focus:ring-gray-300"
+                  />
+                  <span className="text-base font-medium text-gray-700">In Stock</span>
                 </div>
 
                 {/* Sizes */}
