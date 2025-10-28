@@ -86,6 +86,7 @@ export default function AdminPage() {
   const [showAssetGallery, setShowAssetGallery] = useState(false);
   const [galleryImages, setGalleryImages] = useState<ProductImage[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryInitialized, setGalleryInitialized] = useState(false);
   
   const [settings, setSettings] = useState<AdminSettings>({
     taxRate: 8.5,
@@ -143,12 +144,12 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Load gallery images when gallery tab is active
+  // Load gallery images when gallery tab is active for the first time
   useEffect(() => {
-    if (activeSection === 'gallery' && galleryImages.length === 0) {
+    if (activeSection === 'gallery' && !galleryInitialized) {
       void fetchGalleryImages();
     }
-  }, [activeSection, galleryImages.length]);
+  }, [activeSection, galleryInitialized]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -526,11 +527,14 @@ export default function AdminPage() {
         const data = await response.json() as { images: ProductImage[] };
         console.log('Gallery images fetched:', data.images.length);
         setGalleryImages(data.images);
+        setGalleryInitialized(true);
       } else {
         console.error('Failed to fetch gallery images:', response.status);
+        setGalleryInitialized(true);
       }
     } catch (err) {
       console.error('Error fetching gallery images:', err);
+      setGalleryInitialized(true);
     } finally {
       setGalleryLoading(false);
     }
@@ -1697,10 +1701,10 @@ export default function AdminPage() {
   );
 
   const renderGallery = () => {
-    console.log('Rendering gallery, images:', galleryImages.length, 'loading:', galleryLoading);
+    console.log('Rendering gallery, images:', galleryImages.length, 'loading:', galleryLoading, 'initialized:', galleryInitialized);
     
-    // Show loading state during initial fetch or if we don't have images yet
-    if (galleryLoading || galleryImages.length === 0) {
+    // Show loading state until we've checked for images
+    if (galleryLoading || !galleryInitialized) {
       return (
         <div className="space-y-8">
           {/* Page Header */}
