@@ -594,7 +594,34 @@ export default function AdminPage() {
     setSelectedImages([]);
   };
 
-  // Removed handleGalleryImageClick - now using toggle selection instead
+  const handleGalleryImageClick = (image: ProductImage) => {
+    if (image && image.dataUri && image.imageId) {
+      console.log('Gallery image clicked:', image);
+      
+      // Set the image in the product form
+      setEditProduct((prev) => ({ 
+        ...prev, 
+        image: image.dataUri, 
+        imageId: image.imageId 
+      }));
+      
+      // Switch to products tab and open the modal
+      setActiveSection('products');
+      setIsEditingMode(false);
+      setEditingProduct(null);
+      
+      // Small delay to ensure state updates before opening modal
+      setTimeout(() => {
+        setShowEditModal(true);
+      }, 100);
+      
+      addToast({
+        title: "Image Selected",
+        description: "Image has been added to product form",
+        type: "success"
+      });
+    }
+  };
 
   const handleDeleteImage = async (image: ProductImage) => {
     if (confirm(`Are you sure you want to delete this image?`)) {
