@@ -117,7 +117,22 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="bg-white h-full flex flex-col">
+    <article className="bg-white h-full flex flex-col" itemScope itemType="https://schema.org/Product">
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateProductStructuredData({
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            price: displayPrice,
+            image: allImages[0]?.src || '/placeholder.jpg',
+            inStock: product.inStock,
+            brand: 'Stitch Please',
+          })),
+        }}
+      />
       {/* Product Image */}
         <div className="aspect-square relative mb-6 rounded-lg overflow-hidden flex-shrink-0"
              onTouchStart={handleTouchStart}
@@ -190,10 +205,12 @@ export function ProductCard({ product }: ProductCardProps) {
             <p className="text-sm md:text-base text-gray-600 line-clamp-3" itemProp="description">{product.description}</p>
           </div>
           
-          <div className="text-xl md:text-2xl font-medium text-gray-900 flex-shrink-0" itemProp="offers" itemScope itemType="https://schema.org/Offer">
-            <span itemProp="price" content={displayPrice.toString()}>${displayPrice.toFixed(2)}</span>
-            <meta itemProp="priceCurrency" content="USD" />
-            <meta itemProp="availability" content={product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+          <div className="text-xl md:text-2xl font-medium text-gray-900 flex-shrink-0">
+            <span itemProp="offers" itemScope itemType="https://schema.org/Offer">
+              <span itemProp="price" content={displayPrice.toString()}>${displayPrice.toFixed(2)}</span>
+              <meta itemProp="priceCurrency" content="USD" />
+              <meta itemProp="availability" content={product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+            </span>
           </div>
 
         {/* Size Selection */}
@@ -276,6 +293,5 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
     </article>
-    </>
   );
 }

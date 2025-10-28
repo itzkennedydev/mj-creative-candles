@@ -2323,13 +2323,15 @@ export default function AdminPage() {
                             onClick={() => {
                               // If there are additional images, make the first one the primary
                               if (editProduct.images && editProduct.images.length > 0) {
-                                const newPrimary = editProduct.images[0];
-                                setEditProduct({
-                                  ...editProduct,
-                                  image: newPrimary.dataUri,
-                                  imageId: newPrimary.imageId,
-                                  images: editProduct.images.slice(1) // Remove the now-primary image from additional
-                                });
+                                const newPrimary = editProduct.images?.[0];
+                                if (newPrimary) {
+                                  setEditProduct({
+                                    ...editProduct,
+                                    image: newPrimary.dataUri,
+                                    imageId: newPrimary.imageId,
+                                    images: editProduct.images?.slice(1) || [] // Remove the now-primary image from additional
+                                  });
+                                }
                                 addToast({
                                   title: "Primary Image Updated",
                                   description: "Next image has been set as primary",
