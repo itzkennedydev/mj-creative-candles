@@ -26,6 +26,7 @@ import { useToast } from "~/lib/toast-context";
 import type { Product } from "~/lib/types";
 import type { Order } from "~/lib/order-types";
 import { useOrders, useUpdateOrderStatus, useSendPickupNotification, useSendStatusEmail } from "~/lib/hooks/use-orders";
+import { env } from "~/env";
 
 interface AdminSettings {
   taxRate: number;
@@ -37,7 +38,7 @@ interface AdminSettings {
 }
 
 export default function AdminPage() {
-  const { products, updateProduct, deleteProduct, loading: productsLoading, error: productsError } = useProducts();
+  const { products, addProduct, updateProduct, deleteProduct, loading: productsLoading, error: productsError } = useProducts();
   const { addToast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -76,7 +77,8 @@ export default function AdminPage() {
     inStock: true,
     sizes: [] as string[],
     colors: [] as string[],
-    image: ""
+    image: "",
+    imageId: "" as string | undefined
   });
   const editFileInputRef = useRef<HTMLInputElement>(null);
   
@@ -345,7 +347,8 @@ export default function AdminPage() {
       inStock: product.inStock,
       sizes: product.sizes ?? [],
       colors: product.colors ?? [],
-      image: product.image ?? ""
+      image: product.image ?? "",
+      imageId: product.imageId
     });
     // Finally open the modal
     setShowEditModal(true);
@@ -361,35 +364,111 @@ export default function AdminPage() {
       return;
     }
     
-    if (editingProduct) {
-      try {
+    try {
+      if (editingProduct) {
+        // Update existing product
         await updateProduct(editingProduct, editProduct);
         addToast({
           title: "Product Updated",
           description: "Product has been updated successfully!",
           type: "success"
         });
-    } catch {
+      } else {
+        // Create new product
+        await addProduct({
+          name: editProduct.name,
+          price: editProduct.price,
+          description: editProduct.description,
+          inStock: editProduct.inStock,
+          sizes: editProduct.sizes,
+          colors: editProduct.colors,
+          image: editProduct.image,
+          category: 'Apparel' // Default category
+        });
+        addToast({
+          title: "Product Created",
+          description: "Product has been created successfully!",
+          type: "success"
+        });
+      }
+      setEditingProduct(null);
+      setIsEditingMode(false);
+      setEditProduct({ name: "", price: 0, description: "", inStock: true, sizes: [], colors: [], image: "", imageId: "" });
+      setShowEditModal(false);
+    } catch (err) {
+      console.error('Error saving product:', err);
       addToast({
         title: "Error",
-        description: "Failed to update product. Please try again.",
+        description: `Failed to ${editingProduct ? 'update' : 'create'} product. Please try again.`,
+        type: "error"
+      });
+    }
+  };
+
+  const handleEditImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      addToast({
+        title: "Invalid File Type",
+        description: "Please upload a JPEG, PNG, GIF, or WEBP image",
         type: "error"
       });
       return;
     }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      addToast({
+        title: "File Too Large",
+        description: "Maximum file size is 5MB",
+        type: "error"
+      });
+      return;
     }
-    setEditingProduct(null);
-    setIsEditingMode(false);
-    setEditProduct({ name: "", price: 0, description: "", inStock: true, sizes: [], colors: [], image: "" });
-    setShowEditModal(false);
-  };
 
-  const handleEditImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    try {
+      // Show preview
+      const imageUrl = URL.createObjectURL(file);
+      setEditProduct({ ...editProduct, image: imageUrl });
 
-    const imageUrl = URL.createObjectURL(file);
-    setEditProduct({ ...editProduct, image: imageUrl });
+      // Upload to MongoDB
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/images/upload', {
+        method: 'POST',
+        headers: {
+          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const uploadedImage = await response.json() as { dataUri: string; id: string; mimeType: string; filename: string; size: number };
+      // Update with the uploaded image data
+      setEditProduct({ ...editProduct, image: uploadedImage.dataUri, imageId: uploadedImage.id });
+      
+      addToast({
+        title: "Image Uploaded",
+        description: "Image has been uploaded successfully",
+        type: "success"
+      });
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      addToast({
+        title: "Upload Failed",
+        description: "Failed to upload image. Please try again.",
+        type: "error"
+      });
+    }
   };
 
   const handleDeleteProduct = async (id: string) => {
@@ -874,7 +953,8 @@ export default function AdminPage() {
                 inStock: true,
                 sizes: [],
                 colors: [],
-                image: ""
+                image: "",
+                imageId: ""
               });
               setShowEditModal(true);
             }}

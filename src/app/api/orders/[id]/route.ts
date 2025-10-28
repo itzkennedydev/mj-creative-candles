@@ -34,9 +34,18 @@ export async function GET(
       );
     }
 
+    // Serialize order properly for JSON response
+    const serializedOrder = {
+      ...order,
+      _id: order._id.toString(),
+      createdAt: order.createdAt instanceof Date ? order.createdAt.toISOString() : order.createdAt,
+      updatedAt: order.updatedAt instanceof Date ? order.updatedAt.toISOString() : order.updatedAt,
+      ...(order.paidAt && { paidAt: order.paidAt instanceof Date ? order.paidAt.toISOString() : order.paidAt })
+    };
+
     return NextResponse.json({
       success: true,
-      order: order
+      order: serializedOrder
     });
 
   } catch (error) {

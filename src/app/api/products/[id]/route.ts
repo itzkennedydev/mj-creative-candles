@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import type { Product } from '~/lib/types';
+import { authenticateRequest } from '~/lib/auth';
 
 // PUT /api/products/[id] - Update a product
 export async function PUT(
@@ -10,6 +11,16 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Authenticate request
+    const auth = await authenticateRequest(request);
+    
+    if (!auth.isAuthenticated || !auth.isAdmin) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json() as Partial<Product>;
     const { id: productId } = await params;
 
@@ -31,6 +42,7 @@ export async function PUT(
     if (body.description !== undefined) updateData.description = body.description;
     if (body.price !== undefined) updateData.price = body.price;
     if (body.image !== undefined) updateData.image = body.image;
+    if (body.imageId !== undefined) updateData.imageId = body.imageId;
     if (body.category !== undefined) updateData.category = body.category;
     if (body.inStock !== undefined) updateData.inStock = body.inStock;
     if (body.sizes !== undefined) updateData.sizes = body.sizes;
@@ -59,6 +71,7 @@ export async function PUT(
         description: updatedProduct.description,
         price: updatedProduct.price,
         image: updatedProduct.image,
+        imageId: updatedProduct.imageId,
         category: updatedProduct.category,
         inStock: updatedProduct.inStock,
         sizes: updatedProduct.sizes,
@@ -87,6 +100,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Authenticate request
+    const auth = await authenticateRequest(request);
+    
+    if (!auth.isAuthenticated || !auth.isAdmin) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 401 }
+      );
+    }
+
     const { id: productId } = await params;
 
     // Validate ObjectId

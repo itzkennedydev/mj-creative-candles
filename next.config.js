@@ -7,7 +7,7 @@ import "./src/env.js";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['scontent.cdninstagram.com', 'scontent-iad3-1.cdninstagram.com', 'scontent-iad3-2.cdninstagram.com'],
+    domains: ['scontent.cdninstagram.com', 'scontent-iad3-1.cdninstagram.com', 'scontent-iad3-2.cdninstagram.com', 'via.placeholder.com'],
   },
 };
 

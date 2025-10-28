@@ -3,7 +3,8 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  image: string;
+  image: string; // Can be a URI, data URI (base64), or file path
+  imageId?: string; // Optional MongoDB image document ID
   category: string;
   inStock: boolean;
   sizes?: string[];

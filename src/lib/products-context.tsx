@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { Product } from "./types";
+import { env } from "~/env";
 
 interface ProductsContextType {
   products: Product[];
@@ -54,6 +55,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD,
         },
         body: JSON.stringify(productData),
       });
@@ -77,6 +79,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD,
         },
         body: JSON.stringify(productData),
       });
@@ -102,6 +105,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       setError(null);
       const response = await fetch(`/api/products/${id}`, {
         method: 'DELETE',
+        headers: {
+          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD,
+        },
       });
 
       if (!response.ok) {

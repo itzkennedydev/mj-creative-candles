@@ -9,11 +9,25 @@ export async function GET() {
   try {
     const client = await clientPromise;
     const db = client.db('stitch_orders');
-    const productsCollection = db.collection<Product>('products');
+    const productsCollection = db.collection<any>('products');
 
     const products = await productsCollection.find({}).toArray();
     
-    return NextResponse.json(products);
+    // Map _id to id for frontend compatibility
+    const mappedProducts = products.map((product: any) => ({
+      id: product._id.toString(),
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      imageId: product.imageId,
+      category: product.category,
+      inStock: product.inStock,
+      sizes: product.sizes,
+      colors: product.colors
+    }));
+    
+    return NextResponse.json(mappedProducts);
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(
@@ -56,6 +70,7 @@ export async function POST(request: NextRequest) {
       description: body.description ?? '',
       price: body.price,
       image: body.image ?? '/placeholder-product.jpg',
+      imageId: body.imageId,
       category: body.category ?? 'Apparel',
       inStock: body.inStock ?? true,
       sizes: body.sizes ?? [],
@@ -66,12 +81,25 @@ export async function POST(request: NextRequest) {
     const result = await productsCollection.insertOne(product);
 
     if (result.insertedId) {
-      const newProduct: Product = {
-        id: result.insertedId.toString(),
-        ...product
-      };
+      // Fetch the created product with _id
+      const createdProduct = await productsCollection.findOne({ _id: result.insertedId });
       
-      return NextResponse.json(newProduct, { status: 201 });
+      if (createdProduct) {
+        const newProduct: Product = {
+          id: createdProduct._id.toString(),
+          name: createdProduct.name,
+          description: createdProduct.description,
+          price: createdProduct.price,
+          image: createdProduct.image,
+          imageId: createdProduct.imageId,
+          category: createdProduct.category,
+          inStock: createdProduct.inStock,
+          sizes: createdProduct.sizes,
+          colors: createdProduct.colors
+        };
+        
+        return NextResponse.json(newProduct, { status: 201 });
+      }
     }
 
     return NextResponse.json(

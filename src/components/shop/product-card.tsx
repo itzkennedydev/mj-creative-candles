@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import type { Product } from "~/lib/types";
 import { Button } from "~/components/ui/button";
@@ -21,6 +21,16 @@ export function ProductCard({ product }: ProductCardProps) {
 
   // Calculate price with XXL surcharge
   const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : 0);
+
+  // Set default selections when component mounts if there's only one option
+  useEffect(() => {
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      setSelectedSize(product.sizes[0]);
+    }
+    if (product.colors && product.colors.length > 0 && !selectedColor) {
+      setSelectedColor(product.colors[0]);
+    }
+  }, [product.sizes, product.colors]);
 
   const handleAddToCart = () => {
     if (product.sizes && product.sizes.length > 1 && !selectedSize) {
@@ -77,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Size Selection */}
-        {product.sizes && product.sizes.length > 1 && (
+        {product.sizes && product.sizes.length > 0 && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Size</label>
             <div className="flex flex-wrap gap-1 md:gap-2">
@@ -99,7 +109,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Color Selection */}
-        {product.colors && product.colors.length > 1 && (
+        {product.colors && product.colors.length > 0 && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Color</label>
             <div className="flex flex-wrap gap-1 md:gap-2">

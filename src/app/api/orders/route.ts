@@ -131,9 +131,27 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .toArray();
 
+    // Serialize orders properly for JSON response
+    const serializedOrders = orders.map(order => {
+      const serialized = {
+        ...order,
+        _id: order._id.toString(),
+        createdAt: order.createdAt instanceof Date ? order.createdAt.toISOString() : order.createdAt,
+        updatedAt: order.updatedAt instanceof Date ? order.updatedAt.toISOString() : order.updatedAt,
+      };
+      
+      if (order.paidAt) {
+        Object.assign(serialized, {
+          paidAt: order.paidAt instanceof Date ? order.paidAt.toISOString() : order.paidAt
+        });
+      }
+      
+      return serialized;
+    });
+
     return NextResponse.json({
       success: true,
-      orders: orders,
+      orders: serializedOrders,
       total: total,
       totalPages: totalPages,
       currentPage: page
