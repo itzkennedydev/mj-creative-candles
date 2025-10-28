@@ -21,6 +21,7 @@ export async function GET() {
       price: product.price,
       image: product.image,
       imageId: product.imageId,
+      images: product.images ?? [], // Include images array
       category: product.category,
       inStock: product.inStock,
       sizes: product.sizes,
@@ -71,6 +72,7 @@ export async function POST(request: NextRequest) {
       price: body.price,
       image: body.image ?? '/placeholder-product.jpg',
       imageId: body.imageId,
+      images: body.images ?? [], // Include images array
       category: body.category ?? 'Apparel',
       inStock: body.inStock ?? true,
       sizes: body.sizes ?? [],
