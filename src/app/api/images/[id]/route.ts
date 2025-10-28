@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
 import { authenticateRequest } from '~/lib/auth';
+import { ObjectId } from 'mongodb';
 
 interface ImageDocument {
   _id?: unknown;
@@ -23,11 +24,17 @@ export async function GET(
     }
 
     const { id } = await params;
+    
+    // Validate ObjectId
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid image ID' }, { status: 400 });
+    }
+
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const imagesCollection = db.collection<ImageDocument>('images');
 
-    const image = await imagesCollection.findOne({ _id: id });
+    const image = await imagesCollection.findOne({ _id: new ObjectId(id) });
 
     if (!image) {
       return NextResponse.json({ error: 'Image not found' }, { status: 404 });
@@ -59,18 +66,24 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    
+    // Validate ObjectId
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid image ID' }, { status: 400 });
+    }
+
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const imagesCollection = db.collection<ImageDocument>('images');
 
     // Check if image exists
-    const image = await imagesCollection.findOne({ _id: id });
+    const image = await imagesCollection.findOne({ _id: new ObjectId(id) });
     if (!image) {
       return NextResponse.json({ error: 'Image not found' }, { status: 404 });
     }
 
     // Delete the image
-    await imagesCollection.deleteOne({ _id: id });
+    await imagesCollection.deleteOne({ _id: new ObjectId(id) });
 
     // Also remove this image from any products that reference it
     const productsCollection = db.collection('products');
