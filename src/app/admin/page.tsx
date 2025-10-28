@@ -27,6 +27,7 @@ import type { Product, ProductImage } from "~/lib/types";
 import type { Order } from "~/lib/order-types";
 import { useOrders, useUpdateOrderStatus, useSendPickupNotification, useSendStatusEmail } from "~/lib/hooks/use-orders";
 import { useGallery } from "~/lib/hooks/use-gallery";
+import { useQueryClient } from '@tanstack/react-query';
 import { env } from "~/env";
 import { Image as ImageIcon } from "lucide-react";
 
@@ -45,6 +46,7 @@ export default function AdminPage() {
   
   // Use TanStack Query for gallery with caching
   const { data: galleryData, isLoading: isGalleryLoading, refetch: refetchGallery } = useGallery();
+  const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
@@ -702,15 +704,15 @@ export default function AdminPage() {
         throw new Error(errorData.error || 'Failed to delete image');
       }
 
-      // Refresh gallery after deletion
+      // Invalidate and refetch gallery data immediately
+      queryClient.invalidateQueries({ queryKey: ['gallery'] });
+      await refetchGallery();
+      
       addToast({
         title: "Image Deleted",
         description: "Image has been deleted successfully",
         type: "success"
       });
-      
-      // Refresh gallery in the background
-      await refetchGallery();
     } catch (err) {
       console.error('Error deleting image:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete image';
