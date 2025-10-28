@@ -1,9 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 interface Order {
-  _id?: string;
+  _id?: ObjectId;
   customerName: string;
   customerEmail: string;
   customerPhone?: string;
