@@ -524,7 +524,10 @@ export default function AdminPage() {
       
       if (response.ok) {
         const data = await response.json() as { images: ProductImage[] };
+        console.log('Gallery images fetched:', data.images.length);
         setGalleryImages(data.images);
+      } else {
+        console.error('Failed to fetch gallery images:', response.status);
       }
     } catch (err) {
       console.error('Error fetching gallery images:', err);
@@ -1675,7 +1678,9 @@ export default function AdminPage() {
     </div>
   );
 
-  const renderGallery = () => (
+  const renderGallery = () => {
+    console.log('Rendering gallery, images:', galleryImages.length, 'loading:', galleryLoading);
+    return (
     <div className="space-y-8">
       {/* Page Header */}
       <div className="flex items-center justify-between">
@@ -1739,7 +1744,8 @@ export default function AdminPage() {
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   const renderSettings = () => (
     <div className="space-y-8">
