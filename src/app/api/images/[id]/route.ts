@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { clientPromise } from '~/lib/mongodb';
-import { authenticateRequest } from '~/lib/middleware';
+import { authenticateRequest } from '~/lib/auth';
 
 interface ImageDocument {
   _id?: unknown;
