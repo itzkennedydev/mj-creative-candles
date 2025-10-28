@@ -1909,7 +1909,7 @@ export default function AdminPage() {
           <div className="flex items-center gap-3">
             {selectedImages.length > 0 && (
               <Button
-                onClick={handleConfirmGallerySelection}
+                onClick={handleConfirmImageSelection}
                 className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-4 py-2"
               >
                 Create Product ({selectedImages.length})
