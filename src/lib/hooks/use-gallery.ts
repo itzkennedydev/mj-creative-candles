@@ -11,7 +11,7 @@ interface GalleryResponse {
 }
 
 async function fetchGalleryImages(): Promise<GalleryResponse> {
-  const response = await fetch('/api/images/gallery?page=1&limit=50', {
+  const response = await fetch('/api/admin/gallery', {
     headers: {
       'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
     },

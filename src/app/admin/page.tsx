@@ -700,7 +700,7 @@ export default function AdminPage() {
     }
     
     try {
-      const response = await fetch(`/api/images/${image.imageId}`, {
+      const response = await fetch(`/api/admin/gallery?id=${image.imageId}`, {
         method: 'DELETE',
         headers: {
           'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
