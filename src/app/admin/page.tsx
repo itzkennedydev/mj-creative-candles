@@ -2380,6 +2380,16 @@ export default function AdminPage() {
                       </div>
                     )}
                     
+                    {/* Debug info */}
+                    {process.env.NODE_ENV === 'development' && (
+                      <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+                        Debug: images.length = {editProduct.images?.length ?? 0}
+                        {editProduct.images && editProduct.images.length > 0 && (
+                          <div>Images: {JSON.stringify(editProduct.images.map(img => ({ id: img.id, filename: img.filename })))}</div>
+                        )}
+                      </div>
+                    )}
+                    
                     {/* Image Guidelines */}
                     <div className="text-sm text-gray-500">
                       <p>• Recommended size: 800x800px or larger</p>
