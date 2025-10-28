@@ -30,10 +30,10 @@ export function ProductCard({ product }: ProductCardProps) {
   // Only use optimization endpoint if we have an imageId, otherwise use the dataUri directly
   const getImageUrl = (imageId: string, dataUri: string) => {
     // If it's a data URI and we have an imageId, use the optimization endpoint
-    if (dataUri.startsWith('data:') && imageId) {
+    if (dataUri.startsWith('data:') && imageId && imageId.length > 10) {
       return getOptimizedImageUrl(imageId, dataUri, 600);
     }
-    // Otherwise just return the dataUri as-is
+    // Otherwise just return the dataUri as-is (for old uploads or direct data URIs)
     return dataUri;
   };
 
