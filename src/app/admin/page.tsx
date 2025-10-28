@@ -697,7 +697,8 @@ export default function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete image');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete image');
       }
 
       // Refresh gallery after deletion
@@ -710,9 +711,10 @@ export default function AdminPage() {
       });
     } catch (err) {
       console.error('Error deleting image:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete image';
       addToast({
         title: "Error",
-        description: "Failed to delete image. Please try again.",
+        description: errorMessage,
         type: "error"
       });
     }
