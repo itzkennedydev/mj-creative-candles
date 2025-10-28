@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import type { Product } from "~/lib/types";
 import { Button } from "~/components/ui/button";
-import { ShoppingCart, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
 import { useToast } from "~/lib/toast-context";
 
@@ -17,6 +17,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
   const { addItem } = useCart();
   const { addToast } = useToast();
 
@@ -44,6 +47,45 @@ export function ProductCard({ product }: ProductCardProps) {
       }
     }
   }, [product.sizes, product.colors, selectedSize, selectedColor]);
+
+  // Handle swipe gestures
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(0);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && currentImageIndex < allImages.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+    if (isRightSwipe && currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (currentImageIndex < allImages.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
 
   const handleAddToCart = () => {
     if (product.sizes && product.sizes.length > 1 && !selectedSize) {
@@ -74,19 +116,51 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="bg-white">
       {/* Product Image */}
-      <div className="aspect-square relative mb-6 rounded-lg overflow-hidden">
+      <div 
+        ref={imageContainerRef}
+        className="aspect-square relative mb-6 rounded-lg overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {allImages.length > 0 && (
           <Image
             src={allImages[currentImageIndex]?.src ?? '/placeholder.jpg'}
             alt={product.name}
             fill
             className="object-cover"
+            priority={currentImageIndex === 0} // Load first image with priority
+            loading={currentImageIndex === 0 ? undefined : 'lazy'}
           />
         )}
         {!product.inStock && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <span className="text-white font-medium">Out of Stock</span>
           </div>
+        )}
+        
+        {/* Navigation Arrows */}
+        {allImages.length > 1 && (
+          <>
+            {currentImageIndex > 0 && (
+              <button
+                onClick={handlePrevImage}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors z-10"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            )}
+            {currentImageIndex < allImages.length - 1 && (
+              <button
+                onClick={handleNextImage}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors z-10"
+                aria-label="Next image"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            )}
+          </>
         )}
         
         {/* Image Navigation Dots */}
@@ -99,6 +173,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 className={`w-2 h-2 rounded-full transition-all ${
                   currentImageIndex === idx ? 'bg-white w-8' : 'bg-white/50'
                 }`}
+                aria-label={`Go to image ${idx + 1}`}
               />
             ))}
           </div>
