@@ -67,7 +67,7 @@ export async function GET(
       updatedAt: order.updatedAt
     };
     
-    return NextResponse.json({ order: transformedOrder });
+    return NextResponse.json(transformedOrder);
     
   } catch (error) {
     console.error('Failed to fetch order:', error);
