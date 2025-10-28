@@ -2832,7 +2832,7 @@ export default function AdminPage() {
                           e.stopPropagation();
                           handleToggleImageSelection(image);
                         }}
-                        className="w-full h-full relative"
+                        className="w-full h-full relative z-0"
                       >
                         <Image
                           src={image.dataUri ?? ''}
@@ -2842,20 +2842,20 @@ export default function AdminPage() {
                           className="w-full h-full object-cover"
                         />
                         {isSelected && (
-                          <div className="absolute inset-0 bg-[#74CADC]/30 flex items-center justify-center">
+                          <div className="absolute inset-0 bg-[#74CADC]/30 flex items-center justify-center pointer-events-none z-10">
                             <div className="bg-[#74CADC] rounded-full p-3">
                               <CheckCircle className="h-8 w-8 text-white" />
                             </div>
                           </div>
                         )}
                         {!isSelected && (
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center pointer-events-none">
                             <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <ImageIcon className="h-8 w-8 text-white" />
                             </div>
                           </div>
                         )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                           {image.filename}
                         </div>
                       </button>
