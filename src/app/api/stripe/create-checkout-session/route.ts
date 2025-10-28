@@ -95,9 +95,9 @@ export async function POST(request: NextRequest) {
     // Get the base URL dynamically
     const origin = request.headers.get('origin');
     const referer = request.headers.get('referer');
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 
+    const baseUrl: string = process.env.NEXT_PUBLIC_BASE_URL ?? 
       origin ?? 
-      (referer ? referer.replace(/\/[^\/]*$/, '') : null) ?? 
+      (referer ? referer.replace(/\/[^\/]*$/, '') : 'http://localhost:3000') ?? 
       'http://localhost:3000';
 
     console.log('🔗 Stripe checkout URLs:', {
