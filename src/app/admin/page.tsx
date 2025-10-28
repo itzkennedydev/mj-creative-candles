@@ -2262,6 +2262,35 @@ export default function AdminPage() {
                     Product Image
                   </label>
                   <div className="space-y-4">
+                    {/* Additional Images Preview - moved to top */}
+                    {(editProduct.images && editProduct.images.length > 0) && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                          Additional Product Images ({editProduct.images.length})
+                        </label>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                          {editProduct.images.map((img) => (
+                            <div key={img.id} className="relative group">
+                              <Image
+                                src={img.dataUri}
+                                alt={img.filename}
+                                width={100}
+                                height={100}
+                                className="w-full h-20 object-cover rounded-lg border border-gray-300"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveProductImage(img.id)}
+                                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     {/* Image Preview */}
                     {editProduct.image && (
                       <div className="relative">
