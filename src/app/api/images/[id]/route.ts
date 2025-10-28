@@ -88,42 +88,40 @@ export async function DELETE(
     // Also remove this image from any products that reference it
     const productsCollection = db.collection('products');
     
-    // Find products that have this image
+    // Find products that have this image as primary
     const affectedProducts = await productsCollection.find({
-      $or: [
-        { imageId: id },
-        { 'images.imageId': id }
-      ]
+      imageId: id
     }).toArray();
 
-    // Update each affected product
+    // Update products that had this as primary image
     for (const product of affectedProducts) {
-      const update: any = {};
-      
-      // If this is the primary image, clear it and promote next image
-      if (product.imageId === id) {
-        update.$unset = { imageId: "", image: "" };
-        
-        // If there are additional images, promote the first one to primary
-        if (product.images && product.images.length > 0) {
-          const nextImage = product.images[0];
-          update.$set = {
-            image: nextImage.dataUri,
-            imageId: nextImage.imageId
-          };
-          // Remove the promoted image from the array
-          update.$pull = { images: { imageId: nextImage.imageId } };
-        }
+      if (product.images && product.images.length > 0) {
+        // Promote first additional image to primary
+        const nextImage = product.images[0];
+        await productsCollection.updateOne(
+          { _id: product._id },
+          { 
+            $set: { 
+              image: nextImage.dataUri,
+              imageId: nextImage.imageId
+            },
+            $pull: { images: { imageId: nextImage.imageId } }
+          }
+        );
       } else {
-        // Just remove from additional images array
-        update.$pull = { images: { imageId: id } };
+        // Clear primary image
+        await productsCollection.updateOne(
+          { _id: product._id },
+          { $unset: { imageId: "", image: "" } }
+        );
       }
-      
-      await productsCollection.updateOne(
-        { _id: product._id },
-        update
-      );
     }
+
+    // Remove from images array for all products
+    await productsCollection.updateMany(
+      {},
+      { $pull: { images: { imageId: id } } }
+    );
 
     return NextResponse.json({ success: true, message: 'Image deleted successfully' });
   } catch (error) {

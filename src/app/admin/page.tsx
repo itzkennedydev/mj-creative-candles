@@ -703,13 +703,14 @@ export default function AdminPage() {
       }
 
       // Refresh gallery after deletion
-      await refetchGallery();
-
       addToast({
         title: "Image Deleted",
         description: "Image has been deleted successfully",
         type: "success"
       });
+      
+      // Refresh gallery in the background
+      await refetchGallery();
     } catch (err) {
       console.error('Error deleting image:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete image';
