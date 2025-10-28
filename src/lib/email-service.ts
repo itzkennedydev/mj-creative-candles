@@ -6,7 +6,7 @@ import { env } from '~/env.js';
 const mailgun = new Mailgun(FormData);
 const mg = mailgun.client({
   username: 'api',
-  key: env.MAILGUN_API_KEY,
+  key: String(env.MAILGUN_API_KEY),
   url: 'https://api.mailgun.net'
 });
 
@@ -88,7 +88,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
     // Customer email
     const customerEmailHtml = generateCustomerEmailTemplate(order);
     
-    await resend.emails.send({
+    await mg.messages.create('stitchpleaseqc.com', {
       from: 'Stitch Please <orders@stitchpleaseqc.com>',
       to: [order.customer.email],
       subject: `Order Confirmation - ${order.orderNumber}`,
@@ -98,17 +98,17 @@ export async function sendOrderConfirmationEmail(order: Order) {
     // Owner email
     const ownerEmailHtml = generateOwnerEmailTemplate(order);
     
-    await resend.emails.send({
+    await mg.messages.create('stitchpleaseqc.com', {
       from: 'Stitch Please Orders <orders@stitchpleaseqc.com>',
       to: ['pleasestitch18@gmail.com'],
       subject: `New Order Received - ${order.orderNumber}`,
       html: ownerEmailHtml
     });
 
-    console.log('Emails sent successfully via Resend');
+    console.log('Emails sent successfully via Mailgun');
     return true;
   } catch (error) {
-    console.error('Error sending emails via Resend:', error);
+    console.error('Error sending emails via Mailgun:', error);
     return false;
   }
 }
@@ -305,17 +305,17 @@ export async function sendPickupReadyEmail({
       total
     });
     
-    await resend.emails.send({
+    await mg.messages.create('stitchpleaseqc.com', {
       from: 'Stitch Please <orders@stitchpleaseqc.com>',
       to: [customerEmail],
       subject: `Your Order is Ready for Pickup - ${orderNumber}`,
       html: pickupEmailHtml
     });
 
-    console.log('Pickup ready email sent successfully via Resend');
+    console.log('Pickup ready email sent successfully via Mailgun');
     return true;
   } catch (error) {
-    console.error('Error sending pickup ready email via Resend:', error);
+    console.error('Error sending pickup ready email via Mailgun:', error);
     return false;
   }
 }
@@ -483,17 +483,17 @@ export async function sendStatusUpdateEmail({
         return true; // No email for other statuses
     }
 
-    await resend.emails.send({
+    await mg.messages.create('stitchpleaseqc.com', {
       from: 'Stitch Please <orders@stitchpleaseqc.com>',
       to: [customerEmail],
       subject,
       html: emailHtml
     });
 
-    console.log(`${status} email sent successfully via Resend`);
+    console.log(`${status} email sent successfully via Mailgun`);
     return true;
   } catch (error) {
-    console.error(`Error sending ${status} email via Resend:`, error);
+    console.error(`Error sending ${status} email via Mailgun:`, error);
     return false;
   }
 }
