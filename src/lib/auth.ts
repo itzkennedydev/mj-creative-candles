@@ -1,6 +1,7 @@
 // src/lib/auth.ts
 import type { NextRequest } from 'next/server';
 import { env } from '~/env.js';
+import { verifyToken } from '~/lib/auth-utils';
 
 export interface AuthResult {
   isAuthenticated: boolean;
@@ -10,19 +11,32 @@ export interface AuthResult {
 
 export async function authenticateRequest(request: NextRequest): Promise<AuthResult> {
   try {
-    // Check for admin password in headers
-    const adminPassword = request.headers.get('x-admin-password');
+    // Check for JWT token in Authorization header
+    const authHeader = request.headers.get('authorization');
     
-    if (!adminPassword) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      // New JWT-based authentication
+      const token = authHeader.substring(7);
+      const decoded = verifyToken(token);
+      
+      if (decoded && decoded.isAdmin) {
+        return {
+          isAuthenticated: true,
+          isAdmin: true
+        };
+      }
+      
       return {
         isAuthenticated: false,
         isAdmin: false,
-        error: 'No authentication provided'
+        error: 'Invalid or expired token'
       };
     }
-
-    // Verify admin password
-    if (adminPassword === env.ADMIN_PASSWORD) {
+    
+    // Fallback: Check for admin password in headers (legacy support)
+    const adminPassword = request.headers.get('x-admin-password');
+    
+    if (adminPassword && adminPassword === env.ADMIN_PASSWORD) {
       return {
         isAuthenticated: true,
         isAdmin: true
@@ -32,7 +46,7 @@ export async function authenticateRequest(request: NextRequest): Promise<AuthRes
     return {
       isAuthenticated: false,
       isAdmin: false,
-      error: 'Invalid authentication'
+      error: 'No authentication provided'
     };
   } catch {
     return {
