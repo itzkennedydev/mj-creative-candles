@@ -1,3 +1,7 @@
+/// <reference lib="webworker" />
+
+declare const self: ServiceWorkerGlobalScope;
+
 // Service Worker for PWA functionality
 const CACHE_NAME = 'stitch-please-v1';
 const urlsToCache = [
@@ -46,3 +50,4 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
     .catch((err) => console.error('Service worker activation failed:', err))
   );
 });
+
