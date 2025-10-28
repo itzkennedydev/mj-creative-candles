@@ -88,17 +88,42 @@ export async function DELETE(
     // Also remove this image from any products that reference it
     const productsCollection = db.collection('products');
     
-    // Remove from primary imageId
-    await productsCollection.updateMany(
-      { imageId: id },
-      { $unset: { imageId: "" }, $set: { image: "" } }
-    );
+    // Find products that have this image
+    const affectedProducts = await productsCollection.find({
+      $or: [
+        { imageId: id },
+        { 'images.imageId': id }
+      ]
+    }).toArray();
 
-    // Remove from images array
-    await productsCollection.updateMany(
-      {},
-      { $pull: { images: { imageId: id } } }
-    );
+    // Update each affected product
+    for (const product of affectedProducts) {
+      const update: any = {};
+      
+      // If this is the primary image, clear it and promote next image
+      if (product.imageId === id) {
+        update.$unset = { imageId: "", image: "" };
+        
+        // If there are additional images, promote the first one to primary
+        if (product.images && product.images.length > 0) {
+          const nextImage = product.images[0];
+          update.$set = {
+            image: nextImage.dataUri,
+            imageId: nextImage.imageId
+          };
+          // Remove the promoted image from the array
+          update.$pull = { images: { imageId: nextImage.imageId } };
+        }
+      } else {
+        // Just remove from additional images array
+        update.$pull = { images: { imageId: id } };
+      }
+      
+      await productsCollection.updateOne(
+        { _id: product._id },
+        update
+      );
+    }
 
     return NextResponse.json({ success: true, message: 'Image deleted successfully' });
   } catch (error) {
