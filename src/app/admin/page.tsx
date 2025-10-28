@@ -85,7 +85,7 @@ export default function AdminPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [showAssetGallery, setShowAssetGallery] = useState(false);
   const [galleryImages, setGalleryImages] = useState<ProductImage[]>([]);
-  const [galleryPage, setGalleryPage] = useState(1);
+  const [galleryLoading, setGalleryLoading] = useState(false);
   
   const [settings, setSettings] = useState<AdminSettings>({
     taxRate: 8.5,
@@ -119,6 +119,13 @@ export default function AdminPage() {
       badge: null
     },
     { 
+      id: "gallery", 
+      label: "Gallery", 
+      icon: ImageIcon,
+      description: "Asset Library",
+      badge: null
+    },
+    { 
       id: "settings", 
       label: "Settings", 
       icon: Settings,
@@ -135,6 +142,13 @@ export default function AdminPage() {
       setIsAuthenticated(true);
     }
   }, []);
+
+  // Load gallery images when gallery tab is active
+  useEffect(() => {
+    if (activeSection === 'gallery' && galleryImages.length === 0) {
+      void fetchGalleryImages();
+    }
+  }, [activeSection, galleryImages.length]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -501,7 +515,8 @@ export default function AdminPage() {
 
   const fetchGalleryImages = async () => {
     try {
-      const response = await fetch(`/api/images/gallery?page=${galleryPage}&limit=50`, {
+      setGalleryLoading(true);
+      const response = await fetch(`/api/images/gallery?page=1&limit=50`, {
         headers: {
           'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
         },
@@ -513,6 +528,8 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error('Error fetching gallery images:', err);
+    } finally {
+      setGalleryLoading(false);
     }
   };
 
@@ -522,6 +539,22 @@ export default function AdminPage() {
   };
 
   const handleSelectGalleryImage = (image: ProductImage) => {
+    if (image && image.dataUri && image.imageId) {
+      setEditProduct({ 
+        ...editProduct, 
+        image: image.dataUri, 
+        imageId: image.imageId 
+      });
+      setShowAssetGallery(false);
+      addToast({
+        title: "Image Selected",
+        description: "Image has been added to product",
+        type: "success"
+      });
+    }
+  };
+
+  const handleGalleryImageClick = (image: ProductImage) => {
     if (image && image.dataUri && image.imageId) {
       setEditProduct({ 
         ...editProduct, 
@@ -1642,6 +1675,72 @@ export default function AdminPage() {
     </div>
   );
 
+  const renderGallery = () => (
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Asset Gallery</h1>
+          <p className="text-gray-600 mt-2">Manage your uploaded images and assets</p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={fetchGalleryImages}
+          disabled={galleryLoading}
+          className="flex items-center gap-2"
+        >
+          <Activity className="h-4 w-4" />
+          {galleryLoading ? "Loading..." : "Refresh"}
+        </Button>
+      </div>
+
+      {/* Gallery Grid */}
+      {galleryLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#74CADC] mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading images...</p>
+          </div>
+        </div>
+      ) : galleryImages.length === 0 ? (
+        <div className="text-center py-20">
+          <ImageIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+          <p className="text-lg text-gray-600">No images in gallery yet</p>
+          <p className="text-sm text-gray-500 mt-2">Upload images to get started</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {galleryImages.map((image) => {
+            if (!image || !image.id) return null;
+            return (
+              <button
+                key={image.id}
+                onClick={() => handleGalleryImageClick(image)}
+                className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50"
+              >
+                <Image
+                  src={image.dataUri ?? ''}
+                  alt={image.filename ?? 'Gallery image'}
+                  width={200}
+                  height={200}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ImageIcon className="h-8 w-8 text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {image.filename}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
   const renderSettings = () => (
     <div className="space-y-8">
       {/* Page Header */}
@@ -1910,6 +2009,7 @@ export default function AdminPage() {
             {activeSection === "dashboard" && renderDashboard()}
             {activeSection === "products" && renderProducts()}
             {activeSection === "orders" && renderOrders()}
+            {activeSection === "gallery" && renderGallery()}
             {activeSection === "settings" && (
               <div className="space-y-8">
                 {renderSettings()}
