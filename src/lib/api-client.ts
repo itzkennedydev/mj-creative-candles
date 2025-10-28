@@ -9,7 +9,8 @@ if (!API_KEY) {
 }
 
 // Base API configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 
+  (typeof window !== 'undefined' ? '' : 'http://localhost:3000');
 
 // Generic API call function with authentication
 export async function apiCall<T = any>(

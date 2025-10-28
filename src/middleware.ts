@@ -56,7 +56,7 @@ export function middleware(request: NextRequest) {
                        request.nextUrl.hostname === '127.0.0.1';
   const connectSrc = isDevelopment 
     ? "'self' http://localhost:* https://localhost:* https://127.0.0.1:* https://www.google-analytics.com"
-    : "'self' https://www.google-analytics.com";
+    : "'self' https: http: https://www.google-analytics.com";
     
   const csp = [
     "default-src 'self'",
