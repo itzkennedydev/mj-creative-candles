@@ -2308,10 +2308,6 @@ export default function AdminPage() {
                       
                       {editProduct.image ? (
                         <div className="space-y-4">
-                          <div className="flex items-center justify-center gap-2 text-green-600">
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <span className="text-sm font-medium">Image uploaded successfully</span>
-                          </div>
                           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center">
                             <Button
                               type="button"
