@@ -90,6 +90,7 @@ export default function AdminPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [showAssetGallery, setShowAssetGallery] = useState(false);
   const [imageSelectionMode, setImageSelectionMode] = useState<'primary' | 'additional'>('primary');
+  const [selectedImages, setSelectedImages] = useState<ProductImage[]>([]);
   
   // Get gallery images from TanStack Query (with caching)
   const galleryImages = galleryData?.images ?? [];
@@ -521,6 +522,7 @@ export default function AdminPage() {
 
   const handleOpenGallery = (mode: 'primary' | 'additional' = 'primary') => {
     setImageSelectionMode(mode);
+    setSelectedImages([]); // Clear previous selections
     setShowAssetGallery(true);
     // Gallery will load automatically via TanStack Query
   };
@@ -529,77 +531,70 @@ export default function AdminPage() {
     void refetchGallery();
   };
 
-  const handleSelectGalleryImage = (image: ProductImage, asAdditional: boolean = false) => {
-    if (image && image.dataUri && image.imageId) {
-      if (asAdditional) {
-        // Add to additional images array
-        const newImage: ProductImage = {
-          id: Date.now().toString(), // Temporary ID
-          imageId: image.imageId,
-          dataUri: image.dataUri,
-          mimeType: image.mimeType,
-          filename: image.filename
-        };
+  const handleToggleImageSelection = (image: ProductImage) => {
+    if (!image || !image.id || !image.imageId) return;
+    
+    const isSelected = selectedImages.some(img => img.imageId === image.imageId);
+    
+    if (isSelected) {
+      // Remove from selection
+      setSelectedImages(prev => prev.filter(img => img.imageId !== image.imageId));
+    } else {
+      // Add to selection
+      const newImage: ProductImage = {
+        id: image.id,
+        imageId: image.imageId,
+        dataUri: image.dataUri,
+        mimeType: image.mimeType,
+        filename: image.filename
+      };
+      setSelectedImages(prev => [...prev, newImage]);
+    }
+  };
+
+  const handleConfirmImageSelection = () => {
+    if (selectedImages.length === 0) {
+      addToast({
+        title: "No Images Selected",
+        description: "Please select at least one image",
+        type: "warning"
+      });
+      return;
+    }
+
+    if (imageSelectionMode === 'primary') {
+      // Set first selected image as primary
+      const primaryImage = selectedImages[0];
+      if (primaryImage) {
         setEditProduct({ 
           ...editProduct, 
-          images: [...editProduct.images, newImage]
+          image: primaryImage.dataUri, 
+          imageId: primaryImage.imageId 
         });
-        setShowAssetGallery(false);
         addToast({
-          title: "Image Added",
-          description: "Image has been added to product gallery",
-          type: "success"
-        });
-      } else {
-        // Set as primary image
-        setEditProduct({ 
-          ...editProduct, 
-          image: image.dataUri, 
-          imageId: image.imageId 
-        });
-        setShowAssetGallery(false);
-        addToast({
-          title: "Image Selected",
+          title: "Primary Image Set",
           description: "Image has been set as primary",
           type: "success"
         });
       }
-    }
-  };
-
-  const handleGalleryImageClick = (image: ProductImage) => {
-    if (image && image.dataUri && image.imageId) {
-      console.log('Gallery image clicked:', image);
-      
-      // Set the image in the product form based on selection mode
-      setEditProduct((prev) => ({ 
-        ...prev, 
-        image: image.dataUri, 
-        imageId: image.imageId 
-      }));
-      
-      // If we're in a modal, close it
-      if (showAssetGallery) {
-        setShowAssetGallery(false);
-      }
-      
-      // Switch to products tab and open the modal
-      setActiveSection('products');
-      setIsEditingMode(false);
-      setEditingProduct(null);
-      
-      // Small delay to ensure state updates before opening modal
-      setTimeout(() => {
-        setShowEditModal(true);
-      }, 100);
-      
+    } else {
+      // Add all selected images as additional images
+      setEditProduct({ 
+        ...editProduct, 
+        images: [...editProduct.images, ...selectedImages]
+      });
       addToast({
-        title: "Image Selected",
-        description: "Image has been added to product form",
+        title: "Images Added",
+        description: `${selectedImages.length} image(s) added to product gallery`,
         type: "success"
       });
     }
+
+    setShowAssetGallery(false);
+    setSelectedImages([]);
   };
+
+  // Removed handleGalleryImageClick - now using toggle selection instead
 
   const handleDeleteImage = async (image: ProductImage) => {
     if (confirm(`Are you sure you want to delete this image?`)) {
@@ -2274,7 +2269,10 @@ export default function AdminPage() {
                               </Button>
                               <Button
                                 type="button"
-                                onClick={() => handleOpenGallery('primary')}
+                                onClick={() => {
+                                  setImageSelectionMode('primary');
+                                  handleOpenGallery('primary');
+                                }}
                                 className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-300 hover:border-gray-400 px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-medium transition-all duration-200 flex items-center justify-center"
                               >
                                 <ImageIcon className="h-4 w-4 mr-2" />
@@ -2314,17 +2312,6 @@ export default function AdminPage() {
                         </div>
                       </div>
                     )}
-                    
-                    {/* Add Additional Images Button */}
-                    <Button
-                      type="button"
-                      onClick={() => handleOpenGallery('additional')}
-                      variant="outline"
-                      className="mb-6"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Additional Images
-                    </Button>
                     
                     {/* Image Guidelines */}
                     <div className="text-sm text-gray-500">
@@ -2710,9 +2697,16 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 md:p-8 w-full max-w-7xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6 md:mb-8">
-              <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
-                Asset Gallery
-              </h2>
+              <div>
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+                  Asset Gallery
+                </h2>
+                {selectedImages.length > 0 && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {selectedImages.length} image{selectedImages.length > 1 ? 's' : ''} selected
+                  </p>
+                )}
+              </div>
               <div className="flex items-center gap-3">
                 <Button
                   onClick={handleRefreshGallery}
@@ -2722,8 +2716,19 @@ export default function AdminPage() {
                 >
                   <Activity className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
+                {selectedImages.length > 0 && (
+                  <Button
+                    onClick={handleConfirmImageSelection}
+                    className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-4 py-2"
+                  >
+                    Confirm Selection ({selectedImages.length})
+                  </Button>
+                )}
                 <Button
-                  onClick={() => setShowAssetGallery(false)}
+                  onClick={() => {
+                    setShowAssetGallery(false);
+                    setSelectedImages([]);
+                  }}
                   className="p-2 md:p-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 transition-all duration-200"
                 >
                   <X className="h-4 w-4 md:h-5 md:w-5" />
@@ -2748,10 +2753,13 @@ export default function AdminPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {galleryImages.map((image) => {
                   if (!image || !image.id) return null;
+                  const isSelected = selectedImages.some(img => img.imageId === image.imageId);
                   return (
-                    <div key={image.id} className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50">
+                    <div key={image.id} className={`group relative aspect-square rounded-lg overflow-hidden border-4 transition-all duration-200 bg-gray-50 ${
+                      isSelected ? 'border-[#74CADC]' : 'border-gray-200 hover:border-gray-300'
+                    }`}>
                       <button
-                        onClick={() => handleSelectGalleryImage(image, imageSelectionMode === 'additional')}
+                        onClick={() => handleToggleImageSelection(image)}
                         className="w-full h-full relative"
                       >
                         <Image
@@ -2761,11 +2769,20 @@ export default function AdminPage() {
                           height={200}
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            <ImageIcon className="h-8 w-8 text-white" />
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-[#74CADC]/30 flex items-center justify-center">
+                            <div className="bg-[#74CADC] rounded-full p-3">
+                              <CheckCircle className="h-8 w-8 text-white" />
+                            </div>
                           </div>
-                        </div>
+                        )}
+                        {!isSelected && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                              <ImageIcon className="h-8 w-8 text-white" />
+                            </div>
+                          </div>
+                        )}
                         <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           {image.filename}
                         </div>
