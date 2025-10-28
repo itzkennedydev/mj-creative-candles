@@ -12,6 +12,8 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
     ADMIN_PASSWORD: z.string().min(8),
     MONGODB_URI: z.string().min(1),
+    MAILGUN_API_KEY: z.string().min(1),
+    JWT_SECRET: z.string().min(1),
   },
 
   /**
@@ -34,6 +36,8 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     MONGODB_URI: process.env.MONGODB_URI,
+    MAILGUN_API_KEY: process.env.MAILGUN_API_KEY,
+    JWT_SECRET: process.env.JWT_SECRET,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_ADMIN_PASSWORD: process.env.NEXT_PUBLIC_ADMIN_PASSWORD,
   },
