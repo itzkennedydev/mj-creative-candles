@@ -2262,12 +2262,35 @@ export default function AdminPage() {
                     Product Image
                   </label>
                   <div className="space-y-4">
-                    {/* Additional Images Preview - moved to top */}
+                    {/* Image Preview */}
+                    {editProduct.image && (
+                      <div className="relative">
+                        <div className="w-full h-96 md:h-[28rem] rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                          <Image
+                            src={editProduct.image}
+                            alt="Product preview"
+                            width={400}
+                            height={192}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="absolute top-2 right-2">
+                          <Button
+                            onClick={() => setEditProduct({...editProduct, image: ""})}
+                            className="bg-red-500 hover:bg-red-600 text-white p-1.5 md:p-2 rounded-lg"
+                          >
+                            <X className="h-3 w-3 md:h-4 md:w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Additional Images Preview - below primary image */}
                     {(editProduct.images && editProduct.images.length > 0) && (
-                      <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">
                           Additional Product Images ({editProduct.images.length})
-                          <span className="text-xs text-gray-500 ml-2">Drag to reorder, click to set as primary</span>
+                          <span className="text-xs text-gray-500 ml-2">Click to set as primary</span>
                         </label>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                           {editProduct.images.map((img, idx) => (
@@ -2309,29 +2332,6 @@ export default function AdminPage() {
                               </div>
                             </div>
                           ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Image Preview */}
-                    {editProduct.image && (
-                      <div className="relative">
-                        <div className="w-full h-96 md:h-[28rem] rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
-                          <Image
-                            src={editProduct.image}
-                            alt="Product preview"
-                            width={400}
-                            height={192}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="absolute top-2 right-2">
-                          <Button
-                            onClick={() => setEditProduct({...editProduct, image: ""})}
-                            className="bg-red-500 hover:bg-red-600 text-white p-1.5 md:p-2 rounded-lg"
-                          >
-                            <X className="h-3 w-3 md:h-4 md:w-4" />
-                          </Button>
                         </div>
                       </div>
                     )}
