@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
 import { sendOrderConfirmationEmail } from '~/lib/email-service';
 import type { CreateOrderRequest, Order } from '~/lib/order-types';
+import type { OrderItem as ApiOrderItem } from '~/lib/order-types';
 import { authenticateRequest } from '~/lib/auth';
 
 export async function POST(request: NextRequest) {
@@ -134,13 +135,16 @@ export async function GET(request: NextRequest) {
     // Transform orders to match iOS Order model
     const serializedOrders = orders.map(order => {
       // Transform order items to match iOS OrderItem model
-      const transformedItems = order.items.map(item => ({
-        productId: item.productId || '',
-        productName: item.productName,
-        quantity: item.quantity,
-        price: item.productPrice,
-        customizations: item.selectedSize ? `Size: ${item.selectedSize}` : undefined
-      }));
+      const transformedItems = order.items.map((item: ApiOrderItem) => {
+        const productIdValue = (item as unknown as { productId?: string | number }).productId;
+        return {
+          productId: productIdValue !== undefined ? String(productIdValue) : '',
+          productName: item.productName,
+          quantity: item.quantity,
+          price: item.productPrice,
+          customizations: item.selectedSize ? `Size: ${item.selectedSize}` : undefined
+        };
+      });
 
       return {
         id: order._id.toString(),
