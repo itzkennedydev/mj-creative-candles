@@ -2466,24 +2466,24 @@ export default function AdminPage() {
               {galleryImages.map((image) => {
                 if (!image || !image.id) return null;
                 return (
-                <button
-                  key={image.id}
-                  onClick={() => handleSelectGalleryImage(image)}
-                  className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50"
-                >
-                  <Image
-                    src={image.dataUri ?? ''}
-                    alt={image.filename ?? 'Gallery image'}
-                    width={200}
-                    height={200}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ImageIcon className="h-8 w-8 text-white" />
+                  <button
+                    key={image.id}
+                    onClick={() => handleSelectGalleryImage(image)}
+                    className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50"
+                  >
+                    <Image
+                      src={image.dataUri ?? ''}
+                      alt={image.filename ?? 'Gallery image'}
+                      width={200}
+                      height={200}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ImageIcon className="h-8 w-8 text-white" />
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
                 );
               })}
             </div>
