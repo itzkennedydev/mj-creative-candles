@@ -13,10 +13,6 @@ const nextConfig = {
   },
   // Enable compression
   compress: true,
-  // Experimental optimizations
-  experimental: {
-    optimizeCss: true,
-  },
   // Disable ESLint during builds (we can fix lint errors separately)
   eslint: {
     ignoreDuringBuilds: true,
