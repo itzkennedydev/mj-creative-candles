@@ -2406,15 +2406,18 @@ export default function AdminPage() {
                               className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 hover:border-gray-400 px-4 md:px-6 py-2 md:py-3 transition-all duration-200 flex items-center justify-center"
                             >
                               <Upload className="h-4 w-4 mr-2 md:mr-3" />
-                              <span className="font-medium text-sm md:text-base">Change Image</span>
+                              <span className="font-medium text-sm md:text-base">Upload New Image</span>
                             </Button>
                             <Button
                               type="button"
-                              onClick={() => editFileInputRef.current?.click()}
-                              variant="outline"
-                              className="text-gray-600"
+                              onClick={() => {
+                                setImageSelectionMode('primary');
+                                handleOpenGallery('primary');
+                              }}
+                              className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-300 hover:border-gray-400 px-4 md:px-6 py-2 md:py-3 transition-all duration-200 flex items-center justify-center"
                             >
-                              Or drag and drop
+                              <ImageIcon className="h-4 w-4 mr-2 md:mr-3" />
+                              <span className="font-medium text-sm md:text-base">Choose from Gallery</span>
                             </Button>
                           </div>
                         </div>
