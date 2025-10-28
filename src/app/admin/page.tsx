@@ -83,11 +83,13 @@ export default function AdminPage() {
     sizes: [] as string[],
     colors: [] as string[],
     image: "",
-    imageId: ""
+    imageId: "",
+    images: [] as ProductImage[] // Multiple images support
   });
   const editFileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showAssetGallery, setShowAssetGallery] = useState(false);
+  const [imageSelectionMode, setImageSelectionMode] = useState<'primary' | 'additional'>('primary');
   
   // Get gallery images from TanStack Query (with caching)
   const galleryImages = galleryData?.images ?? [];
@@ -368,7 +370,8 @@ export default function AdminPage() {
       sizes: product.sizes ?? [],
       colors: product.colors ?? [],
       image: product.image ?? "",
-      imageId: product.imageId ?? ""
+      imageId: product.imageId ?? "",
+      images: product.images ?? []
     });
     // Finally open the modal
     setShowEditModal(true);
@@ -394,7 +397,7 @@ export default function AdminPage() {
           type: "success"
         });
       } else {
-        // Create new product
+          // Create new product
         await addProduct({
           name: editProduct.name,
           price: editProduct.price,
@@ -403,6 +406,8 @@ export default function AdminPage() {
           sizes: editProduct.sizes,
           colors: editProduct.colors,
           image: editProduct.image,
+          imageId: editProduct.imageId,
+          images: editProduct.images,
           category: 'Apparel' // Default category
         });
         addToast({
@@ -413,7 +418,7 @@ export default function AdminPage() {
       }
       setEditingProduct(null);
       setIsEditingMode(false);
-      setEditProduct({ name: "", price: 0, description: "", inStock: true, sizes: [], colors: [], image: "", imageId: "" });
+      setEditProduct({ name: "", price: 0, description: "", inStock: true, sizes: [], colors: [], image: "", imageId: "", images: [] });
       setShowEditModal(false);
     } catch (err) {
       console.error('Error saving product:', err);
@@ -514,7 +519,8 @@ export default function AdminPage() {
     }
   };
 
-  const handleOpenGallery = () => {
+  const handleOpenGallery = (mode: 'primary' | 'additional' = 'primary') => {
+    setImageSelectionMode(mode);
     setShowAssetGallery(true);
     // Gallery will load automatically via TanStack Query
   };
@@ -523,19 +529,41 @@ export default function AdminPage() {
     void refetchGallery();
   };
 
-  const handleSelectGalleryImage = (image: ProductImage) => {
+  const handleSelectGalleryImage = (image: ProductImage, asAdditional: boolean = false) => {
     if (image && image.dataUri && image.imageId) {
-      setEditProduct({ 
-        ...editProduct, 
-        image: image.dataUri, 
-        imageId: image.imageId 
-      });
-      setShowAssetGallery(false);
-      addToast({
-        title: "Image Selected",
-        description: "Image has been added to product",
-        type: "success"
-      });
+      if (asAdditional) {
+        // Add to additional images array
+        const newImage: ProductImage = {
+          id: Date.now().toString(), // Temporary ID
+          imageId: image.imageId,
+          dataUri: image.dataUri,
+          mimeType: image.mimeType,
+          filename: image.filename
+        };
+        setEditProduct({ 
+          ...editProduct, 
+          images: [...editProduct.images, newImage]
+        });
+        setShowAssetGallery(false);
+        addToast({
+          title: "Image Added",
+          description: "Image has been added to product gallery",
+          type: "success"
+        });
+      } else {
+        // Set as primary image
+        setEditProduct({ 
+          ...editProduct, 
+          image: image.dataUri, 
+          imageId: image.imageId 
+        });
+        setShowAssetGallery(false);
+        addToast({
+          title: "Image Selected",
+          description: "Image has been set as primary",
+          type: "success"
+        });
+      }
     }
   };
 
@@ -543,7 +571,7 @@ export default function AdminPage() {
     if (image && image.dataUri && image.imageId) {
       console.log('Gallery image clicked:', image);
       
-      // Set the image in the product form
+      // Set the image in the product form based on selection mode
       setEditProduct((prev) => ({ 
         ...prev, 
         image: image.dataUri, 
@@ -571,6 +599,51 @@ export default function AdminPage() {
         type: "success"
       });
     }
+  };
+
+  const handleDeleteImage = async (image: ProductImage) => {
+    if (confirm(`Are you sure you want to delete this image?`)) {
+      try {
+        const response = await fetch(`/api/images/${image.imageId}`, {
+          method: 'DELETE',
+          headers: {
+            'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete image');
+        }
+
+        // Refresh gallery after deletion
+        await refetchGallery();
+
+        addToast({
+          title: "Image Deleted",
+          description: "Image has been deleted successfully",
+          type: "success"
+        });
+      } catch (err) {
+        console.error('Error deleting image:', err);
+        addToast({
+          title: "Error",
+          description: "Failed to delete image. Please try again.",
+          type: "error"
+        });
+      }
+    }
+  };
+
+  const handleRemoveProductImage = (imageId: string) => {
+    setEditProduct({
+      ...editProduct,
+      images: editProduct.images.filter(img => img.id !== imageId)
+    });
+    addToast({
+      title: "Image Removed",
+      description: "Image has been removed from product gallery",
+      type: "success"
+    });
   };
 
   const handleDeleteProduct = async (id: string) => {
@@ -1056,7 +1129,8 @@ export default function AdminPage() {
                 sizes: [],
                 colors: [],
                 image: "",
-                imageId: ""
+                imageId: "",
+                images: []
               });
               setShowEditModal(true);
             }}
@@ -1746,27 +1820,38 @@ export default function AdminPage() {
           {galleryImages.map((image) => {
             if (!image || !image.id) return null;
             return (
-              <button
-                key={image.id}
-                onClick={() => handleGalleryImageClick(image)}
-                className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50"
-              >
-                <Image
-                  src={image.dataUri ?? ''}
-                  alt={image.filename ?? 'Gallery image'}
-                  width={200}
-                  height={200}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ImageIcon className="h-8 w-8 text-white" />
+              <div key={image.id} className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50">
+                <button
+                  onClick={() => handleGalleryImageClick(image)}
+                  className="w-full h-full relative"
+                >
+                  <Image
+                    src={image.dataUri ?? ''}
+                    alt={image.filename ?? 'Gallery image'}
+                    width={200}
+                    height={200}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ImageIcon className="h-8 w-8 text-white" />
+                    </div>
                   </div>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {image.filename}
-                </div>
-              </button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {image.filename}
+                  </div>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void handleDeleteImage(image);
+                  }}
+                  className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                  title="Delete image"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             );
           })}
         </div>
@@ -2189,7 +2274,7 @@ export default function AdminPage() {
                               </Button>
                               <Button
                                 type="button"
-                                onClick={handleOpenGallery}
+                                onClick={() => handleOpenGallery('primary')}
                                 className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-300 hover:border-gray-400 px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-medium transition-all duration-200 flex items-center justify-center"
                               >
                                 <ImageIcon className="h-4 w-4 mr-2" />
@@ -2200,6 +2285,46 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
+                    
+                    {/* Additional Images */}
+                    {editProduct.images && editProduct.images.length > 0 && (
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                          Additional Product Images
+                        </label>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                          {editProduct.images.map((img) => (
+                            <div key={img.id} className="relative group">
+                              <Image
+                                src={img.dataUri}
+                                alt={img.filename}
+                                width={100}
+                                height={100}
+                                className="w-full h-20 object-cover rounded-lg border border-gray-300"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveProductImage(img.id)}
+                                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Add Additional Images Button */}
+                    <Button
+                      type="button"
+                      onClick={() => handleOpenGallery('additional')}
+                      variant="outline"
+                      className="mb-6"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Additional Images
+                    </Button>
                     
                     {/* Image Guidelines */}
                     <div className="text-sm text-gray-500">
@@ -2624,27 +2749,38 @@ export default function AdminPage() {
                 {galleryImages.map((image) => {
                   if (!image || !image.id) return null;
                   return (
-                    <button
-                      key={image.id}
-                      onClick={() => handleSelectGalleryImage(image)}
-                      className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50"
-                    >
-                      <Image
-                        src={image.dataUri ?? ''}
-                        alt={image.filename ?? 'Gallery image'}
-                        width={200}
-                        height={200}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ImageIcon className="h-8 w-8 text-white" />
+                    <div key={image.id} className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#74CADC] transition-all duration-200 bg-gray-50">
+                      <button
+                        onClick={() => handleSelectGalleryImage(image, imageSelectionMode === 'additional')}
+                        className="w-full h-full relative"
+                      >
+                        <Image
+                          src={image.dataUri ?? ''}
+                          alt={image.filename ?? 'Gallery image'}
+                          width={200}
+                          height={200}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ImageIcon className="h-8 w-8 text-white" />
+                          </div>
                         </div>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {image.filename}
-                      </div>
-                    </button>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {image.filename}
+                        </div>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void handleDeleteImage(image);
+                        }}
+                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        title="Delete image"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   );
                 })}
               </div>
