@@ -34,7 +34,11 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!orderId || !items || items.length === 0 || !customerEmail) {
-      logSecurityEvent(request, 'INVALID_CHECKOUT_DATA', { orderId, itemsCount: items?.length, customerEmail });
+      logSecurityEvent(request, 'INVALID_CHECKOUT_DATA', { 
+        orderId: String(orderId || 'undefined'), 
+        itemsCount: items?.length || 0, 
+        customerEmail: String(customerEmail || 'undefined') 
+      });
       return NextResponse.json(
         { error: 'Missing required fields: orderId, items, and customerEmail are required' },
         { status: 400 }
@@ -95,9 +99,9 @@ export async function POST(request: NextRequest) {
     // Get the base URL dynamically
     const origin = request.headers.get('origin');
     const referer = request.headers.get('referer');
-    const baseUrl: string = process.env.NEXT_PUBLIC_BASE_URL ?? 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 
       origin ?? 
-      (referer ? referer.replace(/\/[^\/]*$/, '') : 'http://localhost:3000') ?? 
+      (referer ? referer.replace(/\/[^\/]*$/, '') : null) ?? 
       'http://localhost:3000';
 
     console.log('🔗 Stripe checkout URLs:', {
