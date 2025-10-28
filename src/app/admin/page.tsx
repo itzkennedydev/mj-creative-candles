@@ -457,7 +457,6 @@ export default function AdminPage() {
     try {
       // Show preview
       const imageUrl = URL.createObjectURL(file);
-      setEditProduct({ ...editProduct, image: imageUrl });
 
       // Upload to MongoDB
       const formData = new FormData();
@@ -476,14 +475,34 @@ export default function AdminPage() {
       }
 
       const uploadedImage = await response.json() as { dataUri: string; id: string; mimeType: string; filename: string; size: number };
-      // Update with the uploaded image data
-      setEditProduct({ ...editProduct, image: uploadedImage.dataUri, imageId: uploadedImage.id });
       
-      addToast({
-        title: "Image Uploaded",
-        description: "Image has been uploaded successfully",
-        type: "success"
-      });
+      // Update with the uploaded image data
+      // If there's already a primary image, add this as an additional image
+      // Otherwise, set it as the primary image
+      if (editProduct.image && editProduct.imageId) {
+        setEditProduct({ 
+          ...editProduct, 
+          images: [...(editProduct.images || []), {
+            id: Date.now().toString(),
+            imageId: uploadedImage.id,
+            dataUri: uploadedImage.dataUri,
+            mimeType: uploadedImage.mimeType,
+            filename: uploadedImage.filename
+          }]
+        });
+        addToast({
+          title: "Image Added",
+          description: "Image has been added to additional images",
+          type: "success"
+        });
+      } else {
+        setEditProduct({ ...editProduct, image: uploadedImage.dataUri, imageId: uploadedImage.id });
+        addToast({
+          title: "Image Uploaded",
+          description: "Image has been set as primary",
+          type: "success"
+        });
+      }
     } catch (err) {
       console.error('Error uploading image:', err);
       addToast({
