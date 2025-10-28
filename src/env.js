@@ -14,6 +14,7 @@ export const env = createEnv({
     MONGODB_URI: z.string().min(1),
     MAILGUN_API_KEY: z.string().min(1),
     JWT_SECRET: z.string().min(1),
+    API_KEY: z.string().min(16),
   },
 
   /**
@@ -38,6 +39,7 @@ export const env = createEnv({
     MONGODB_URI: process.env.MONGODB_URI,
     MAILGUN_API_KEY: process.env.MAILGUN_API_KEY,
     JWT_SECRET: process.env.JWT_SECRET,
+    API_KEY: process.env.API_KEY,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_ADMIN_PASSWORD: process.env.NEXT_PUBLIC_ADMIN_PASSWORD,
   },

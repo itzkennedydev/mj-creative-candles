@@ -1,9 +1,19 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { stripe } from '~/lib/stripe';
+import { validateApiKey, logSecurityEvent } from '~/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate API key for checkout session creation
+    if (!validateApiKey(request)) {
+      logSecurityEvent(request, 'INVALID_API_KEY_CHECKOUT_ATTEMPT');
+      return NextResponse.json(
+        { error: 'Unauthorized - Valid API key required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json() as { 
       orderId: string; 
       items: Array<{
@@ -22,9 +32,30 @@ export async function POST(request: NextRequest) {
     
     const { orderId, items, subtotal, tax, total, customerEmail } = body;
 
-    if (!items || items.length === 0) {
+    // Validate required fields
+    if (!orderId || !items || items.length === 0 || !customerEmail) {
+      logSecurityEvent(request, 'INVALID_CHECKOUT_DATA', { orderId, itemsCount: items?.length, customerEmail });
       return NextResponse.json(
-        { error: 'No items provided' },
+        { error: 'Missing required fields: orderId, items, and customerEmail are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customerEmail)) {
+      logSecurityEvent(request, 'INVALID_EMAIL_CHECKOUT', { customerEmail });
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    // Validate totals
+    if (subtotal < 0 || tax < 0 || total < 0) {
+      logSecurityEvent(request, 'INVALID_TOTALS_CHECKOUT', { subtotal, tax, total });
+      return NextResponse.json(
+        { error: 'Invalid totals - values must be positive' },
         { status: 400 }
       );
     }
@@ -77,12 +108,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    logSecurityEvent(request, 'CHECKOUT_SESSION_CREATED', { orderId, customerEmail, sessionId: session.id });
+
     return NextResponse.json({
       sessionId: session.id,
       url: session.url,
     });
   } catch (error) {
     console.error('Error creating checkout session:', error);
+    logSecurityEvent(request, 'CHECKOUT_SESSION_ERROR', { error: error instanceof Error ? error.message : 'Unknown error' });
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }

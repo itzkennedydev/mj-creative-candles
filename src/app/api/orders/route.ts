@@ -5,18 +5,50 @@ import { sendOrderConfirmationEmail } from '~/lib/email-service';
 import type { CreateOrderRequest, Order } from '~/lib/order-types';
 import type { OrderItem as ApiOrderItem } from '~/lib/order-types';
 import { authenticateRequest } from '~/lib/auth';
+import { validateApiKey, validateOrderData, sanitizeString, logSecurityEvent } from '~/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate API key for order creation
+    if (!validateApiKey(request)) {
+      logSecurityEvent(request, 'INVALID_API_KEY_ATTEMPT');
+      return NextResponse.json(
+        { error: 'Unauthorized - Valid API key required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json() as CreateOrderRequest;
     
-    // Validate required fields
-    if (!body.customer || !body.items || body.items.length === 0) {
+    // Validate and sanitize order data
+    const validation = validateOrderData(body);
+    if (!validation.isValid) {
+      logSecurityEvent(request, 'INVALID_ORDER_DATA', { errors: validation.errors });
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Invalid order data', details: validation.errors },
         { status: 400 }
       );
     }
+
+    // Sanitize customer data
+    const sanitizedCustomer = {
+      firstName: sanitizeString(body.customer.firstName, 50),
+      lastName: sanitizeString(body.customer.lastName, 50),
+      email: body.customer.email.toLowerCase().trim(),
+      phone: body.customer.phone.replace(/[^\d+\-\(\)\s]/g, ''),
+    };
+
+    // Sanitize shipping data
+    const sanitizedShipping = {
+      street: sanitizeString(body.shipping.street, 200),
+      city: sanitizeString(body.shipping.city, 50),
+      state: sanitizeString(body.shipping.state, 50),
+      zipCode: sanitizeString(body.shipping.zipCode, 20),
+      country: sanitizeString(body.shipping.country, 50),
+    };
+
+    // Sanitize notes
+    const sanitizedNotes = body.notes ? sanitizeString(body.notes, 500) : undefined;
 
     const client = await clientPromise;
     const db = client.db('stitch_orders');
@@ -25,11 +57,11 @@ export async function POST(request: NextRequest) {
     // Generate order number
     const orderNumber = `SP-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-    // Create order document
+    // Create order document with sanitized data
     const order: Omit<Order, '_id'> = {
       orderNumber,
-      customer: body.customer,
-      shipping: body.shipping,
+      customer: sanitizedCustomer,
+      shipping: sanitizedShipping,
       items: body.items,
       subtotal: body.subtotal,
       tax: body.tax,
@@ -37,7 +69,7 @@ export async function POST(request: NextRequest) {
       total: body.total,
       status: 'pending',
       paymentMethod: body.paymentMethod,
-      notes: body.notes,
+      notes: sanitizedNotes,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -60,6 +92,8 @@ export async function POST(request: NextRequest) {
         // Don't fail the order creation if email fails
       }
 
+      logSecurityEvent(request, 'ORDER_CREATED', { orderNumber, customerEmail: sanitizedCustomer.email });
+
       return NextResponse.json({
         success: true,
         orderId: result.insertedId,
@@ -71,6 +105,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating order:', error);
+    logSecurityEvent(request, 'ORDER_CREATION_ERROR', { error: error instanceof Error ? error.message : 'Unknown error' });
     return NextResponse.json(
       { error: 'Failed to create order' },
       { status: 500 }

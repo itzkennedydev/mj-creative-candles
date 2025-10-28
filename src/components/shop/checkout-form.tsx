@@ -6,6 +6,7 @@ import { useCart } from "~/lib/cart-context";
 import { useToast } from "~/lib/toast-context";
 import type { CustomerInfo } from "~/lib/types";
 import type { CreateOrderRequest } from "~/lib/order-types";
+import { api, handleApiError } from "~/lib/api-client";
 
 export function CheckoutForm() {
   const { items: cartItems, getTotalPrice } = useCart();
@@ -102,42 +103,22 @@ export function CheckoutForm() {
         notes: notes.trim() || undefined
       };
       
-      // Save order to database first
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData)
-      });
-
-      const result = await response.json() as { success: boolean; orderNumber?: string; orderId?: string; error?: string };
-
-      if (!response.ok) {
-        throw new Error(result.error ?? `HTTP ${response.status}: ${response.statusText}`);
-      }
+      // Save order to database first using secure API client
+      const result: { success: boolean; orderId?: string; orderNumber?: string; error?: string } = await api.createOrder(orderData);
 
       if (!result.success || !result.orderId) {
-        throw new Error(result.error ?? 'Failed to create order');
+        throw new Error('Failed to create order');
       }
 
-      // Create Stripe Checkout session
-      const checkoutResponse = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orderId: result.orderId,
-          items: orderItems,
-          subtotal,
-          tax,
-          total,
-          customerEmail: customerInfo.email
-        })
+      // Create Stripe Checkout session using secure API client
+      const checkoutResult: { sessionId?: string; url?: string; error?: string } = await api.createCheckoutSession({
+        orderId: result.orderId,
+        items: orderItems,
+        subtotal,
+        tax,
+        total,
+        customerEmail: customerInfo.email
       });
-
-      const checkoutResult = await checkoutResponse.json() as { sessionId?: string; url?: string; error?: string };
       
       if (checkoutResult.url) {
         // Redirect to Stripe Checkout
@@ -148,7 +129,7 @@ export function CheckoutForm() {
       
     } catch (error) {
       console.error("Checkout error:", error);
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      const errorMessage = handleApiError(error);
       addToast({
         title: 'Order Error',
         description: errorMessage,
