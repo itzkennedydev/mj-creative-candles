@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",
     "connect-src 'self' https://www.google-analytics.com",
-    "frame-src 'self' https://www.instagram.com https://platform.instagram.com",
+    "frame-src 'self' https://www.instagram.com https://platform.instagram.com https://vercel.live",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
