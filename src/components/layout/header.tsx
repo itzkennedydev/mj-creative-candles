@@ -39,6 +39,7 @@ export function Header() {
               width="120"
               height="30"
               className="object-contain dark:hidden"
+              style={{ width: "auto", height: "auto" }}
               priority
             />
             <Image
@@ -47,6 +48,7 @@ export function Header() {
               width="120"
               height="30"
               className="object-contain hidden dark:block"
+              style={{ width: "auto", height: "auto" }}
               priority
             />
           </Link>

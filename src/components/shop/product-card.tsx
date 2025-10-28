@@ -129,6 +129,7 @@ export function ProductCard({ product }: ProductCardProps) {
             src={allImages[currentImageIndex]?.src ?? '/placeholder.jpg'}
             alt={product.name}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover"
             priority={currentImageIndex === 0} // Load first image with priority
             loading={currentImageIndex === 0 ? undefined : 'lazy'}
