@@ -26,6 +26,7 @@ import { useToast } from "~/lib/toast-context";
 import type { Product, ProductImage } from "~/lib/types";
 import type { Order } from "~/lib/order-types";
 import { useOrders, useUpdateOrderStatus, useSendPickupNotification, useSendStatusEmail } from "~/lib/hooks/use-orders";
+import { useGallery } from "~/lib/hooks/use-gallery";
 import { env } from "~/env";
 import { Image as ImageIcon } from "lucide-react";
 
@@ -41,6 +42,9 @@ interface AdminSettings {
 export default function AdminPage() {
   const { products, addProduct, updateProduct, deleteProduct, loading: productsLoading, error: productsError } = useProducts();
   const { addToast } = useToast();
+  
+  // Use TanStack Query for gallery with caching
+  const { data: galleryData, isLoading: isGalleryLoading, refetch: refetchGallery } = useGallery();
   const [mounted, setMounted] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
@@ -84,9 +88,10 @@ export default function AdminPage() {
   const editFileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showAssetGallery, setShowAssetGallery] = useState(false);
-  const [galleryImages, setGalleryImages] = useState<ProductImage[]>([]);
-  const [galleryLoading, setGalleryLoading] = useState(false);
-  const [galleryInitialized, setGalleryInitialized] = useState(false);
+  
+  // Get gallery images from TanStack Query (with caching)
+  const galleryImages = galleryData?.images ?? [];
+  const galleryLoading = isGalleryLoading || false;
   
   const [settings, setSettings] = useState<AdminSettings>({
     taxRate: 8.5,
@@ -144,12 +149,7 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Load gallery images when gallery tab is active for the first time
-  useEffect(() => {
-    if (activeSection === 'gallery' && !galleryInitialized) {
-      void fetchGalleryImages();
-    }
-  }, [activeSection, galleryInitialized]);
+  // Gallery images are automatically loaded and cached via TanStack Query
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -514,36 +514,13 @@ export default function AdminPage() {
     }
   };
 
-  const fetchGalleryImages = async () => {
-    try {
-      setGalleryLoading(true);
-      const response = await fetch(`/api/images/gallery?page=1&limit=50`, {
-        headers: {
-          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json() as { images: ProductImage[] };
-        console.log('Gallery images fetched:', data.images.length);
-        setGalleryImages(data.images);
-        setGalleryInitialized(true);
-      } else {
-        console.error('Failed to fetch gallery images:', response.status);
-        setGalleryInitialized(true);
-      }
-    } catch (err) {
-      console.error('Error fetching gallery images:', err);
-      setGalleryInitialized(true);
-    } finally {
-      setGalleryLoading(false);
-    }
-  };
-
-  const handleOpenGallery = async () => {
+  const handleOpenGallery = () => {
     setShowAssetGallery(true);
-    setGalleryLoading(true); // Start loading immediately
-    await fetchGalleryImages();
+    // Gallery will load automatically via TanStack Query
+  };
+  
+  const handleRefreshGallery = () => {
+    void refetchGallery();
   };
 
   const handleSelectGalleryImage = (image: ProductImage) => {
@@ -1702,10 +1679,10 @@ export default function AdminPage() {
   );
 
   const renderGallery = () => {
-    console.log('Rendering gallery, images:', galleryImages.length, 'loading:', galleryLoading, 'initialized:', galleryInitialized);
+    console.log('Rendering gallery, images:', galleryImages.length, 'loading:', galleryLoading);
     
     // Show loading state until we've checked for images
-    if (galleryLoading || !galleryInitialized) {
+    if (galleryLoading) {
       return (
         <div className="space-y-8">
           {/* Page Header */}
@@ -1716,7 +1693,7 @@ export default function AdminPage() {
             </div>
             <Button
               variant="outline"
-              onClick={fetchGalleryImages}
+              onClick={handleRefreshGallery}
               disabled={galleryLoading}
               className="flex items-center gap-2"
             >
@@ -1755,7 +1732,7 @@ export default function AdminPage() {
           </div>
           <Button
             variant="outline"
-            onClick={fetchGalleryImages}
+            onClick={handleRefreshGallery}
             disabled={galleryLoading}
             className="flex items-center gap-2"
           >
