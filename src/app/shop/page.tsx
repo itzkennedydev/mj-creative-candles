@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Container } from "~/components/ui/container";
 import { ProductGrid } from "~/components/shop/product-grid";
 import { ShopSidebar } from "~/components/shop/shop-sidebar";
+import { ProductsHeader } from "~/components/shop/products-header";
 import { Search } from "lucide-react";
 import { FloatingCart } from "~/components/shop/floating-cart";
 
@@ -58,10 +59,7 @@ export default function ShopPage() {
               </div>
               
               <div className="flex-1">
-                <div className="mb-6 md:mb-8">
-                  <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">Products</h2>
-                  <p className="text-gray-600">Showing 2 products</p>
-                </div>
+                <ProductsHeader />
                 <ProductGrid />
               </div>
             </div>
