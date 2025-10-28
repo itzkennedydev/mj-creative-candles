@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import type { Product } from "~/lib/types";
+import { getOptimizedImageUrl } from "~/lib/types";
 import { Button } from "~/components/ui/button";
 import { ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
@@ -23,11 +24,11 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const { addToast } = useToast();
 
-  // Create array of all images including primary
+  // Create array of all images including primary with optimized URLs
   const allImages = product.image ? [
-    { src: product.image, isPrimary: true },
-    ...(product.images || []).map(img => ({ src: img.dataUri, isPrimary: false }))
-  ] : (product.images || []).map(img => ({ src: img.dataUri, isPrimary: false }));
+    { src: getOptimizedImageUrl(product.imageId || '', product.image, 600), isPrimary: true },
+    ...(product.images || []).map(img => ({ src: getOptimizedImageUrl(img.imageId, img.dataUri, 600), isPrimary: false }))
+  ] : (product.images || []).map(img => ({ src: getOptimizedImageUrl(img.imageId, img.dataUri, 600), isPrimary: false }));
 
   // Calculate price with XXL surcharge
   const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : 0);

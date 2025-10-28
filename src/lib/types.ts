@@ -20,6 +20,16 @@ export interface Product {
   colors?: string[];
 }
 
+// Helper function to get optimized image URL
+export function getOptimizedImageUrl(imageId: string, dataUri: string, width: number = 800): string {
+  // If we have an imageId, use the optimization endpoint
+  if (imageId && imageId !== '') {
+    return `/api/images/optimize?id=${imageId}&width=${width}&quality=75`;
+  }
+  // Otherwise, return the data URI as fallback
+  return dataUri;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;
