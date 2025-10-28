@@ -83,25 +83,22 @@ export async function POST(request: NextRequest) {
     const result = await productsCollection.insertOne(product);
 
     if (result.insertedId) {
-      // Fetch the created product with _id
-      const createdProduct = await productsCollection.findOne({ _id: result.insertedId });
+      // Return immediately to avoid an extra database query
+      const newProduct: Product = {
+        id: result.insertedId.toString(),
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        image: product.image,
+        imageId: product.imageId,
+        images: product.images ?? [],
+        category: product.category,
+        inStock: product.inStock,
+        sizes: product.sizes ?? [],
+        colors: product.colors ?? []
+      };
       
-      if (createdProduct) {
-        const newProduct: Product = {
-          id: createdProduct._id.toString(),
-          name: createdProduct.name,
-          description: createdProduct.description,
-          price: createdProduct.price,
-          image: createdProduct.image,
-          imageId: createdProduct.imageId,
-          category: createdProduct.category,
-          inStock: createdProduct.inStock,
-          sizes: createdProduct.sizes,
-          colors: createdProduct.colors
-        };
-        
-        return NextResponse.json(newProduct, { status: 201 });
-      }
+      return NextResponse.json(newProduct, { status: 201 });
     }
 
     return NextResponse.json(
