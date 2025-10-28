@@ -329,7 +329,7 @@ export default function AdminPage() {
     const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
     const processingOrdersCount = orders.filter(o => o.status === 'processing').length;
     const readyOrdersCount = orders.filter(o => o.status === 'ready_for_pickup').length;
-    const totalRevenueAmount = orders.reduce((sum, order) => sum + order.total, 0);
+    const totalRevenueAmount = orders.reduce((sum, order) => sum + (order.total ?? 0), 0);
     
     return {
       totalOrders: totalOrdersCount,
@@ -363,7 +363,12 @@ export default function AdminPage() {
         setIsCodeSent(true);
         setError("");
       } else {
-        const data = await response.json() as { error?: string };
+        const data = await response.json() as { error?: string; unauthorized?: boolean };
+        if (data.unauthorized) {
+          // Redirect to access request page
+          window.location.href = '/admin/access-request';
+          return;
+        }
         setError(data.error ?? "Failed to send verification code");
       }
     } catch {
@@ -1159,9 +1164,10 @@ export default function AdminPage() {
                     {/* Chart Bars */}
                     <div className="flex items-end justify-between space-x-2 h-20 border-b border-gray-100 pb-2">
                       {orders.slice(0, 7).map((order, i) => {
-                        const maxOrderTotal = Math.max(...orders.map(o => o.total));
-                        const height = (order.total / maxOrderTotal) * 50 + 10; // 10-60px range
-                        const isHighest = order.total === maxOrderTotal;
+                        const orderTotal = order.total ?? 0;
+                        const maxOrderTotal = Math.max(...orders.map(o => o.total ?? 0));
+                        const height = maxOrderTotal > 0 ? (orderTotal / maxOrderTotal) * 50 + 10 : 10; // 10-60px range
+                        const isHighest = orderTotal === maxOrderTotal && maxOrderTotal > 0;
                         
                         return (
                           <div key={order._id?.toString() ?? i} className="flex flex-col items-center flex-1">
@@ -1170,10 +1176,10 @@ export default function AdminPage() {
                                 isHighest ? 'bg-[#74CADC]' : 'bg-gray-300'
                               }`}
                               style={{ height: `${height}px` }}
-                              title={`Order #${order.orderNumber}: $${order.total.toFixed(2)}`}
+                              title={`Order #${order.orderNumber}: $${orderTotal.toFixed(2)}`}
                             />
                             <div className="text-xs text-gray-500 mt-1 font-medium">
-                              ${order.total.toFixed(0)}
+                              ${orderTotal.toFixed(0)}
                             </div>
                           </div>
                         );
@@ -1198,7 +1204,7 @@ export default function AdminPage() {
                         <div key={order._id?.toString() ?? i} className="flex items-center justify-between text-xs">
                           <span className="text-gray-600">Order #{order.orderNumber}</span>
                           <span className="text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</span>
-                          <span className="font-medium text-gray-900">${order.total.toFixed(2)}</span>
+                          <span className="font-medium text-gray-900">${(order.total ?? 0).toFixed(2)}</span>
                         </div>
                       ))}
                       {orders.length > 3 && (
@@ -1323,7 +1329,7 @@ export default function AdminPage() {
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                       <span>{order.customer.firstName} {order.customer.lastName}</span>
                       <span>•</span>
-                      <span className="font-semibold text-gray-900">${order.total.toFixed(2)}</span>
+                      <span className="font-semibold text-gray-900">${(order.total ?? 0).toFixed(2)}</span>
                       <span>•</span>
                       <span>{new Date(order.createdAt).toLocaleDateString()}</span>
                     </div>
@@ -1497,7 +1503,7 @@ export default function AdminPage() {
                 <div>
                   <h4 className="text-lg font-bold text-gray-900 mb-2">{product.name}</h4>
                   <p className="text-sm text-gray-600 line-clamp-2 mb-3">{product.description}</p>
-                  <p className="text-xl font-bold text-gray-900">${product.price.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-gray-900">${(product.price ?? 0).toFixed(2)}</p>
                 </div>
                 
                 <div className="space-y-3">
@@ -1692,7 +1698,7 @@ export default function AdminPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-semibold text-gray-900">
-                          ${order.total.toFixed(2)}
+                          ${(order.total ?? 0).toFixed(2)}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -1914,11 +1920,11 @@ export default function AdminPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium text-gray-900">${order.subtotal.toFixed(2)}</span>
+                    <span className="font-medium text-gray-900">${(order.subtotal ?? 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax</span>
-                    <span className="font-medium text-gray-900">${order.tax.toFixed(2)}</span>
+                    <span className="font-medium text-gray-900">${(order.tax ?? 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Pickup</span>
@@ -1927,7 +1933,7 @@ export default function AdminPage() {
                   <div className="border-t border-gray-300 pt-2 mt-2">
                     <div className="flex justify-between text-base font-bold">
                       <span className="text-gray-900">Total</span>
-                      <span className="text-gray-900">${order.total.toFixed(2)}</span>
+                      <span className="text-gray-900">${(order.total ?? 0).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -2988,7 +2994,7 @@ export default function AdminPage() {
                   <div className="space-y-3 text-sm">
                     <p><span className="font-medium">Payment:</span> {selectedOrderForModal.paymentMethod}</p>
                     <p><span className="font-medium">Delivery:</span> Pickup Only</p>
-                    <p><span className="font-medium">Total:</span> ${selectedOrderForModal.total.toFixed(2)}</p>
+                    <p><span className="font-medium">Total:</span> ${(selectedOrderForModal.total ?? 0).toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -3038,11 +3044,11 @@ export default function AdminPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-base">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium text-gray-900">${selectedOrderForModal.subtotal.toFixed(2)}</span>
+                    <span className="font-medium text-gray-900">${(selectedOrderForModal.subtotal ?? 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-base">
                     <span className="text-gray-600">Tax</span>
-                    <span className="font-medium text-gray-900">${selectedOrderForModal.tax.toFixed(2)}</span>
+                    <span className="font-medium text-gray-900">${(selectedOrderForModal.tax ?? 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-base">
                     <span className="text-gray-600">Pickup</span>
@@ -3051,7 +3057,7 @@ export default function AdminPage() {
                   <div className="border-t border-gray-300 pt-3 mt-3">
                     <div className="flex justify-between text-lg font-bold">
                       <span className="text-gray-900">Total</span>
-                      <span className="text-gray-900">${selectedOrderForModal.total.toFixed(2)}</span>
+                      <span className="text-gray-900">${(selectedOrderForModal.total ?? 0).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

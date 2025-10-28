@@ -10,6 +10,90 @@ const mg = mailgun.client({
   url: 'https://api.mailgun.net'
 });
 
+export async function sendAccessRequestEmail(email: string, name: string, reason: string) {
+  try {
+    const accessRequestHtml = generateAccessRequestEmailTemplate(email, name, reason);
+
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please Admin <admin@stitchpleaseqc.com>',
+      to: ['itskennedy.dev@gmail.com', 'pleasestitch18@gmail.com'],
+      subject: `New Admin Access Request from ${name}`,
+      html: accessRequestHtml
+    });
+
+    console.log(`✅ Access request notification sent for ${email}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send access request email:', error);
+    return false;
+  }
+}
+
+function generateAccessRequestEmailTemplate(email: string, name: string, reason: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Admin Access Request</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .info-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .label { font-weight: bold; color: #0A5565; }
+        .value { margin-bottom: 15px; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+        .button { display: inline-block; background: #0A5565; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🔐 Admin Access Request</h1>
+          <p>Someone is requesting access to the Stitch Please admin panel</p>
+        </div>
+        
+        <div class="content">
+          <div class="info-box">
+            <div class="value">
+              <span class="label">Name:</span><br>
+              ${name}
+            </div>
+            <div class="value">
+              <span class="label">Email:</span><br>
+              ${email}
+            </div>
+            <div class="value">
+              <span class="label">Reason for Access:</span><br>
+              ${reason}
+            </div>
+            <div class="value">
+              <span class="label">Requested At:</span><br>
+              ${new Date().toLocaleString()}
+            </div>
+          </div>
+          
+          <p><strong>Action Required:</strong></p>
+          <p>Please review this access request and either approve or deny access to the admin panel.</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://stitchpleaseqc.com/admin" class="button">Review in Admin Panel</a>
+          </div>
+          
+          <div class="footer">
+            <p>This is an automated notification from the Stitch Please admin system.</p>
+            <p>If you did not expect this email, please ignore it.</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
 export async function sendVerificationCodeEmail(email: string, code: string) {
   try {
     const verificationEmailHtml = generateVerificationEmailTemplate(code);
