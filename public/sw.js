@@ -10,24 +10,29 @@ const urlsToCache = [
   '/Logo.png',
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', (event: ExtendableEvent) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
+      .catch((err) => console.error('Service worker install failed:', err))
   );
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (event: FetchEvent) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
         // Return cached version or fetch from network
         return response || fetch(event.request);
       })
+      .catch((err) => {
+        console.error('Service worker fetch failed:', err);
+        return fetch(event.request);
+      })
   );
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event: ExtendableEvent) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -38,5 +43,6 @@ self.addEventListener('activate', (event) => {
         })
       );
     })
+    .catch((err) => console.error('Service worker activation failed:', err))
   );
 });
