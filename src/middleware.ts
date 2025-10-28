@@ -50,9 +50,12 @@ export function middleware(request: NextRequest) {
   }
 
   // Content Security Policy
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isDevelopment = process.env.NODE_ENV === 'development' || 
+                       process.env.VERCEL_ENV === 'development' ||
+                       request.nextUrl.hostname === 'localhost' ||
+                       request.nextUrl.hostname === '127.0.0.1';
   const connectSrc = isDevelopment 
-    ? "'self' http://localhost:* https://www.google-analytics.com"
+    ? "'self' http://localhost:* https://localhost:* https://127.0.0.1:* https://www.google-analytics.com"
     : "'self' https://www.google-analytics.com";
     
   const csp = [
@@ -68,6 +71,13 @@ export function middleware(request: NextRequest) {
     "base-uri 'self'",
     "form-action 'self'",
   ].join('; ');
+
+  // Debug logging for development
+  if (isDevelopment) {
+    console.log('🔧 Development CSP:', csp);
+    console.log('🔧 Hostname:', request.nextUrl.hostname);
+    console.log('🔧 NODE_ENV:', process.env.NODE_ENV);
+  }
 
   response.headers.set('Content-Security-Policy', csp);
 

@@ -14,7 +14,7 @@ const securityHeaders = [
       "script-src-elem 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://www.instagram.com https://platform.instagram.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https: http:",
+      "connect-src 'self' https: http: http://localhost:* https://localhost:* http://127.0.0.1:* https://127.0.0.1:*",
       "frame-src 'self' https://www.instagram.com https://platform.instagram.com",
       "font-src 'self' data:",
       "object-src 'none'",
