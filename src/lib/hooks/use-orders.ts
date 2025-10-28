@@ -15,10 +15,15 @@ interface OrderUpdateResponse {
 }
 
 // Fetch orders with pagination and search
-export function useOrders(page = 1, searchQuery = '') {
+export function useOrders(page = 1, searchQuery = '', isAuthenticated = false) {
   return useQuery({
     queryKey: ['orders', page, searchQuery],
     queryFn: async (): Promise<OrdersResponse> => {
+      const token = sessionStorage.getItem('admin_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '10',
@@ -27,7 +32,7 @@ export function useOrders(page = 1, searchQuery = '') {
 
       const response = await fetch(`/api/orders?${params}`, {
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('admin_token')}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
       if (!response.ok) {
@@ -35,6 +40,7 @@ export function useOrders(page = 1, searchQuery = '') {
       }
       return response.json() as Promise<OrdersResponse>;
     },
+    enabled: isAuthenticated, // Only run query if authenticated
     staleTime: 30 * 1000, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
   });

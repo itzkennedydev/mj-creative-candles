@@ -61,8 +61,12 @@ export default function AdminPage() {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedOrderForModal, setSelectedOrderForModal] = useState<Order | null>(null);
   
-  // TanStack Query hooks
-  const { data: ordersData, isLoading: ordersLoading, refetch: refetchOrders } = useOrders(currentPage, searchQuery);
+  // TanStack Query hooks - only fetch when authenticated
+  const { data: ordersData, isLoading: ordersLoading, refetch: refetchOrders } = useOrders(
+    currentPage, 
+    searchQuery,
+    isAuthenticated
+  );
   const updateOrderStatus = useUpdateOrderStatus();
   const sendPickupNotification = useSendPickupNotification();
   const sendStatusEmail = useSendStatusEmail();
@@ -1020,16 +1024,6 @@ export default function AdminPage() {
               <Activity className="h-4 w-4" />
               Refresh Data
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Logout
-            </Button>
           </div>
         </div>
 
@@ -1140,13 +1134,13 @@ export default function AdminPage() {
                 
                 <div className="text-left py-4">
                   <div className="text-4xl md:text-5xl font-bold text-green-600">
-                    ${stats.totalRevenue.toFixed(2)}
+                    ${(stats.totalRevenue ?? 0).toFixed(2)}
                   </div>
                 </div>
                 
                 <div className="space-y-3 hidden md:block">
                   <div className="text-sm text-gray-600">From {stats.totalOrders} orders</div>
-                  <div className="text-sm text-gray-500">Average: ${stats.totalOrders > 0 ? (stats.totalRevenue / stats.totalOrders).toFixed(2) : '0.00'}</div>
+                  <div className="text-sm text-gray-500">Average: ${stats.totalOrders > 0 ? ((stats.totalRevenue ?? 0) / stats.totalOrders).toFixed(2) : '0.00'}</div>
                 </div>
               </div>
               
@@ -1902,10 +1896,10 @@ export default function AdminPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-semibold text-gray-900">
-                            ${(item.quantity * item.productPrice).toFixed(2)}
+                            ${(item.quantity * (item.productPrice ?? 0)).toFixed(2)}
                           </p>
                           <p className="text-xs text-gray-500">
-                            ${item.productPrice.toFixed(2)} each
+                            ${(item.productPrice ?? 0).toFixed(2)} each
                           </p>
                         </div>
                       </div>
@@ -2276,12 +2270,6 @@ export default function AdminPage() {
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => setIsAuthenticated(false)}
-          className="px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg"
-        >
-          Logout
-        </Button>
       </div>
 
       {/* Mobile Navigation Menu */}
@@ -2389,7 +2377,7 @@ export default function AdminPage() {
           
           <div className="border-t border-gray-200 pt-4">
             <Button
-              onClick={() => setIsAuthenticated(false)}
+              onClick={handleLogout}
               className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 px-6 py-3 transition-all duration-200"
             >
               <span className="font-medium">Logout</span>
@@ -3026,10 +3014,10 @@ export default function AdminPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-semibold text-gray-900">
-                            ${(item.quantity * item.productPrice).toFixed(2)}
+                            ${(item.quantity * (item.productPrice ?? 0)).toFixed(2)}
                           </p>
                           <p className="text-sm text-gray-500">
-                            ${item.productPrice.toFixed(2)} each
+                            ${(item.productPrice ?? 0).toFixed(2)} each
                           </p>
                         </div>
                       </div>
