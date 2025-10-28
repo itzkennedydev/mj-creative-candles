@@ -2597,6 +2597,41 @@ export default function AdminPage() {
                         </button>
                       ))}
                     </div>
+                    
+                    {/* Custom Color Input */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        id="customColor"
+                        placeholder="Add custom color"
+                        className="flex-1 px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all duration-200"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const input = e.target as HTMLInputElement;
+                            const customColor = input.value.trim();
+                            if (customColor && !editProduct.colors.includes(customColor)) {
+                              addEditColor(customColor);
+                              input.value = '';
+                            }
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          const input = document.getElementById('customColor') as HTMLInputElement;
+                          const customColor = input.value.trim();
+                          if (customColor && !editProduct.colors.includes(customColor)) {
+                            addEditColor(customColor);
+                            input.value = '';
+                          }
+                        }}
+                        className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-4 py-2"
+                      >
+                        Add
+                      </Button>
+                    </div>
+                    
                     {editProduct.colors.length > 0 && (
                       <p className="text-sm text-gray-500 font-medium">
                         Selected: {editProduct.colors.join(", ")}
