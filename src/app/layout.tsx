@@ -9,35 +9,14 @@ import { ToastContainer } from "~/components/ui/toast";
 import QueryProvider from "~/lib/query-client";
 import Script from "next/script";
 import { ConditionalLayout } from "../components/layout/conditional-layout";
+import { generateSEOTags } from "~/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = generateSEOTags({
   title: "Stitch, Please! | Custom Embroidery & Design Services",
   description: "Professional custom embroidery, signs, team apparel, business logos, and personalized items by Tanika Zentic. Fast turnaround times and creative designs for all your custom needs.",
-  metadataBase: new URL('https://stitchpleaseqc.com'),
+  url: "https://stitchpleaseqc.com",
   keywords: ['custom embroidery', 'wooden signs', 'canvas signs', 'team apparel', 'business logos', 'personalized gifts', 'custom designs', 'quad cities'],
-  authors: [{ name: 'Tanika Zentic' }],
-  openGraph: {
-    title: 'Stitch, Please! | Custom Embroidery & Design Services',
-    description: 'Professional custom embroidery, signs, apparel and personalized items in the Quad Cities. Fast turnaround times and creative designs.',
-    type: 'website',
-    locale: 'en_US',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630 }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Stitch, Please! Custom Embroidery',
-    description: 'Professional custom embroidery and design services by Tanika Zentic.',
-    images: ['/twitter-image.jpg'],
-  },
-  icons: [
-    { rel: "icon", url: "/favicon.ico" },
-    { rel: "apple-touch-icon", sizes: "180x180", url: "/apple-touch-icon.png" }
-  ],
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+});
 
 export default function RootLayout({
   children,
@@ -45,7 +24,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${GeistSans.variable} scroll-smooth`} suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#74CADC" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* Google Analytics */}
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        )}
+      </head>
       <body className="antialiased min-h-screen flex flex-col overflow-x-hidden" suppressHydrationWarning>
         <QueryProvider>
           <ProductsProvider>

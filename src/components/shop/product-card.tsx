@@ -8,6 +8,8 @@ import { Button } from "~/components/ui/button";
 import { ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
 import { useToast } from "~/lib/toast-context";
+import { trackAddToCart, trackViewItem } from "~/lib/analytics";
+import { generateProductStructuredData } from "~/lib/seo";
 
 interface ProductCardProps {
   product: Product;
@@ -117,13 +119,12 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="bg-white h-full flex flex-col">
       {/* Product Image */}
-      <div 
-        ref={imageContainerRef}
-        className="aspect-square relative mb-6 rounded-lg overflow-hidden flex-shrink-0"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
+        <div className="aspect-square relative mb-6 rounded-lg overflow-hidden flex-shrink-0"
+             onTouchStart={handleTouchStart}
+             onTouchMove={handleTouchMove}
+             onTouchEnd={handleTouchEnd}
+             role="img"
+             aria-label={`${product.name} product image`}>
         {allImages.length > 0 && (
           <Image
             src={allImages[currentImageIndex]?.src ?? '/placeholder.jpg'}
@@ -183,15 +184,17 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
       
       {/* Product Details */}
-      <div className="space-y-4 md:space-y-6 flex-1 flex flex-col">
-        <div className="flex-shrink-0">
-          <h3 className="text-lg md:text-xl font-medium text-gray-900 mb-2 line-clamp-2">{product.name}</h3>
-          <p className="text-sm md:text-base text-gray-600 line-clamp-3">{product.description}</p>
-        </div>
-        
-        <div className="text-xl md:text-2xl font-medium text-gray-900">
-          ${displayPrice.toFixed(2)}
-        </div>
+        <div className="space-y-4 md:space-y-6 flex-1 flex flex-col">
+          <div className="flex-shrink-0">
+            <h3 className="text-lg md:text-xl font-medium text-gray-900 mb-2 line-clamp-2" itemProp="name">{product.name}</h3>
+            <p className="text-sm md:text-base text-gray-600 line-clamp-3" itemProp="description">{product.description}</p>
+          </div>
+          
+          <div className="text-xl md:text-2xl font-medium text-gray-900 flex-shrink-0" itemProp="offers" itemScope itemType="https://schema.org/Offer">
+            <span itemProp="price" content={displayPrice.toString()}>${displayPrice.toFixed(2)}</span>
+            <meta itemProp="priceCurrency" content="USD" />
+            <meta itemProp="availability" content={product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+          </div>
 
         {/* Size Selection */}
         {product.sizes && product.sizes.length > 0 && (
@@ -265,12 +268,14 @@ export function ProductCard({ product }: ProductCardProps) {
             onClick={handleAddToCart}
             disabled={!product.inStock}
             className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-2 md:py-3 text-sm md:text-base font-medium"
+            aria-label={`Add ${product.name} to cart`}
           >
-            <ShoppingCart className="h-4 w-4 mr-2" />
+            <ShoppingCart className="h-4 w-4 mr-2" aria-hidden="true" />
             Add to Cart
           </Button>
         </div>
       </div>
-    </div>
+    </article>
+    </>
   );
 }
