@@ -9,7 +9,9 @@ export function middleware(request: NextRequest) {
   // Apply security headers
   const securityHeaders = getSecurityHeaders();
   Object.entries(securityHeaders).forEach(([key, value]) => {
-    response.headers.set(key, value);
+    if (value !== undefined && value !== null) {
+      response.headers.set(key, String(value));
+    }
   });
 
   // Apply CORS headers for API routes
@@ -17,7 +19,9 @@ export function middleware(request: NextRequest) {
     const origin = request.headers.get('origin');
     const corsHeaders = getCorsHeaders(origin);
     Object.entries(corsHeaders).forEach(([key, value]) => {
-      response.headers.set(key, value);
+      if (value !== undefined && value !== null) {
+        response.headers.set(key, String(value));
+      }
     });
 
     // Handle preflight requests
@@ -33,7 +37,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Log suspicious activities
-    const userAgent = request.headers.get('user-agent') || '';
+    const userAgent = request.headers.get('user-agent') ?? '';
     if (userAgent.includes('bot') || userAgent.includes('crawler') || userAgent.includes('spider')) {
       logSecurityEvent(request, 'SUSPICIOUS_USER_AGENT', { userAgent });
     }
