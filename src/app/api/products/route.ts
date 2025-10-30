@@ -11,7 +11,7 @@ export async function GET() {
     const db = client.db('stitch_orders');
     const productsCollection = db.collection<any>('products');
 
-    const products = await productsCollection.find({}).toArray();
+    const products = await productsCollection.find({}).sort({ sortOrder: 1, name: 1 }).toArray();
     
     // Map _id to id for frontend compatibility
     const mappedProducts = products.map((product: any) => ({

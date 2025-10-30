@@ -48,15 +48,18 @@ export function EventPopup() {
   };
 
   if (isDismissed || !isVisible) {
-    console.log('EventPopup: not rendering, isDismissed:', isDismissed, 'isVisible:', isVisible);
     return null;
   }
 
-  console.log('EventPopup: rendering popup');
-
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[9999] flex items-center justify-center px-4 py-4" style={{ margin: 0, width: '100vw', height: '100vh' }}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative animate-in fade-in-0 zoom-in-95 duration-300 mx-2">
+    <div 
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[9999] flex items-center justify-center px-4 py-4"
+      onClick={handleDismiss}
+    >
+      <div 
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative animate-in fade-in-0 zoom-in-95 duration-300 mx-2"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Close Button */}
         <button
           onClick={handleDismiss}
