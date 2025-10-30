@@ -181,6 +181,17 @@ export function getCorsHeaders(origin?: string | null) {
 
   const isAllowedOrigin = origin && allowedOrigins.includes(origin);
 
+  // Native mobile apps (iOS/Android) don't send an Origin header
+  // Allow requests without an Origin header for mobile app compatibility
+  if (!origin) {
+    return {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key, x-admin-password',
+      'Access-Control-Max-Age': '86400',
+    };
+  }
+
   return {
     'Access-Control-Allow-Origin': isAllowedOrigin ? origin : allowedOrigins[0] || '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
