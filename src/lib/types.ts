@@ -22,13 +22,12 @@ export interface Product {
 
 // Helper function to get optimized image URL
 export function getOptimizedImageUrl(imageId: string, dataUri: string, width: number = 800): string {
-  // If we have an imageId (MongoDB ObjectId), use the optimization endpoint
-  // MongoDB ObjectIds are 24-character hex strings
+  // If we have a valid ObjectId length, use the new images route with width param
   if (imageId && imageId.length === 24) {
-    // Use optimization endpoint which will cache the processed image
-    return `/api/images/optimize?id=${imageId}&width=${width}&quality=75`;
+    const safeWidth = Math.max(64, Math.min(2000, Math.floor(width)));
+    return `/api/images/${imageId}?w=${safeWidth}`;
   }
-  // Otherwise, return the data URI as fallback (for old uploads or direct data URIs)
+  // Fallback for legacy data URIs or absolute URLs
   return dataUri;
 }
 

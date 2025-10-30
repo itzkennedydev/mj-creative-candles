@@ -27,26 +27,68 @@ export async function GET(
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
     const file = files[0] as any;
-    const contentType = file.contentType || file.metadata?.contentType || 'application/octet-stream';
+    const originalContentType = file.contentType || file.metadata?.contentType || 'image/jpeg';
 
-    const stream = bucket.openDownloadStream(objectId);
-
-    const readableStream = new ReadableStream({
-      start(controller) {
-        stream.on('data', (chunk) => controller.enqueue(chunk));
-        stream.on('end', () => controller.close());
-        stream.on('error', (err) => controller.error(err));
-      },
-      cancel() {
-        stream.destroy();
-      },
+    // Read the file into a buffer (GridFS streams -> Buffer)
+    const chunks: Buffer[] = [];
+    await new Promise<void>((resolve, reject) => {
+      bucket.openDownloadStream(objectId)
+        .on('data', (chunk) => chunks.push(Buffer.from(chunk)))
+        .on('end', () => resolve())
+        .on('error', (err) => reject(err));
     });
+    let buffer = Buffer.concat(chunks);
 
-    return new NextResponse(readableStream as any, {
+    // Optional resizing and format negotiation
+    const url = new URL(request.url);
+    const widthParam = url.searchParams.get('w');
+    const targetWidth = widthParam ? Math.max(64, Math.min(2000, parseInt(widthParam))) : undefined;
+
+    // Check Accept header for webp/avif support
+    const accept = request.headers.get('accept') || '';
+    const preferAvif = accept.includes('image/avif');
+    const preferWebp = accept.includes('image/webp');
+
+    let contentType = originalContentType;
+    try {
+      // Use dynamic import to avoid hard dependency issues
+      const sharp = (await import('sharp')).default;
+      let img = sharp(buffer, { failOnError: false });
+      if (targetWidth) {
+        img = img.resize({ width: targetWidth, withoutEnlargement: true });
+      }
+      if (preferAvif) {
+        img = img.avif({ quality: 70 });
+        contentType = 'image/avif';
+      } else if (preferWebp) {
+        img = img.webp({ quality: 75 });
+        contentType = 'image/webp';
+      } else if (!originalContentType.includes('jpeg') && !originalContentType.includes('png')) {
+        // Normalize to jpeg if unknown
+        img = img.jpeg({ quality: 80 });
+        contentType = 'image/jpeg';
+      }
+      buffer = await img.toBuffer();
+    } catch {
+      // If sharp is unavailable, fall back to original buffer
+      contentType = originalContentType;
+    }
+
+    // ETag for caching (weak ETag based on length + upload date)
+    const etag = `W/"${buffer.length}-${new Date(file.uploadDate).getTime()}"`;
+    const ifNoneMatch = request.headers.get('if-none-match');
+    if (ifNoneMatch && ifNoneMatch === etag) {
+      return new NextResponse(null, { status: 304 });
+    }
+
+    return new NextResponse(buffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
+        'Content-Length': buffer.length.toString(),
         'Cache-Control': 'public, max-age=31536000, immutable',
+        'ETag': etag,
+        'Last-Modified': new Date(file.uploadDate).toUTCString(),
       },
     });
   } catch (error) {
