@@ -54,6 +54,78 @@ export async function POST(request: NextRequest) {
     const db = client.db('stitch_orders');
     const ordersCollection = db.collection<Order>('orders');
 
+    // Check for duplicate orders from the same customer
+    // First check: Within last 5 minutes (for rapid double submissions)
+    // Second check: Any pending/paid order with same email, phone, total, and items (for retries/network issues)
+    const fiveMinutesAgo = new Date(Date.now() - 300000);
+    
+    // Check 1: Rapid duplicates within 5 minutes
+    const recentDuplicate = await ordersCollection.findOne({
+      'customer.email': sanitizedCustomer.email,
+      'customer.phone': sanitizedCustomer.phone,
+      createdAt: { $gte: fiveMinutesAgo },
+      total: body.total,
+      status: { $in: ['pending', 'paid', 'processing'] }
+    });
+
+    // Check 2: If no recent duplicate found, check for any pending order with same details
+    // This catches cases where user retried after network timeout
+    let exactDuplicate = null;
+    if (!recentDuplicate) {
+      // Check for orders with same email, phone, total, same number of items, and same item details
+      const matchingOrders = await ordersCollection.find({
+        'customer.email': sanitizedCustomer.email,
+        'customer.phone': sanitizedCustomer.phone,
+        total: body.total,
+        status: { $in: ['pending', 'paid', 'processing'] },
+        'items.0.productName': body.items[0]?.productName, // Match first item product name
+        'items.0.quantity': body.items[0]?.quantity // Match first item quantity
+      }).sort({ createdAt: -1 }).limit(5).toArray();
+
+      // Verify the orders have identical items
+      for (const order of matchingOrders) {
+        if (order.items.length === body.items.length) {
+          const orderItemsMatch = order.items.every((orderItem: any, index: number) => {
+            const newItem = body.items[index];
+            return orderItem.productId === newItem.productId &&
+                   orderItem.productName === newItem.productName &&
+                   orderItem.quantity === newItem.quantity &&
+                   orderItem.productPrice === newItem.productPrice;
+          });
+
+          if (orderItemsMatch) {
+            exactDuplicate = order;
+            break;
+          }
+        }
+      }
+    }
+
+    const duplicate = recentDuplicate || exactDuplicate;
+    if (duplicate) {
+      const timeDiff = recentDuplicate 
+        ? (Date.now() - new Date(duplicate.createdAt).getTime()) / 1000
+        : null;
+      const reason = recentDuplicate 
+        ? `within ${Math.round((timeDiff || 0) / 60)} minute(s)` 
+        : 'exact match (same customer, total, and items)';
+      
+      console.warn(`⚠️ Duplicate order detected for ${sanitizedCustomer.email} - ${reason}. Returning existing order.`);
+      logSecurityEvent(request, 'DUPLICATE_ORDER_PREVENTED', { 
+        customerEmail: sanitizedCustomer.email,
+        existingOrderId: duplicate._id.toString(),
+        reason: recentDuplicate ? 'recent_duplicate' : 'exact_duplicate',
+        timeDifference: timeDiff
+      });
+      
+      return NextResponse.json({
+        success: true,
+        orderId: duplicate._id,
+        orderNumber: duplicate.orderNumber,
+        isDuplicate: true
+      });
+    }
+
     // Generate order number
     const orderNumber = `SP-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
@@ -207,14 +279,30 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Deduplicate orders by ID (safety measure in case duplicates exist in database)
+    const uniqueOrdersMap = new Map<string, typeof serializedOrders[0]>();
+    for (const order of serializedOrders) {
+      if (!uniqueOrdersMap.has(order.id)) {
+        uniqueOrdersMap.set(order.id, order);
+      } else {
+        console.warn(`⚠️ Duplicate order ID found in API response: ${order.id}`);
+      }
+    }
+    const uniqueOrders = Array.from(uniqueOrdersMap.values());
+
+    // Update total count if we removed duplicates
+    const actualTotal = uniqueOrders.length < serializedOrders.length 
+      ? total - (serializedOrders.length - uniqueOrders.length)
+      : total;
+
     return NextResponse.json({
       success: true,
-      orders: serializedOrders,
-      totalCount: total,
+      orders: uniqueOrders,
+      totalCount: actualTotal,
       page: page,
       limit: limit,
-      totalPages: totalPages,
-      hasNextPage: page < totalPages,
+      totalPages: Math.ceil(actualTotal / limit),
+      hasNextPage: page < Math.ceil(actualTotal / limit),
       hasPrevPage: page > 1
     });
 
