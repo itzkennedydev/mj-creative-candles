@@ -28,12 +28,6 @@ export function CheckoutForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Prevent double submission
-    if (isProcessing) {
-      console.warn('⚠️ Checkout form submission blocked: already processing');
-      return;
-    }
-    
     // Validate required fields
     if (!customerInfo.firstName.trim() || !customerInfo.lastName.trim() || 
         !customerInfo.email.trim() || !customerInfo.phone.trim()) {
