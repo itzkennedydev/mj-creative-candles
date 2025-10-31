@@ -42,6 +42,8 @@ export interface Order {
   updatedAt: Date;
   paidAt?: Date;
   failureReason?: string;
+  emailsSent?: boolean;
+  emailsSentAt?: Date;
 }
 
 export interface CreateOrderRequest {

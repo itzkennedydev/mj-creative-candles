@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Container } from '~/components/ui/container';
 
 export default function CheckoutSuccessPage() {
   const [sessionId, setSessionId] = useState<string>('');
+  const emailsSentRef = useRef(false);
 
   useEffect(() => {
     // Get session ID from URL params
@@ -14,6 +15,33 @@ export default function CheckoutSuccessPage() {
     
     if (sessionIdParam) {
       setSessionId(sessionIdParam);
+      
+      // Send confirmation emails after payment is confirmed
+      // Only send once, even if component re-renders
+      if (!emailsSentRef.current) {
+        emailsSentRef.current = true;
+        
+        fetch('/api/orders/send-confirmation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ sessionId: sessionIdParam }),
+        })
+          .then(async (response) => {
+            const data = await response.json();
+            if (response.ok) {
+              console.log('Confirmation emails sent successfully:', data);
+            } else {
+              console.error('Failed to send confirmation emails:', data);
+              // Don't show error to user - payment was successful
+            }
+          })
+          .catch((error) => {
+            console.error('Error sending confirmation emails:', error);
+            // Don't show error to user - payment was successful
+          });
+      }
     }
 
     // Clear cart on successful payment by removing items from localStorage

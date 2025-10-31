@@ -1,7 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import clientPromise from '~/lib/mongodb';
-import { sendOrderConfirmationEmail } from '~/lib/email-service';
 import type { CreateOrderRequest, Order } from '~/lib/order-types';
 import type { OrderItem as ApiOrderItem } from '~/lib/order-types';
 import { authenticateRequest } from '~/lib/auth';
@@ -78,20 +77,7 @@ export async function POST(request: NextRequest) {
     const result = await ordersCollection.insertOne(order);
 
     if (result.insertedId) {
-      // Send email notifications
-      const fullOrder: Order = {
-        _id: result.insertedId.toString(),
-        ...order
-      };
-      
-      try {
-        await sendOrderConfirmationEmail(fullOrder);
-        console.log('Email notifications sent successfully');
-      } catch (emailError) {
-        console.error('Error sending email notifications:', emailError);
-        // Don't fail the order creation if email fails
-      }
-
+      // Note: Email notifications are sent after payment is confirmed on the checkout success page
       logSecurityEvent(request, 'ORDER_CREATED', { orderNumber, customerEmail: sanitizedCustomer.email });
 
       return NextResponse.json({
