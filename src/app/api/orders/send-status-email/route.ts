@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
     };
     const { orderId, status } = body;
 
+    console.log(`[send-status-email] Received request - orderId: ${orderId}, status: "${status}"`);
+
     if (!orderId || !status) {
       return NextResponse.json(
         { error: 'Order ID and status are required' },
@@ -45,7 +47,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log(`[send-status-email] Found order ${order.orderNumber}`);
+    console.log(`[send-status-email] Customer email: ${order.customer.email}`);
+    console.log(`[send-status-email] Customer name: ${order.customer.firstName} ${order.customer.lastName}`);
+
     // Send status update email
+    console.log(`[send-status-email] Sending email for status: "${status}"`);
     await sendStatusUpdateEmail({
       customerName: `${order.customer.firstName} ${order.customer.lastName}`,
       customerEmail: order.customer.email,
@@ -54,6 +61,8 @@ export async function POST(request: NextRequest) {
       items: order.items,
       total: order.total
     });
+
+    console.log(`[send-status-email] Email sent successfully for status: "${status}"`);
 
     return NextResponse.json({
       success: true,

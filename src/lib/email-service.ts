@@ -1,6 +1,7 @@
 import Mailgun from 'mailgun.js';
 import type { Order, OrderItem } from './order-types';
 import { env } from '~/env.js';
+import { getAuthorizedEmails } from './admin-emails-db';
 
 // Initialize Mailgun
 const mailgun = new Mailgun(FormData);
@@ -14,9 +15,18 @@ export async function sendAccessRequestEmail(email: string, name: string, reason
   try {
     const accessRequestHtml = generateAccessRequestEmailTemplate(email, name, reason);
 
+    // Get admin emails from database
+    const adminEmails = await getAuthorizedEmails();
+    const adminEmailAddresses = adminEmails.map(admin => admin.email);
+
+    if (adminEmailAddresses.length === 0) {
+      console.warn('No admin emails found in database, using fallback');
+      adminEmailAddresses.push('itskennedy.dev@gmail.com', 'pleasestitch18@gmail.com');
+    }
+
     await mg.messages.create('stitchpleaseqc.com', {
       from: 'Stitch Please Admin <admin@stitchpleaseqc.com>',
-      to: ['itskennedy.dev@gmail.com', 'pleasestitch18@gmail.com'],
+      to: adminEmailAddresses,
       subject: `New Admin Access Request from ${name}`,
       html: accessRequestHtml
     });
@@ -182,9 +192,18 @@ export async function sendOrderConfirmationEmail(order: Order) {
     // Owner email
     const ownerEmailHtml = generateOwnerEmailTemplate(order);
     
+    // Get admin emails from database
+    const adminEmails = await getAuthorizedEmails();
+    const adminEmailAddresses = adminEmails.map(admin => admin.email);
+
+    if (adminEmailAddresses.length === 0) {
+      console.warn('No admin emails found in database, using fallback');
+      adminEmailAddresses.push('pleasestitch18@gmail.com');
+    }
+    
     await mg.messages.create('stitchpleaseqc.com', {
       from: 'Stitch Please Orders <orders@stitchpleaseqc.com>',
-      to: ['pleasestitch18@gmail.com'],
+      to: adminEmailAddresses,
       subject: `New Order Received - ${order.orderNumber}`,
       html: ownerEmailHtml
     });
@@ -550,36 +569,196 @@ export async function sendStatusUpdateEmail({
     let emailHtml: string;
     let subject: string;
 
+    console.log(`[sendStatusUpdateEmail] Processing status: "${status}" for order ${orderNumber}`);
+    console.log(`[sendStatusUpdateEmail] Status type: ${typeof status}, length: ${status?.length}`);
+
     switch (status) {
       case 'processing':
+        console.log(`[sendStatusUpdateEmail] Matched 'processing' case`);
         emailHtml = generateProcessingEmailTemplate({ customerName, orderNumber, items, total });
         subject = `Order Processing Started - ${orderNumber}`;
         break;
+      case 'ready_for_pickup':
+        console.log(`[sendStatusUpdateEmail] ✓ Matched 'ready_for_pickup' case`);
+        emailHtml = generateReadyForPickupEmailTemplate({ customerName, orderNumber, items, total });
+        subject = `Your Order is Ready for Pickup - ${orderNumber}`;
+        console.log(`[sendStatusUpdateEmail] Generated ready_for_pickup email template`);
+        break;
       case 'delivered':
+        console.log(`[sendStatusUpdateEmail] Matched 'delivered' case`);
         emailHtml = generateDeliveredEmailTemplate({ customerName, orderNumber, items, total });
         subject = `Thank You! Order Delivered - ${orderNumber}`;
         break;
       case 'cancelled':
+        console.log(`[sendStatusUpdateEmail] Matched 'cancelled' case`);
         emailHtml = generateCancelledEmailTemplate({ customerName, orderNumber, items, total });
         subject = `Order Cancelled - ${orderNumber}`;
         break;
       default:
+        console.log(`[sendStatusUpdateEmail] ✗ No match for status: "${status}" (type: ${typeof status})`);
+        console.log(`[sendStatusUpdateEmail] Available cases: processing, ready_for_pickup, delivered, cancelled`);
         return true; // No email for other statuses
     }
 
-    await mg.messages.create('stitchpleaseqc.com', {
-      from: 'Stitch Please <orders@stitchpleaseqc.com>',
-      to: [customerEmail],
-      subject,
-      html: emailHtml
-    });
+    console.log(`[sendStatusUpdateEmail] About to send email to ${customerEmail} with subject: ${subject}`);
+    console.log(`[sendStatusUpdateEmail] Customer name: ${customerName}`);
+    console.log(`[sendStatusUpdateEmail] Order number: ${orderNumber}`);
 
-    console.log(`${status} email sent successfully via Mailgun`);
-    return true;
+    try {
+      const mailgunResponse = await mg.messages.create('stitchpleaseqc.com', {
+        from: 'Stitch Please <orders@stitchpleaseqc.com>',
+        to: [customerEmail],
+        subject,
+        html: emailHtml
+      });
+
+      console.log(`[sendStatusUpdateEmail] ✓ Mailgun API response:`, JSON.stringify(mailgunResponse, null, 2));
+      console.log(`[sendStatusUpdateEmail] ✓ Email successfully sent to ${customerEmail} via Mailgun`);
+
+      // Send admin notification email
+      try {
+        const adminEmailHtml = generateAdminStatusUpdateTemplate({
+          customerName,
+          orderNumber,
+          status,
+          items,
+          total
+        });
+        
+        const adminSubject = `Order Status Updated: ${statusDisplayName(status)} - ${orderNumber}`;
+        
+        // Get admin emails from database
+        const adminEmails = await getAuthorizedEmails();
+        const adminEmailAddresses = adminEmails.map(admin => admin.email);
+
+        if (adminEmailAddresses.length === 0) {
+          console.warn('No admin emails found in database, using fallback');
+          adminEmailAddresses.push('pleasestitch18@gmail.com', 'itskennedy.dev@gmail.com');
+        }
+        
+        await mg.messages.create('stitchpleaseqc.com', {
+          from: 'Stitch Please Orders <orders@stitchpleaseqc.com>',
+          to: adminEmailAddresses,
+          subject: adminSubject,
+          html: adminEmailHtml
+        });
+        
+        console.log(`[sendStatusUpdateEmail] ✓ Admin notification sent successfully to ${adminEmailAddresses.length} admin(s)`);
+      } catch (adminEmailError) {
+        console.error(`[sendStatusUpdateEmail] ✗ Failed to send admin notification:`, adminEmailError);
+        // Don't fail the whole operation if admin email fails
+      }
+
+      return true;
+    } catch (mailgunError: unknown) {
+      console.error(`[sendStatusUpdateEmail] ✗ Mailgun API error:`, mailgunError);
+      const errorMessage = mailgunError instanceof Error ? mailgunError.message : 'Unknown error';
+      const errorDetails = (mailgunError as { response?: { body?: unknown } })?.response?.body || mailgunError;
+      console.error(`[sendStatusUpdateEmail] ✗ Error message:`, errorMessage);
+      console.error(`[sendStatusUpdateEmail] ✗ Error details:`, errorDetails);
+      throw mailgunError; // Re-throw to be caught by outer try-catch
+    }
   } catch (error) {
     console.error(`Error sending ${status} email via Mailgun:`, error);
     return false;
   }
+}
+
+function statusDisplayName(status: string): string {
+  switch (status) {
+    case 'processing':
+      return 'Processing';
+    case 'ready_for_pickup':
+      return 'Ready for Pickup';
+    case 'delivered':
+      return 'Delivered';
+    case 'cancelled':
+      return 'Cancelled';
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
+  }
+}
+
+function generateAdminStatusUpdateTemplate({
+  customerName,
+  orderNumber,
+  status,
+  items,
+  total
+}: {
+  customerName: string;
+  orderNumber: string;
+  status: string;
+  items: OrderItem[];
+  total: number;
+}): string {
+  const statusName = statusDisplayName(status);
+  const statusEmoji = status === 'ready_for_pickup' ? '✅' : status === 'delivered' ? '🎉' : status === 'cancelled' ? '❌' : '🔄';
+  
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Status Updated - ${orderNumber}</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #0A5565; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .status-badge { background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>${statusEmoji} Order Status Updated</h1>
+          <p>Order #${orderNumber}</p>
+        </div>
+        
+        <div class="content">
+          <div class="status-badge">
+            <h2>Status: ${statusName}</h2>
+            <p>The order status has been updated to <strong>${statusName}</strong></p>
+          </div>
+          
+          <div class="order-details">
+            <h3>Order Details</h3>
+            <p><strong>Order Number:</strong> ${orderNumber}</p>
+            <p><strong>Customer:</strong> ${customerName}</p>
+            
+            <h4>Items:</h4>
+            ${items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #0A5565;">
+              <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
+            </div>
+          </div>
+          
+          <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>📋 Next Steps</h4>
+            <p>Review the order status update in your admin panel and take any necessary actions.</p>
+          </div>
+        </div>
+        
+        <div style="text-align: center; padding: 20px; color: #666;">
+          <p>View full order details in your admin panel</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
 }
 
 function generateProcessingEmailTemplate({
@@ -744,6 +923,100 @@ function generateDeliveredEmailTemplate({
         <div class="footer">
           <p>Thank you for choosing Stitch Please!</p>
           <p>We look forward to creating more amazing pieces for you in the future.</p>
+          <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateReadyForPickupEmailTemplate({
+  customerName,
+  orderNumber,
+  items,
+  total
+}: {
+  customerName: string;
+  orderNumber: string;
+  items: OrderItem[];
+  total: number;
+}): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Ready for Pickup</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #4CAF50; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #4CAF50; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+        .ready { background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .pickup-info { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎉 Your Order is Ready!</h1>
+          <p>Time to pick up your custom items</p>
+        </div>
+        
+        <div class="content">
+          <h2>Hello ${customerName}!</h2>
+          <p>Great news! Your order has been completed and is ready for pickup.</p>
+          
+          <div class="ready">
+            <h3>✅ Order Complete</h3>
+            <p>Your custom items have been finished and are waiting for you. We'll contact you soon to arrange a convenient pickup time.</p>
+          </div>
+          
+          <div class="pickup-info">
+            <h4>📍 Pickup Location</h4>
+            <p><strong>Stitch Please</strong><br>
+            415 13th St<br>
+            Moline, IL 61265</p>
+            <p><strong>Phone:</strong> (309) 373-6017</p>
+            <p style="margin-top: 10px;">Please call us to schedule your pickup time, or we'll contact you shortly.</p>
+          </div>
+          
+          <div class="order-details">
+            <h3>Order Summary</h3>
+            <p><strong>Order Number:</strong> ${orderNumber}</p>
+            
+            <h4>Items Ready for Pickup:</h4>
+            ${items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #4CAF50;">
+              <p class="total"><strong>Total Paid: $${total.toFixed(2)}</strong></p>
+            </div>
+          </div>
+          
+          <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>⚠️ Important Pickup Information</h4>
+            <ul>
+              <li><strong>Check your items</strong> - Please inspect your order before leaving</li>
+              <li><strong>Contact us</strong> - Call (309) 373-6017 if you have any questions</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Thank you for choosing Stitch Please!</p>
           <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
         </div>
       </div>
