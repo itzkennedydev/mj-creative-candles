@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Container } from "~/components/ui/container";
 import { useCart } from "~/lib/cart-context";
@@ -34,6 +34,7 @@ export default function ProductDetailPage() {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const quantity = 1;
   const [activeTab, setActiveTab] = useState<string>("product");
+  const [isExpanded, setIsExpanded] = useState(false);
   const { addItem } = useCart();
   const { addToast } = useToast();
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -48,6 +49,26 @@ export default function ProductDetailPage() {
       console.warn('Product ID is missing');
     }
   }, [productId]);
+
+  // Handle Escape key to close expanded view
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+
+    if (isExpanded) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isExpanded]);
 
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', productId],
@@ -286,7 +307,94 @@ export default function ProductDetailPage() {
                 ))}
               </div>
             )}
+
+            {/* Expand Icon */}
+            {allImages.length > 0 && (
+              <button
+                onClick={() => setIsExpanded(true)}
+                className="absolute top-4 right-4 bg-white/90 hover:bg-white text-black p-2.5 md:p-3 rounded-full transition-all duration-200 z-20 shadow-lg active:scale-95"
+                aria-label="Expand image"
+              >
+                <Maximize2 className="h-5 w-5 md:h-6 md:w-6" />
+              </button>
+            )}
           </section>
+
+          {/* Expanded Image Modal */}
+          {isExpanded && allImages.length > 0 && (
+            <div 
+              className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-4"
+              onClick={() => setIsExpanded(false)}
+            >
+              <button
+                onClick={() => setIsExpanded(false)}
+                className="absolute top-4 right-4 bg-white/90 hover:bg-white text-black p-3 rounded-full transition-all duration-200 shadow-lg z-50"
+                aria-label="Close expanded view"
+              >
+                <X className="h-6 w-6" />
+              </button>
+              
+              {/* Navigation Arrows */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(currentImageIndex > 0 ? currentImageIndex - 1 : allImages.length - 1);
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-4 rounded-full transition-all duration-200 z-50 shadow-lg"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(currentImageIndex < allImages.length - 1 ? currentImageIndex + 1 : 0);
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-4 rounded-full transition-all duration-200 z-50 shadow-lg"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
+                </>
+              )}
+
+              {/* Expanded Image */}
+              <div 
+                className="relative w-full h-full max-w-7xl max-h-[90vh]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Image
+                  src={allImages[currentImageIndex]?.src ?? '/placeholder.jpg'}
+                  alt={product.name}
+                  fill
+                  className="object-contain"
+                  sizes="100vw"
+                  priority
+                />
+              </div>
+
+              {/* Image Dots Indicator */}
+              {allImages.length > 1 && (
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-x-2 z-50">
+                  {allImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(idx);
+                      }}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        currentImageIndex === idx ? 'bg-white' : 'bg-white/30 hover:bg-white/70'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
         {/* Right Panel - Product Details */}
         <div className="md:h-[600px] lg:h-[calc(90svh-84px)] md:flex md:flex-col md:items-center md:justify-center lg:w-full relative lg:sticky lg:top-[59px]">

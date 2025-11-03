@@ -6,7 +6,7 @@ import Link from "next/link";
 import type { Product } from "~/lib/types";
 import { getOptimizedImageUrl } from "~/lib/types";
 import { Button } from "~/components/ui/button";
-import { ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight } from "lucide-react";
+import { ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
 import { useToast } from "~/lib/toast-context";
 import { trackAddToCart, trackViewItem } from "~/lib/analytics";
@@ -23,6 +23,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const { addItem } = useCart();
   const { addToast } = useToast();
@@ -61,6 +62,25 @@ export function ProductCard({ product }: ProductCardProps) {
       }
     }
   }, [product.sizes, product.colors, selectedSize, selectedColor]);
+
+  // Handle Escape key to close expanded view
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+
+    if (isExpanded) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isExpanded]);
 
   // Handle swipe gestures
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -199,7 +219,11 @@ export function ProductCard({ product }: ProductCardProps) {
             {allImages.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => setCurrentImageIndex(idx)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setCurrentImageIndex(idx);
+                }}
                 className={`w-2 h-2 rounded-full transition-all ${
                   currentImageIndex === idx ? 'bg-white w-8' : 'bg-white/50'
                 }`}
@@ -208,8 +232,99 @@ export function ProductCard({ product }: ProductCardProps) {
             ))}
           </div>
         )}
+
+        {/* Expand Icon */}
+        {allImages.length > 0 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              setIsExpanded(true);
+            }}
+            className="absolute top-2 right-2 bg-white/90 hover:bg-white text-black p-2 rounded-full transition-all duration-200 z-20 shadow-lg active:scale-95"
+            aria-label="Expand image"
+          >
+            <Maximize2 className="h-4 w-4" />
+          </button>
+        )}
       </div>
       </Link>
+
+      {/* Expanded Image Modal */}
+      {isExpanded && allImages.length > 0 && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-4"
+          onClick={() => setIsExpanded(false)}
+        >
+          <button
+            onClick={() => setIsExpanded(false)}
+            className="absolute top-4 right-4 bg-white/90 hover:bg-white text-black p-3 rounded-full transition-all duration-200 shadow-lg z-50"
+            aria-label="Close expanded view"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          
+          {/* Navigation Arrows */}
+          {allImages.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentImageIndex(currentImageIndex > 0 ? currentImageIndex - 1 : allImages.length - 1);
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-4 rounded-full transition-all duration-200 z-50 shadow-lg"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentImageIndex(currentImageIndex < allImages.length - 1 ? currentImageIndex + 1 : 0);
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-4 rounded-full transition-all duration-200 z-50 shadow-lg"
+                aria-label="Next image"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
+          )}
+
+          {/* Expanded Image */}
+          <div 
+            className="relative w-full h-full max-w-7xl max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={allImages[currentImageIndex]?.src ?? '/placeholder.jpg'}
+              alt={product.name}
+              fill
+              className="object-contain"
+              sizes="100vw"
+              priority
+            />
+          </div>
+
+          {/* Image Dots Indicator */}
+          {allImages.length > 1 && (
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-x-2 z-50">
+              {allImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex(idx);
+                  }}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    currentImageIndex === idx ? 'bg-white' : 'bg-white/30 hover:bg-white/70'
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Product Details */}
         <div className="space-y-4 md:space-y-6 flex-1 flex flex-col">
