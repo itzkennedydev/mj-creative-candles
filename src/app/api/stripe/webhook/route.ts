@@ -4,6 +4,8 @@ import { stripe } from '~/lib/stripe';
 import { env } from '~/env.js';
 import clientPromise from '~/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { sendOrderConfirmationEmail } from '~/lib/email-service';
+import type { Order } from '~/lib/order-types';
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -98,6 +100,31 @@ export async function POST(request: NextRequest) {
           console.error(`Order ${orderId} not found when processing webhook`);
         } else {
           console.log(`Successfully updated order ${orderId} to paid status via webhook`);
+          
+          // Send email notifications immediately when payment is confirmed via webhook
+          // This ensures notifications are sent as soon as payment is confirmed, not waiting for checkout page
+          try {
+            const ordersCollection = db.collection<Order>('orders');
+            const order = await ordersCollection.findOne({ _id: new ObjectId(orderId) });
+            
+            if (order && !order.emailsSent) {
+              // Send confirmation emails immediately
+              await sendOrderConfirmationEmail(order);
+              
+              // Mark that emails have been sent
+              await ordersCollection.updateOne(
+                { _id: new ObjectId(orderId) },
+                { $set: { emailsSent: true, emailsSentAt: new Date() } }
+              );
+              
+              console.log(`✅ Email notifications sent immediately for order ${order.orderNumber} via webhook`);
+            } else if (order?.emailsSent) {
+              console.log(`Order ${order.orderNumber} already had emails sent, skipping duplicate`);
+            }
+          } catch (emailError) {
+            // Log error but don't fail the webhook - emails can be sent later via checkout success page
+            console.error(`Error sending email notifications via webhook for order ${orderId}:`, emailError);
+          }
         }
         break;
       }

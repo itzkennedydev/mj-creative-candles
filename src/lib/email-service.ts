@@ -1265,3 +1265,115 @@ function generateCancelledEmailTemplate({
     </html>
   `;
 }
+
+export async function sendBugReportEmail({
+  subject,
+  description,
+  deviceInfo,
+  appVersion,
+  userEmail,
+}: {
+  subject: string;
+  description: string;
+  deviceInfo?: string;
+  appVersion?: string;
+  userEmail?: string;
+}): Promise<boolean> {
+  try {
+    // Skip email sending during build time or if no API key
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping bug report email - no valid Mailgun API key');
+      return true;
+    }
+
+    const bugReportHtml = generateBugReportEmailTemplate({
+      subject,
+      description,
+      deviceInfo,
+      appVersion,
+      userEmail,
+    });
+
+    // Send to specified email address
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please Bug Reports <bugs@stitchpleaseqc.com>',
+      to: ['itskennedy.dev@gmail.com'],
+      subject: `Bug Report: ${subject}`,
+      html: bugReportHtml,
+      replyTo: userEmail || 'noreply@stitchpleaseqc.com',
+    });
+
+    console.log('✅ Bug report email sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Failed to send bug report email:', error);
+    return false;
+  }
+}
+
+function generateBugReportEmailTemplate({
+  subject,
+  description,
+  deviceInfo,
+  appVersion,
+  userEmail,
+}: {
+  subject: string;
+  description: string;
+  deviceInfo?: string;
+  appVersion?: string;
+  userEmail?: string;
+}): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Bug Report</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .bug-box { background: white; border: 2px solid #f44336; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .info-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .label { font-weight: bold; color: #0A5565; margin-bottom: 5px; display: block; }
+        .value { margin-bottom: 15px; white-space: pre-wrap; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🐛 Bug Report</h1>
+          <p>New bug report from Stitch Please iOS app</p>
+        </div>
+        
+        <div class="content">
+          <div class="bug-box">
+            <h2 style="color: #f44336; margin-top: 0;">${subject}</h2>
+            <div class="value">${description.replace(/\n/g, '<br>')}</div>
+          </div>
+          
+          <div class="info-box">
+            <h3 style="color: #0A5565; margin-top: 0;">Report Details</h3>
+            ${userEmail ? `<div><span class="label">Reporter Email:</span><div class="value">${userEmail}</div></div>` : ''}
+            ${appVersion ? `<div><span class="label">App Version:</span><div class="value">${appVersion}</div></div>` : ''}
+            ${deviceInfo ? `<div><span class="label">Device Info:</span><div class="value">${deviceInfo}</div></div>` : ''}
+            <div><span class="label">Reported At:</span><div class="value">${new Date().toLocaleString()}</div></div>
+          </div>
+          
+          <p style="color: #666; font-size: 14px;">
+            This bug report was submitted through the Stitch Please iOS app.${userEmail ? ` You can reply directly to this email to contact the reporter.` : ''}
+          </p>
+        </div>
+        
+        <div class="footer">
+          <p>© 2025 Stitch Please. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
