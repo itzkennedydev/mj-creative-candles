@@ -72,7 +72,7 @@ export function Header() {
               <NavLink href="/shop">Shop</NavLink>
               <NavLink href="/services">Services</NavLink>
               <NavLink href="/events/stitch-sniff-holiday">Events</NavLink>
-              <NavLink href="/appointments" badge="NEW">Mobile</NavLink>
+              <NavLink href="/appointments" badge="NEW">Mobile Embroidery</NavLink>
               <NavLink href="/about">About</NavLink>
             </nav>
 
