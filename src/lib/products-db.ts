@@ -11,9 +11,12 @@ interface ProductDocument {
   price: number;
   image: string;
   category: string;
+  shopType?: 'spirit-wear' | 'regular-shop';
   inStock: boolean;
   sizes?: string[];
   colors?: string[];
+  requiresBabyClothes?: boolean;
+  babyClothesDeadlineDays?: number;
 }
 
 // Load environment variables
@@ -27,6 +30,7 @@ const initialProducts: Omit<Product, 'id'>[] = [
     price: 22.00,
     image: "/placeholder-black-tshirt.png",
     category: "Apparel",
+    shopType: "spirit-wear",
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["Black"]
@@ -37,6 +41,7 @@ const initialProducts: Omit<Product, 'id'>[] = [
     price: 35.00,
     image: "/placeholder-black-hoodie.png",
     category: "Apparel",
+    shopType: "spirit-wear",
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["Black"]
@@ -86,9 +91,12 @@ export async function getProducts(): Promise<Product[]> {
       price: product.price,
       image: product.image,
       category: product.category,
+      shopType: product.shopType,
       inStock: product.inStock,
       sizes: product.sizes,
-      colors: product.colors
+      colors: product.colors,
+      requiresBabyClothes: product.requiresBabyClothes,
+      babyClothesDeadlineDays: product.babyClothesDeadlineDays
     }));
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -150,9 +158,12 @@ export async function updateProduct(id: string, productData: Partial<Product>): 
       price: updatedProduct.price,
       image: updatedProduct.image,
       category: updatedProduct.category,
+      shopType: updatedProduct.shopType,
       inStock: updatedProduct.inStock,
       sizes: updatedProduct.sizes,
-      colors: updatedProduct.colors
+      colors: updatedProduct.colors,
+      requiresBabyClothes: updatedProduct.requiresBabyClothes,
+      babyClothesDeadlineDays: updatedProduct.babyClothesDeadlineDays
     };
   } catch (error) {
     console.error('Error updating product:', error);

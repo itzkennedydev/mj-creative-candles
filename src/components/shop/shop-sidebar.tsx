@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-export function ShopSidebar() {
+interface ShopSidebarProps {
+  shopType?: "spirit-wear" | "regular-shop";
+}
+
+export function ShopSidebar({ shopType = "regular-shop" }: ShopSidebarProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>("All");
 

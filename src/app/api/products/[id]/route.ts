@@ -5,6 +5,63 @@ import { ObjectId } from 'mongodb';
 import type { Product } from '~/lib/types';
 import { authenticateRequest } from '~/lib/auth';
 
+// GET /api/products/[id] - Get a single product (PUBLIC)
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: productId } = await params;
+
+    // Validate ObjectId
+    if (!ObjectId.isValid(productId)) {
+      return NextResponse.json(
+        { error: 'Invalid product ID' },
+        { status: 400 }
+      );
+    }
+
+    const client = await clientPromise;
+    const db = client.db('stitch_orders');
+    const productsCollection = db.collection<any>('products');
+
+    const product = await productsCollection.findOne({ _id: new ObjectId(productId) });
+
+    if (!product) {
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+
+    // Map _id to id for frontend compatibility
+    const mappedProduct: Product = {
+      id: product._id.toString(),
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      imageId: product.imageId,
+      images: product.images ?? [],
+      category: product.category,
+      shopType: product.shopType,
+      inStock: product.inStock,
+      sizes: product.sizes,
+      colors: product.colors,
+      requiresBabyClothes: product.requiresBabyClothes,
+      babyClothesDeadlineDays: product.babyClothesDeadlineDays
+    };
+
+    return NextResponse.json(mappedProduct);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch product' },
+      { status: 500 }
+    );
+  }
+}
+
 // PUT /api/products/[id] - Update a product
 export async function PUT(
   request: NextRequest,
@@ -45,9 +102,12 @@ export async function PUT(
     if (body.imageId !== undefined) updateData.imageId = body.imageId;
     if (body.images !== undefined) updateData.images = body.images; // Include images array
     if (body.category !== undefined) updateData.category = body.category;
+    if (body.shopType !== undefined) updateData.shopType = body.shopType;
     if (body.inStock !== undefined) updateData.inStock = body.inStock;
     if (body.sizes !== undefined) updateData.sizes = body.sizes;
     if (body.colors !== undefined) updateData.colors = body.colors;
+    if (body.requiresBabyClothes !== undefined) updateData.requiresBabyClothes = body.requiresBabyClothes;
+    if (body.babyClothesDeadlineDays !== undefined) updateData.babyClothesDeadlineDays = body.babyClothesDeadlineDays;
 
     // Update product in database
     const result = await productsCollection.updateOne(
@@ -75,9 +135,12 @@ export async function PUT(
         imageId: updatedProduct.imageId,
         images: updatedProduct.images ?? [], // Include images array
         category: updatedProduct.category,
+        shopType: updatedProduct.shopType,
         inStock: updatedProduct.inStock,
         sizes: updatedProduct.sizes,
-        colors: updatedProduct.colors
+        colors: updatedProduct.colors,
+        requiresBabyClothes: updatedProduct.requiresBabyClothes,
+        babyClothesDeadlineDays: updatedProduct.babyClothesDeadlineDays
       };
       
       return NextResponse.json(product);

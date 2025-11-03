@@ -11,6 +11,159 @@ const mg = mailgun.client({
   url: 'https://api.mailgun.net'
 });
 
+export async function sendNewsletterSubscriptionEmail(email: string) {
+  try {
+    // Skip email sending during build time or if no API key
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping newsletter subscription email - no valid Mailgun API key');
+      return true;
+    }
+
+    const subscriptionEmailHtml = generateNewsletterSubscriptionTemplate();
+
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please <newsletter@stitchpleaseqc.com>',
+      to: [email],
+      subject: 'Welcome to Stitch Please Newsletter!',
+      html: subscriptionEmailHtml
+    });
+
+    // Send admin notification
+    const adminEmails = await getAuthorizedEmails();
+    const adminEmailAddresses = adminEmails.map(admin => admin.email);
+
+    if (adminEmailAddresses.length === 0) {
+      adminEmailAddresses.push('pleasestitch18@gmail.com', 'itskennedy.dev@gmail.com');
+    }
+
+    const adminNotificationHtml = generateAdminNewsletterNotificationTemplate(email);
+
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please Newsletter <newsletter@stitchpleaseqc.com>',
+      to: adminEmailAddresses,
+      subject: `New Newsletter Subscription: ${email}`,
+      html: adminNotificationHtml
+    });
+
+    console.log(`✅ Newsletter subscription emails sent for ${email}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send newsletter subscription email:', error);
+    return false;
+  }
+}
+
+function generateNewsletterSubscriptionTemplate(): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Welcome to Stitch Please Newsletter</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #74CADC; color: #0A5565; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .welcome-box { background: white; border: 2px solid #74CADC; border-radius: 8px; padding: 25px; margin: 20px 0; text-align: center; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+        .button { display: inline-block; background: #74CADC; color: #0A5565; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; font-weight: bold; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Welcome to Stitch Please!</h1>
+          <p>Thank you for subscribing to our newsletter</p>
+        </div>
+        
+        <div class="content">
+          <div class="welcome-box">
+            <h2>🎉 You&apos;re All Set!</h2>
+            <p>Thank you for joining our community! You&apos;ll now receive:</p>
+            <ul style="text-align: left; display: inline-block; margin: 20px 0;">
+              <li>Latest product updates and new arrivals</li>
+              <li>Exclusive promotions and special offers</li>
+              <li>Custom embroidery tips and inspiration</li>
+              <li>Event announcements and community news</li>
+            </ul>
+          </div>
+          
+          <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>Stay Connected</h3>
+            <p>Follow us on social media for even more updates and behind-the-scenes content:</p>
+            <p style="margin-top: 15px;">
+              <a href="https://www.facebook.com/stitchpleaseqc" class="button">Facebook</a>
+              <a href="https://www.instagram.com/stitchpleaseqc" class="button">Instagram</a>
+            </p>
+          </div>
+          
+          <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>📞 Questions?</h4>
+            <p>Have questions or need help with a custom order? Call us at <strong>(309) 373-6017</strong> or visit our website.</p>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>© 2025 Stitch Please. All rights reserved.</p>
+          <p>415 13th St, Moline, IL 61265</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateAdminNewsletterNotificationTemplate(email: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New Newsletter Subscription</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .info-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .label { font-weight: bold; color: #0A5565; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>📧 New Newsletter Subscription</h1>
+          <p>Someone just subscribed to your newsletter</p>
+        </div>
+        
+        <div class="content">
+          <div class="info-box">
+            <div style="margin-bottom: 15px;">
+              <span class="label">Email:</span><br>
+              ${email}
+            </div>
+            <div style="margin-bottom: 15px;">
+              <span class="label">Subscribed At:</span><br>
+              ${new Date().toLocaleString()}
+            </div>
+          </div>
+          
+          <p>This is an automated notification from the Stitch Please newsletter system.</p>
+        </div>
+        
+        <div class="footer">
+          <p>© 2025 Stitch Please. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
 export async function sendAccessRequestEmail(email: string, name: string, reason: string) {
   try {
     const accessRequestHtml = generateAccessRequestEmailTemplate(email, name, reason);

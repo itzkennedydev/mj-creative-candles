@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { Product } from "~/lib/types";
 import { getOptimizedImageUrl } from "~/lib/types";
 import { Button } from "~/components/ui/button";
@@ -143,8 +144,9 @@ export function ProductCard({ product }: ProductCardProps) {
           })),
         }}
       />
-      {/* Product Image */}
-        <div className="aspect-square relative mb-6 rounded-lg overflow-hidden flex-shrink-0"
+      {/* Product Image - Clickable to product detail */}
+      <Link href={`/shop/${product.id}`}>
+        <div className="aspect-square relative mb-6 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer"
              onTouchStart={handleTouchStart}
              onTouchMove={handleTouchMove}
              onTouchEnd={handleTouchEnd}
@@ -207,12 +209,28 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
       </div>
+      </Link>
       
       {/* Product Details */}
         <div className="space-y-4 md:space-y-6 flex-1 flex flex-col">
           <div className="flex-shrink-0">
-            <h3 className="text-lg md:text-xl font-medium text-gray-900 mb-2 line-clamp-2" itemProp="name">{product.name}</h3>
+            <Link href={`/shop/${product.id}`}>
+              <h3 className="text-lg md:text-xl font-medium text-gray-900 mb-2 line-clamp-2 hover:text-gray-700 transition-colors cursor-pointer" itemProp="name">{product.name}</h3>
+            </Link>
             <p className="text-sm md:text-base text-gray-600 line-clamp-3" itemProp="description">{product.description}</p>
+            
+            {/* Special Instructions for Mama Keepsake Sweatshirt */}
+            {product.requiresBabyClothes && (
+              <div className="mt-3 p-3 bg-pink-50 border border-pink-200 rounded-md">
+                <p className="text-sm font-medium text-pink-900 mb-1">Bring Your Baby Clothes!</p>
+                <p className="text-xs text-pink-800">
+                  You have {product.babyClothesDeadlineDays || 5} days to bring in your baby clothes after ordering.
+                  {product.colors && product.colors.length > 0 && (
+                    <span className="block mt-1">Don&apos;t see your preferred color? Add it in the order notes during checkout.</span>
+                  )}
+                </p>
+              </div>
+            )}
           </div>
           
           <div className="text-xl md:text-2xl font-medium text-gray-900 flex-shrink-0">

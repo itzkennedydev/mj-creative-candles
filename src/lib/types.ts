@@ -15,9 +15,12 @@ export interface Product {
   imageId?: string; // Optional MongoDB image document ID for primary image
   images?: ProductImage[]; // Array of additional images
   category: string;
+  shopType?: 'spirit-wear' | 'regular-shop'; // Type of shop: spirit-wear (UTHS) or regular-shop (Stitch Please)
   inStock: boolean;
   sizes?: string[];
   colors?: string[];
+  requiresBabyClothes?: boolean; // For Mama Keepsake Sweatshirt
+  babyClothesDeadlineDays?: number; // Number of days to bring in baby clothes (default 5)
 }
 
 // Helper function to get optimized image URL

@@ -1,0 +1,502 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { Container } from "~/components/ui/container";
+import { useCart } from "~/lib/cart-context";
+import { useToast } from "~/lib/toast-context";
+import { useQuery } from "@tanstack/react-query";
+import type { Product } from "~/lib/types";
+import { getOptimizedImageUrl } from "~/lib/types";
+
+async function fetchProduct(id: string): Promise<Product> {
+  const response = await fetch(`/api/products/${id}`);
+  if (!response.ok) {
+    try {
+      const errorData = await response.json() as { error?: string };
+      throw new Error(errorData.error ?? `Failed to fetch product: ${response.status}`);
+    } catch {
+      throw new Error(`Failed to fetch product: ${response.status}`);
+    }
+  }
+  return response.json() as Promise<Product>;
+}
+
+export default function ProductDetailPage() {
+  const params = useParams();
+  const productId = params?.id as string;
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  const quantity = 1;
+  const [activeTab, setActiveTab] = useState<string>("product");
+  const { addItem } = useCart();
+  const { addToast } = useToast();
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+
+  // Debug log
+  useEffect(() => {
+    if (productId) {
+      console.log('Product ID:', productId);
+    } else {
+      console.warn('Product ID is missing');
+    }
+  }, [productId]);
+
+  const { data: product, isLoading, error } = useQuery({
+    queryKey: ['product', productId],
+    queryFn: () => {
+      if (!productId) {
+        throw new Error('Product ID is required');
+      }
+      return fetchProduct(productId);
+    },
+    enabled: !!productId,
+    retry: 1,
+  });
+
+  // Get all images
+  const getImageUrl = (imageId: string, dataUri: string) => {
+    if (dataUri.startsWith('data:') && imageId && imageId.length > 10) {
+      return getOptimizedImageUrl(imageId, dataUri, 1200);
+    }
+    return dataUri;
+  };
+
+  const allImages = product ? (
+    product.image ? [
+      { src: getImageUrl(product.imageId ?? '', product.image), isPrimary: true },
+      ...(product.images ?? []).map(img => ({ 
+        src: getImageUrl(img.imageId, img.dataUri), 
+        isPrimary: false 
+      }))
+    ] : (product.images ?? []).map(img => ({ 
+      src: getImageUrl(img.imageId, img.dataUri), 
+      isPrimary: false 
+    }))
+  ) : [];
+
+  // Set default selections
+  useEffect(() => {
+    if (product) {
+      if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+        setSelectedSize(product.sizes[0] ?? "");
+      }
+      if (product.colors && product.colors.length > 0 && !selectedColor) {
+        setSelectedColor(product.colors[0] ?? "");
+      }
+    }
+  }, [product, selectedSize, selectedColor]);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    
+    if (product.sizes && product.sizes.length > 1 && !selectedSize) {
+      addToast({
+        title: "Size Required",
+        description: "Please select a size before adding to cart.",
+        type: "warning"
+      });
+      return;
+    }
+    if (product.colors && product.colors.length > 1 && !selectedColor) {
+      addToast({
+        title: "Color Required",
+        description: "Please select a color before adding to cart.",
+        type: "warning"
+      });
+      return;
+    }
+    
+    addItem(product, quantity, selectedSize, selectedColor);
+    addToast({
+      title: "Added to Cart!",
+      description: `${product.name} has been added to your cart.`,
+      type: "success"
+    });
+  };
+
+  const displayPrice = product ? product.price + (selectedSize === 'XXL' ? 3 : 0) : 0;
+
+  // Handle swipe gestures for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches[0]) {
+      touchStartX.current = e.touches[0].clientX;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches[0]) {
+      touchEndX.current = e.touches[0].clientX;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (distance > minSwipeDistance && allImages.length > 1) {
+      // Swipe left - next image
+      setCurrentImageIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
+    } else if (distance < -minSwipeDistance && allImages.length > 1) {
+      // Swipe right - previous image
+      setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
+    }
+    
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('Product fetch error:', error);
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">
+            {error instanceof Error ? error.message : 'Failed to load product'}
+          </p>
+          <Link href="/shop">
+            <button className="px-6 py-3 bg-black/80 text-white rounded-full hover:bg-black transition-colors">
+              Back to Shop
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Product not found</p>
+          <Link href="/shop">
+            <button className="px-6 py-3 bg-black/80 text-white rounded-full hover:bg-black transition-colors">
+              Back to Shop
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <main className="bg-white pt-[24px] pb-[16px] md:pt-[32px] md:pb-[12px] lg:pt-[40px] lg:pb-[16px]">
+      <Container className="pb-[16px] md:pb-[12px] lg:pb-[16px]">
+        <div className="md:grid md:grid-cols-[1fr_1fr] md:gap-x-[20px] lg:grid-cols-[1fr_330px] lg:gap-x-[24px] lg:relative">
+          {/* Left Panel - Product Images */}
+          <section 
+            ref={imageContainerRef}
+            className="h-[380px] sm:h-[480px] md:h-[600px] lg:h-[calc(90svh-84px)] overflow-hidden rounded-[24px] md:rounded-[32px] lg:rounded-[40px] relative lg:overflow-hidden lg:sticky lg:top-[59px] touch-pan-y"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="swiper h-full overflow-hidden rounded-[24px] md:rounded-[32px] lg:rounded-[40px] bg-[#F1F1EF] flex w-full">
+              <div className="relative bg-[#F1F1EF] w-full h-full">
+                {allImages.length > 0 && (
+                  <>
+                    <div className="transition-opacity duration-300 opacity-100 relative h-full z-10">
+                      <Image
+                        src={allImages[currentImageIndex]?.src ?? '/placeholder.jpg'}
+                        alt={product.name}
+                        fill
+                        className="w-full h-full transition-opacity duration-500 object-cover relative object-top"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, calc(100vw - 354px)"
+                        priority
+                        style={{ color: 'transparent' }}
+                      />
+                    </div>
+                    
+                    {/* Navigation Arrows - Show on tablet and desktop */}
+                    {allImages.length > 1 && (
+                      <div className="hidden md:block">
+                        <button
+                          onClick={() => setCurrentImageIndex(currentImageIndex > 0 ? currentImageIndex - 1 : allImages.length - 1)}
+                          className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2.5 md:p-3 rounded-full transition-all duration-200 z-20 shadow-lg active:scale-95"
+                          aria-label="Previous image"
+                        >
+                          <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
+                        </button>
+                        <button
+                          onClick={() => setCurrentImageIndex(currentImageIndex < allImages.length - 1 ? currentImageIndex + 1 : 0)}
+                          className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-2.5 md:p-3 rounded-full transition-all duration-200 z-20 shadow-lg active:scale-95"
+                          aria-label="Next image"
+                        >
+                          <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
+                        </button>
+                      </div>
+                    )}
+                    
+                    {/* Mobile Navigation Arrows */}
+                    {allImages.length > 1 && (
+                      <div className="md:hidden flex justify-between items-center absolute inset-0 z-20 pointer-events-none">
+                        <button
+                          onClick={() => setCurrentImageIndex(currentImageIndex > 0 ? currentImageIndex - 1 : allImages.length - 1)}
+                          className="pointer-events-auto bg-white/80 active:bg-white text-black p-2.5 rounded-full transition-all duration-200 shadow-lg ml-3 active:scale-95"
+                          aria-label="Previous image"
+                        >
+                          <ChevronLeft className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => setCurrentImageIndex(currentImageIndex < allImages.length - 1 ? currentImageIndex + 1 : 0)}
+                          className="pointer-events-auto bg-white/80 active:bg-white text-black p-2.5 rounded-full transition-all duration-200 shadow-lg mr-3 active:scale-95"
+                          aria-label="Next image"
+                        >
+                          <ChevronRight className="h-5 w-5" />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+            
+            {/* Image Dots Indicator */}
+            {allImages.length > 1 && (
+              <div className="absolute bottom-[12px] sm:bottom-[16px] left-1/2 translate-x-[-50%] z-10 flex gap-x-[4px]">
+                {allImages.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentImageIndex(idx)}
+                    className={`w-[6px] h-[6px] sm:w-[8px] sm:h-[8px] rounded-full transition-all duration-300 ${
+                      currentImageIndex === idx ? 'bg-white' : 'bg-white/30 hover:bg-white/70 active:bg-white/50'
+                    }`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+        {/* Right Panel - Product Details */}
+        <div className="md:h-[600px] lg:h-[calc(90svh-84px)] md:flex md:flex-col md:items-center md:justify-center lg:w-full relative lg:sticky lg:top-[59px]">
+          <div className="w-full">
+            <div className="max-w-[438px] mx-auto md:max-w-[unset] md:mx-[unset] md:w-full">
+              <section className="pt-[24px] sm:pt-[28px] md:pt-0 text-black/[0.72] md:w-full">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end md:flex-col md:items-center md:justify-center gap-y-4 sm:gap-y-0">
+                  <div className="md:flex md:flex-col md:justify-center md:items-center w-full">
+                    {/* Product Name - Split into bold and regular parts */}
+                    <h1 className="text-[18px] sm:text-[20px] md:text-[22px] lg:text-[20px] leading-[130%] font-bold">
+                      {product.name.split(' ')[0]}
+                    </h1>
+                    <span className="text-[18px] sm:text-[20px] md:text-[22px] lg:text-[20px] leading-[130%]">
+                      {product.name.split(' ').slice(1).join(' ')}
+                    </span>
+                    
+                    {/* Tabs */}
+                    <div className="flex gap-x-[8px] justify-start sm:justify-start md:justify-center mt-[8px] sm:mt-[10px] md:mt-[12px] overflow-x-auto pb-1 scrollbar-hide">
+                      <button
+                        className={`px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] rounded-full text-[13px] sm:text-[14px] border-[2px] leading-[130%] transition-colors duration-[0.25s] whitespace-nowrap flex-shrink-0 ${
+                          activeTab === 'product' 
+                            ? 'border-black/[0.12]' 
+                            : 'border-black/[0.06] hover:border-black/[0.12] active:border-black/[0.12]'
+                        }`}
+                        onClick={() => setActiveTab('product')}
+                      >
+                        Product
+                      </button>
+                      <button
+                        className={`px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] rounded-full text-[13px] sm:text-[14px] border-[2px] leading-[130%] transition-colors duration-[0.25s] whitespace-nowrap flex-shrink-0 ${
+                          activeTab === 'faq' 
+                            ? 'border-black/[0.12]' 
+                            : 'border-black/[0.06] hover:border-black/[0.12] active:border-black/[0.12]'
+                        }`}
+                        onClick={() => setActiveTab('faq')}
+                      >
+                        FAQ
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Color Selector */}
+                  {product.colors && product.colors.length > 0 && (
+                    <div className="flex flex-col gap-y-[12px] md:mt-[24px] w-full md:w-auto">
+                      <div className="flex gap-x-[6px] sm:gap-x-[8px] overflow-x-auto pb-2 scrollbar-hide md:overflow-x-visible md:justify-center">
+                        {product.colors.map((color) => {
+                          const colorMap: Record<string, string> = {
+                            'Black': '#47433D',
+                            'White': '#F7F7F5',
+                            'Cream': '#D5CCBF',
+                            'Grey': '#8F9AA6',
+                            'Gray': '#8F9AA6',
+                            'Navy': '#4A5568',
+                            'Pink': '#FFC0CB',
+                            'Purple': '#9F7AEA',
+                            'Maroon': '#B91C1C',
+                            'Blue': '#74CADC',
+                            'Green': '#68D391',
+                            'Red': '#F56565',
+                          };
+                          const colorValue = colorMap[color] ?? '#CCCCCC';
+                          const isSelected = selectedColor === color;
+                          
+                          return (
+                            <div key={color} className="flex flex-col items-center gap-y-[6px] flex-shrink-0">
+                              <button
+                                onClick={() => setSelectedColor(color)}
+                                className={`w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] md:w-[40px] md:h-[40px] rounded-full flex items-center justify-center transition-all active:scale-95 touch-manipulation`}
+                                style={{ backgroundColor: colorValue }}
+                                aria-label={`${product.name.toLowerCase()}-${color.toLowerCase()}-color-selector`}
+                              >
+                                {isSelected && (
+                                  <span className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] md:w-[12px] md:h-[12px] block rounded-full bg-white"></span>
+                                )}
+                              </button>
+                              <span className="text-[11px] sm:text-[12px] leading-[130%] text-black/[0.72] whitespace-nowrap">{color}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tab Content */}
+                {activeTab === 'product' ? (
+                  <>
+                    {/* Size Selection as Plan Options - NEO Style */}
+                    {product.sizes && product.sizes.length > 0 && (
+                      <div className="bg-black/[0.06] rounded-[20px] sm:rounded-[24px] p-[4px] mt-[20px] sm:mt-[24px]">
+                        {product.sizes.map((size) => {
+                          const isSelected = selectedSize === size;
+                          const sizePrice = size === 'XXL' ? product.price + 3 : product.price;
+                          
+                          return (
+                            <button
+                              key={size}
+                              onClick={() => setSelectedSize(size)}
+                              className="p-[14px] sm:p-[16px] relative block w-full active:opacity-80 touch-manipulation"
+                            >
+                              <div className="flex justify-between relative z-[2]">
+                                <h2 className="text-[13px] sm:text-[14px] leading-[130%] font-bold">{size}</h2>
+                                <h3 className="text-[13px] sm:text-[14px] leading-[130%] font-bold">
+                                  ${sizePrice.toFixed(2)}
+                                </h3>
+                              </div>
+                              {isSelected && (
+                                <div 
+                                  className="w-full h-full absolute rounded-[18px] sm:rounded-[20px] bg-white top-0 left-0" 
+                                  style={{ opacity: 1 }}
+                                />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Description */}
+                    <div className="mt-5 sm:mt-6">
+                      <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-black/[0.72]">{product.description}</p>
+                    </div>
+
+                    {/* Special Instructions */}
+                    {product.requiresBabyClothes && (
+                      <div className="mt-5 sm:mt-6 bg-black/[0.03] rounded-[20px] sm:rounded-[24px] p-3 sm:p-4">
+                        <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold text-black/[0.72] mb-1">
+                          Bring Your Baby Clothes!
+                        </p>
+                        <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-black/[0.44]">
+                          You have {product.babyClothesDeadlineDays ?? 5} days to bring in your baby clothes after ordering.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  /* FAQ Tab Content */
+                  <div className="mt-[20px] sm:mt-[24px]">
+                    <div className="flex flex-col gap-y-[12px] sm:gap-y-[16px]" data-orientation="vertical">
+                      <div className="bg-black/[0.03] rounded-[20px] sm:rounded-[24px] p-[20px] sm:p-[24px]">
+                        <h3 className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold mb-2">
+                          How long does customization take?
+                        </h3>
+                        <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-black/[0.44]">
+                          Most custom orders are completed within 5-7 business days. Rush orders may be available upon request.
+                        </p>
+                      </div>
+                      <div className="bg-black/[0.03] rounded-[20px] sm:rounded-[24px] p-[20px] sm:p-[24px]">
+                        <h3 className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold mb-2">
+                          What payment methods do you accept?
+                        </h3>
+                        <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-black/[0.44]">
+                          We accept all major credit cards and debit cards through our secure checkout system.
+                        </p>
+                      </div>
+                      <div className="bg-black/[0.03] rounded-[20px] sm:rounded-[24px] p-[20px] sm:p-[24px]">
+                        <h3 className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold mb-2">
+                          Do you offer refunds?
+                        </h3>
+                        <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-black/[0.44]">
+                          Custom items are non-refundable, but we&apos;re happy to work with you on any issues.
+                        </p>
+                      </div>
+                      {product.requiresBabyClothes && (
+                        <div className="bg-black/[0.03] rounded-[20px] sm:rounded-[24px] p-[20px] sm:p-[24px]">
+                          <h3 className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold mb-2">
+                            What happens if I don&apos;t bring baby clothes?
+                          </h3>
+                          <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-black/[0.44]">
+                            You must bring baby clothes within {product.babyClothesDeadlineDays ?? 5} days. 
+                            If not received, we&apos;ll contact you about alternatives.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </section>
+
+              {/* Order Section - NEO Style */}
+              <section className="mt-[20px] sm:mt-[24px] md:mt-[24px]">
+                <div className="flex flex-col items-center" style={{ opacity: 1 }}>
+                  <h3 className="text-[15px] sm:text-[16px] leading-[130%] font-bold text-center text-black/[0.72]">
+                    ${displayPrice.toFixed(2)}
+                  </h3>
+                  {product.requiresBabyClothes && (
+                    <h3 className="text-[12px] sm:text-[14px] leading-[130%] text-center text-black/[0.72] opacity-50 font-normal mt-1">
+                      Bring baby clothes within {product.babyClothesDeadlineDays ?? 5} days
+                    </h3>
+                  )}
+                  {!product.inStock && (
+                    <h3 className="text-[12px] sm:text-[14px] leading-[130%] text-center text-black/[0.72] opacity-50 font-normal mt-1">
+                      Out of Stock
+                    </h3>
+                  )}
+                  <Button
+                    onClick={handleAddToCart}
+                    disabled={!product.inStock}
+                    className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 active:bg-[#74CADC]/80 text-[#0A5565] py-[13px] sm:py-[14px] mt-[20px] sm:mt-[24px] text-[13px] sm:text-[14px] leading-[130%] font-medium touch-manipulation transition-all active:scale-[0.98]"
+                  >
+                    {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                  </Button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+        </div>
+      </Container>
+      <div className="h-[16px] md:h-[12px] lg:h-[16px]"></div>
+    </main>
+  );
+}

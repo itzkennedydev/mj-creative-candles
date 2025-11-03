@@ -265,9 +265,18 @@ export function CheckoutForm() {
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
-                placeholder="Any special instructions or notes for your order..."
+                placeholder={
+                  cartItems.some(item => item.product.requiresBabyClothes)
+                    ? "Any special instructions, color preferences for sweatshirt (if not available in options), or notes for your order..."
+                    : "Any special instructions or notes for your order..."
+                }
                 suppressHydrationWarning
               />
+              {cartItems.some(item => item.product.requiresBabyClothes) && (
+                <p className="mt-2 text-xs text-gray-500">
+                  💡 <strong>Mama Keepsake Sweatshirt:</strong> If you don&apos;t see your preferred sweatshirt color in the options above, please specify it here. You have {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days to bring in your baby clothes after placing your order.
+                </p>
+              )}
             </div>
           </div>
         </div>

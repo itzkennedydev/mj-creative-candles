@@ -23,9 +23,12 @@ export async function GET() {
       imageId: product.imageId,
       images: product.images ?? [], // Include images array
       category: product.category,
+      shopType: product.shopType,
       inStock: product.inStock,
       sizes: product.sizes,
-      colors: product.colors
+      colors: product.colors,
+      requiresBabyClothes: product.requiresBabyClothes,
+      babyClothesDeadlineDays: product.babyClothesDeadlineDays
     }));
     
     return NextResponse.json({
@@ -77,9 +80,12 @@ export async function POST(request: NextRequest) {
       imageId: body.imageId,
       images: body.images ?? [], // Include images array
       category: body.category ?? 'Apparel',
+      shopType: body.shopType,
       inStock: body.inStock ?? true,
       sizes: body.sizes ?? [],
-      colors: body.colors ?? []
+      colors: body.colors ?? [],
+      requiresBabyClothes: body.requiresBabyClothes ?? false,
+      babyClothesDeadlineDays: body.babyClothesDeadlineDays
     };
 
     // Insert product into database
@@ -96,9 +102,12 @@ export async function POST(request: NextRequest) {
         imageId: product.imageId,
         images: product.images ?? [],
         category: product.category,
+        shopType: product.shopType,
         inStock: product.inStock,
         sizes: product.sizes ?? [],
-        colors: product.colors ?? []
+        colors: product.colors ?? [],
+        requiresBabyClothes: product.requiresBabyClothes,
+        babyClothesDeadlineDays: product.babyClothesDeadlineDays
       };
       
       return NextResponse.json(newProduct, { status: 201 });

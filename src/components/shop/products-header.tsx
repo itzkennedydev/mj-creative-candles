@@ -1,9 +1,17 @@
 import { useProductsQuery } from "~/lib/hooks/use-products";
 
-export function ProductsHeader() {
+interface ProductsHeaderProps {
+  shopType?: "spirit-wear" | "regular-shop";
+}
+
+export function ProductsHeader({ shopType = "regular-shop" }: ProductsHeaderProps) {
   const { data: products = [], isLoading } = useProductsQuery();
   
-  const productCount = isLoading ? 0 : products.length;
+  const filteredProducts = shopType 
+    ? products.filter(p => p.shopType === shopType || (!p.shopType && shopType === "regular-shop"))
+    : products;
+  
+  const productCount = isLoading ? 0 : filteredProducts.length;
   
   return (
     <div className="mb-6 md:mb-8">

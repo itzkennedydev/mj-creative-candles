@@ -234,7 +234,7 @@ export default function AdminPage() {
       });
       
       // Send status update email for specific statuses
-      if (['processing', 'delivered', 'cancelled'].includes(newStatus)) {
+      if (['processing', 'ready_for_pickup', 'delivered', 'cancelled'].includes(newStatus)) {
         try {
           await sendStatusEmail.mutateAsync({ orderId, status: newStatus });
         } catch (emailError) {

@@ -2,11 +2,12 @@
 
 import React from "react";
 import Image from "next/image";
-import { Container } from "~/components/ui/container";
+import { Calendar, MapPin, Camera, Bone, Gift, PawPrint, Sparkles, Facebook, Instagram, ArrowRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { Calendar, MapPin, Clock, Camera, Bone, Gift, PawPrint, Wrench, Facebook, Instagram } from "lucide-react";
+import { Container } from "~/components/ui/container";
 
 export default function StitchSniffHolidayEvent() {
+
   const activities = [
     {
       icon: Camera,
@@ -25,161 +26,213 @@ export default function StitchSniffHolidayEvent() {
     },
     {
       icon: PawPrint,
-      title: "Dog Xmas Outfits",
+      title: "Xmas Outfits",
       description: "Festive attire for the holidays"
     },
     {
-      icon: Wrench,
-      title: "Make Your Own Paw Print Ornament",
+      icon: Sparkles,
+      title: "Paw Print Ornaments",
       description: "Create a keepsake ornament"
     },
     {
-      icon: Wrench,
-      title: "Customize Leashes and Collars",
-      description: "Personalize your dog's accessories"
+      icon: Gift,
+      title: "Custom Accessories",
+      description: "Personalize leashes and collars"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header Section */}
-      <div className="bg-white border-b border-gray-200">
-        <Container>
-          <div className="py-8 md:py-12 text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-gray-900 mb-3 md:mb-4">
-              STITCH & SNIFF
-            </h1>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              HOLIDAY EVENT
-            </h2>
-            <p className="text-base md:text-lg lg:text-xl text-gray-600">
-              Hosted by Stitch, Please Custom Embroidery
-            </p>
+    <main className="min-h-screen bg-white pt-[20px] pb-[80px] lg:pb-0 lg:pt-[30px]">
+      {/* Hero Section - NEO Style */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#74CADC]/5 via-transparent to-[#74CADC]/10" />
+        <div className="relative py-[40px] lg:py-[80px]">
+          <Container>
+            <div className="text-center">
+              <div className="flex flex-col items-center">
+              <h1 className="text-[40px] lg:text-[64px] leading-[100%] font-bold text-black/[0.72]">
+                STITCH & SNIFF
+              </h1>
+              <span className="text-[24px] lg:text-[32px] leading-[130%] text-black/[0.44] mt-[8px]">
+                Holiday Event
+              </span>
+              <div className="flex gap-[8px] mt-[16px]">
+                <span className="px-[16px] py-[6px] bg-black/[0.06] rounded-full text-[12px] leading-[130%] text-black/[0.72] font-medium">
+                  Dog Friendly
+                </span>
+                <span className="px-[16px] py-[6px] bg-[#74CADC]/20 rounded-full text-[12px] leading-[130%] text-black/[0.72] font-medium">
+                  Free Entry
+                </span>
+              </div>
+            </div>
           </div>
-        </Container>
-      </div>
+          </Container>
+        </div>
+      </section>
 
-      {/* Main Content */}
-      <Container>
-        <div className="py-8 md:py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+      {/* Main Content - NEO Style Grid */}
+      <div className="py-[40px]">
+        <Container>
+          <div className="lg:grid lg:grid-cols-[1fr_480px] lg:gap-[40px]">
             {/* Left Column - Event Details */}
-            <div className="space-y-6 md:space-y-8">
-              {/* Activities */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
-                <div className="flex items-center gap-3 mb-4 md:mb-6">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <Gift className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
+            <div className="space-y-[24px]">
+              {/* Date & Time Card - NEO Style */}
+              <div className="bg-black/[0.03] rounded-[24px] p-[32px]">
+                <div className="flex justify-between items-start lg:items-center flex-col lg:flex-row gap-[24px]">
+                  <div>
+                    <div className="flex items-center gap-[12px] mb-[16px]">
+                      <div className="w-[40px] h-[40px] rounded-full bg-white flex items-center justify-center">
+                        <Calendar className="h-[20px] w-[20px] text-black/[0.72]" />
+                      </div>
+                      <div>
+                        <h3 className="text-[20px] leading-[130%] font-bold text-black/[0.72]">
+                          Saturday, December 6th
+                        </h3>
+                        <p className="text-[14px] leading-[130%] text-black/[0.44]">
+                          11:00 AM – 4:00 PM
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-lg md:text-xl font-bold text-gray-900">Event Activities</h3>
+                  
+                  <div>
+                    <div className="flex items-center gap-[12px]">
+                      <div className="w-[40px] h-[40px] rounded-full bg-white flex items-center justify-center">
+                        <MapPin className="h-[20px] w-[20px] text-black/[0.72]" />
+                      </div>
+                      <div>
+                        <p className="text-[16px] leading-[130%] font-medium text-black/[0.72]">
+                          415 13th St.
+                        </p>
+                        <p className="text-[14px] leading-[130%] text-black/[0.44]">
+                          Moline, IL 61265
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                
+                <Button
+                  onClick={() => window.open("https://maps.google.com/?q=415+13th+St,+Moline+IL+61265", "_blank")}
+                  className="mt-[24px] w-full lg:w-auto px-[24px] py-[14px] bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-[14px] leading-[130%] transition-all duration-[0.25s] flex items-center justify-center gap-[8px] group"
+                >
+                  <span className="font-medium">Get Directions</span>
+                  <ArrowRight className="h-[16px] w-[16px] group-hover:translate-x-[4px] transition-transform" />
+                </Button>
+              </div>
+
+              {/* Activities Grid - NEO Style */}
+              <div>
+                <h3 className="text-[20px] leading-[130%] font-bold text-black/[0.72] mb-[24px] text-center lg:text-left">
+                  Event Activities
+                </h3>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-[16px]">
                   {activities.map((activity, index) => {
                     const Icon = activity.icon;
                     return (
-                      <div key={index} className="bg-gray-50 rounded-xl p-3 md:p-4">
-                        <div className="flex items-center gap-2 mb-2 md:mb-3">
-                          <Icon className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
-                          <h4 className="text-sm md:text-base font-semibold text-gray-900">{activity.title}</h4>
+                      <div
+                        key={index}
+                        className="group p-[24px] bg-black/[0.03] hover:bg-black/[0.06] rounded-[20px] transition-all duration-[0.25s] cursor-pointer"
+                      >
+                        <div className="flex flex-col items-center text-center">
+                          <div className="w-[48px] h-[48px] rounded-full bg-white flex items-center justify-center mb-[12px] group-hover:bg-[#74CADC] transition-all duration-[0.25s]">
+                            <Icon className="h-[24px] w-[24px] text-black/[0.72] group-hover:text-white transition-colors" />
+                          </div>
+                          <h4 className="text-[14px] leading-[130%] font-bold mb-[8px] text-black/[0.72]">
+                            {activity.title}
+                          </h4>
+                          <p className="text-[12px] leading-[130%] text-black/[0.44]">
+                            {activity.description}
+                          </p>
                         </div>
-                        <p className="text-xs md:text-sm text-gray-600">{activity.description}</p>
                       </div>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Date & Time */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
-                <div className="flex items-center gap-2 mb-3">
-                  <Calendar className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
-                  <h3 className="text-sm md:text-base font-semibold text-gray-900">Date & Time</h3>
+              {/* Info Banner - NEO Style */}
+              <div className="bg-gradient-to-r from-[#74CADC]/10 to-[#74CADC]/5 rounded-[24px] p-[32px] text-center">
+                <h3 className="text-[18px] leading-[130%] font-bold text-black/[0.72] mb-[16px]">
+                  Join Us for Festive Fun!
+                </h3>
+                <div className="flex flex-wrap justify-center gap-[8px] mb-[24px]">
+                  {['Door Prizes', 'Holiday Music', 'Photo Ops', 'Treats'].map((item) => (
+                    <span 
+                      key={item}
+                      className="px-[16px] py-[8px] bg-white/80 backdrop-blur-sm rounded-full text-[14px] leading-[130%] text-black/[0.72] font-medium"
+                    >
+                      {item}
+                    </span>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-900">Saturday,</p>
-                  <p className="text-base md:text-lg font-bold text-gray-900">December 6th</p>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-3 w-3 md:h-4 md:w-4 text-gray-600" />
-                    <p className="text-xs md:text-sm text-gray-600">11:00 AM – 4:00 PM</p>
+                
+                {/* Social Links - NEO Style */}
+                <p className="text-[14px] leading-[130%] text-black/[0.44] mb-[16px]">
+                  Follow us for sneak peeks and updates
+                </p>
+                <div className="flex justify-center gap-[16px]">
+                  <Button
+                    onClick={() => window.open("https://facebook.com/stitchpleaseqc", "_blank")}
+                    className="w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#74CADC] flex items-center justify-center transition-all duration-[0.25s] group"
+                    variant="ghost"
+                    aria-label="Facebook"
+                  >
+                    <Facebook className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#0A5565] transition-colors" />
+                  </Button>
+                  <Button
+                    onClick={() => window.open("https://instagram.com/stitchpleaseqc", "_blank")}
+                    className="w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#74CADC] flex items-center justify-center transition-all duration-[0.25s] group"
+                    variant="ghost"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#0A5565] transition-colors" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Image - NEO Style */}
+            <div className="mt-[40px] lg:mt-0">
+              <div className="sticky top-[80px]">
+                <div className="relative rounded-[40px] overflow-hidden bg-[#F1F1EF] shadow-2xl">
+                  <div className="aspect-[3/4] lg:aspect-[4/5] relative">
+                    <Image
+                      src="/IMG_9615.jpg"
+                      alt="Stitch & Sniff Holiday Event - Woman with Golden Retriever"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 480px"
+                      priority
+                    />
+                    {/* Overlay gradient for better text visibility if needed */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                    
+                    {/* Event badge on image */}
+                    <div className="absolute top-[24px] left-[24px] right-[24px]">
+                      <div className="bg-white/95 backdrop-blur-sm rounded-[20px] p-[16px] shadow-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-[12px] leading-[130%] text-black/[0.44] font-medium">
+                              Hosted by
+                            </p>
+                            <p className="text-[14px] leading-[130%] text-black/[0.72] font-bold">
+                              Stitch Please Custom
+                            </p>
+                          </div>
+                          <div className="w-[40px] h-[40px] rounded-full bg-[#74CADC]/20 flex items-center justify-center">
+                            <PawPrint className="h-[20px] w-[20px] text-[#74CADC]" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Location */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
-                <div className="flex items-center gap-2 mb-3">
-                  <MapPin className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
-                  <h3 className="text-sm md:text-base font-semibold text-gray-900">Location</h3>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-900">415 13th St.</p>
-                  <p className="text-xs md:text-sm text-gray-600">Moline, IL 61265</p>
-                </div>
-              </div>
-
-              {/* CTA Button */}
-              <div className="text-center">
-                <Button
-                  className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-medium rounded-xl w-full sm:w-auto"
-                  onClick={() => window.open("https://maps.google.com/?q=415+13th+St,+Moline+IL+61265", "_blank")}
-                >
-                  Get Directions
-                </Button>
-              </div>
-            </div>
-
-            {/* Right Column - Image */}
-            <div className="flex justify-center lg:justify-end order-first lg:order-last">
-              <div className="relative w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl">
-                <div className="h-[400px] sm:h-[500px] md:h-[600px] lg:h-[800px] rounded-2xl overflow-hidden shadow-2xl">
-                  <Image
-                    src="/IMG_9615.jpg"
-                    alt="Stitch & Sniff Holiday Event - Woman with Golden Retriever in Buffalo Plaid"
-                    width={700}
-                    height={800}
-                    className="w-full h-full object-cover"
-                    priority
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Container>
-
-      {/* Footer Section */}
-      <div className="bg-white border-t border-gray-200">
-        <Container>
-          <div className="py-8 md:py-12 text-center">
-            <div className="bg-gray-50 rounded-2xl p-6 md:p-8">
-              <p className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">
-                Door prizes • Holiday music • Festive fun for all!
-              </p>
-              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
-                Follow us on Facebook and Instagram for sneak peeks!
-              </p>
-              <div className="flex justify-center space-x-6">
-                <a
-                  href="https://facebook.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-[#74CADC] transition-colors"
-                >
-                  <Facebook className="h-6 w-6 md:h-8 md:w-8" />
-                </a>
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-[#74CADC] transition-colors"
-                >
-                  <Instagram className="h-6 w-6 md:h-8 md:w-8" />
-                </a>
               </div>
             </div>
           </div>
         </Container>
       </div>
-    </div>
+    </main>
   );
 }

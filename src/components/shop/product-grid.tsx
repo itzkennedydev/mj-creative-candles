@@ -1,8 +1,26 @@
 import { ProductCard } from "./product-card";
 import { useProductsQuery } from "~/lib/hooks/use-products";
 
-export function ProductGrid() {
+interface ProductGridProps {
+  shopType?: "spirit-wear" | "regular-shop";
+  searchQuery?: string;
+}
+
+export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: ProductGridProps) {
   const { data: products = [], isLoading, error } = useProductsQuery();
+  
+  // Filter products by shop type and search query
+  const filteredProducts = products.filter(product => {
+    const matchesShopType = shopType 
+      ? (product.shopType === shopType || (!product.shopType && shopType === "regular-shop"))
+      : true;
+    
+    const matchesSearch = searchQuery.trim() === "" || 
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesShopType && matchesSearch;
+  });
   
   if (isLoading) {
     return (
@@ -36,7 +54,7 @@ export function ProductGrid() {
     );
   }
   
-  if (products.length === 0) {
+  if (filteredProducts.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 mb-4">No products available</p>
@@ -46,7 +64,7 @@ export function ProductGrid() {
   
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 auto-rows-fr">
-      {products.map((product) => (
+      {filteredProducts.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
     </div>

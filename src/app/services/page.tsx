@@ -1,21 +1,15 @@
 "use client";
 
-import React from 'react';
-import { Container } from "~/components/ui/container";
-import { Button } from "~/components/ui/button";
-import { Mail, Facebook, Instagram, Phone } from "lucide-react";
+import React, { useState } from 'react';
 import Image from "next/image";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "~/components/ui/tabs";
+import { Phone, ChevronRight } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { Container } from "~/components/ui/container";
+import { NewsletterSection } from "~/components/sections/newsletter";
 
 const productCategories = [
   {
     name: "Apparel",
-    icon: "👕",
     items: [
       "Hoodies, tshirts, jackets",
       "Baby apparel", 
@@ -26,7 +20,6 @@ const productCategories = [
   },
   {
     name: "Headwear & Accessories",
-    icon: "🧢",
     items: [
       "Hats and beanies",
       "Headbands",
@@ -37,7 +30,6 @@ const productCategories = [
   },
   {
     name: "Home & Decor",
-    icon: "🏠",
     items: [
       "Blankets",
       "Pillows",
@@ -48,7 +40,6 @@ const productCategories = [
   },
   {
     name: "Special Events",
-    icon: "🎉",
     items: [
       "Graduation caps",
       "Wedding party gifts",
@@ -59,7 +50,6 @@ const productCategories = [
   },
   {
     name: "Promotional",
-    icon: "🎯",
     items: [
       "Koozies",
       "Masks",
@@ -82,146 +72,144 @@ const partners = [
 ];
 
 export default function ServicesPage() {
+  const [activeCategory, setActiveCategory] = useState("Apparel");
+  const [hoveredPartner, setHoveredPartner] = useState<number | null>(null);
+
   return (
-    <Container>
-      <div className="py-16 space-y-16">
-        {/* Products & Services */}
-        <section className="space-y-8">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold text-[#1d1d1f] mb-2">Our Products & Services</h2>
-            <p className="text-[#1d1d1f]/60">
-              From apparel to promotional items, we offer a wide range of customization options to bring your vision to life.
+    <main className="min-h-screen bg-white pt-[53px] pb-[80px] lg:pb-0 lg:pt-[60px]">
+      {/* Hero Section - NEO Style */}
+      <section className="py-[40px] lg:py-[60px]">
+        <Container>
+          <div className="text-center">
+          <h1 className="text-[32px] lg:text-[48px] leading-[130%] font-bold text-black/[0.72]">
+            Our Services
+          </h1>
+          <p className="text-[16px] lg:text-[20px] leading-[130%] text-black/[0.44] mt-[8px] max-w-[600px] mx-auto">
+            From apparel to promotional items, we bring your vision to life with precision and care
+          </p>
+        </div>
+      </Container>
+      </section>
+
+      {/* Products & Services Grid - NEO Style */}
+      <section className="pb-[60px]">
+        <Container>
+          {/* Category Tabs - NEO Style */}
+          <div className="flex flex-wrap gap-[8px] justify-center mb-[40px]">
+            {productCategories.map((category) => (
+              <Button
+                key={category.name}
+                onClick={() => setActiveCategory(category.name)}
+                className={`px-[22px] py-[11px] text-[14px] border-[2px] leading-[130%] rounded-full ${
+                  activeCategory === category.name
+                    ? 'bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] border-[#74CADC]'
+                    : 'border-black/[0.06] hover:border-black/[0.12] text-black/[0.72] bg-transparent'
+                }`}
+                variant={activeCategory === category.name ? 'default' : 'outline'}
+              >
+                {category.name}
+              </Button>
+            ))}
+          </div>
+
+          {/* Active Category Content */}
+          <div className="bg-black/[0.03] rounded-[40px] p-[32px] lg:p-[48px]">
+            <div className="flex items-center justify-center mb-[32px]">
+              <h2 className="text-[24px] lg:text-[32px] leading-[130%] font-bold text-black/[0.72]">
+                {activeCategory}
+              </h2>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-[16px]">
+              {productCategories
+                .find(c => c.name === activeCategory)
+                ?.items.map((item, i) => (
+                  <div
+                    key={i}
+                    className="group p-[24px] bg-white hover:bg-black/[0.06] rounded-[24px] transition-all duration-[0.25s] cursor-pointer"
+                  >
+                    <div className="flex items-start gap-[16px]">
+                      <div className="w-[32px] h-[32px] rounded-full bg-[#74CADC]/20 group-hover:bg-[#74CADC] flex items-center justify-center flex-shrink-0 transition-all duration-[0.25s]">
+                        <span className="text-[14px] font-bold text-black/[0.72] group-hover:text-white">
+                          {i + 1}
+                        </span>
+                      </div>
+                      <span className="text-[14px] leading-[130%] text-black/[0.72] font-medium">
+                        {item}
+                      </span>
+                    </div>
+                  </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA Section - NEO Style */}
+          <div className="mt-[40px] p-[32px] lg:p-[48px] bg-gradient-to-br from-[#74CADC]/10 to-[#74CADC]/5 rounded-[40px] text-center">
+            <h3 className="text-[20px] lg:text-[24px] leading-[130%] font-bold text-black/[0.72] mb-[8px]">
+              Don&apos;t see what you&apos;re looking for?
+            </h3>
+            <p className="text-[14px] lg:text-[16px] leading-[130%] text-black/[0.44] mb-[24px] max-w-[500px] mx-auto">
+              We can customize almost anything! Our mobile services bring the personalization to you.
+            </p>
+            <Button
+              onClick={() => window.open("tel:3093736017", "_blank")}
+              className="inline-flex items-center px-[24px] py-[14px] bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] group"
+            >
+              <Phone className="mr-[8px] h-[16px] w-[16px] group-hover:scale-110 transition-transform" />
+              <span className="text-[14px] leading-[130%] font-medium">Call or Text (309) 373-6017</span>
+              <ChevronRight className="ml-[8px] h-[16px] w-[16px] group-hover:translate-x-[4px] transition-transform" />
+            </Button>
+          </div>
+        </Container>
+      </section>
+
+      {/* Partners Section - NEO Style */}
+      <section className="py-[60px] bg-[#F7F7F7]/50">
+        <Container>
+          <div className="text-center mb-[40px]">
+            <h2 className="text-[24px] lg:text-[32px] leading-[130%] font-bold text-black/[0.72]">
+              Trusted By
+            </h2>
+            <p className="text-[14px] lg:text-[16px] leading-[130%] text-black/[0.44] mt-[8px]">
+              Leading brands and organizations choose us for their custom needs
             </p>
           </div>
 
-          <Tabs defaultValue="Apparel" className="space-y-8">
-            <TabsList className="flex flex-wrap justify-center gap-3 bg-transparent">
-              {productCategories.map((category) => (
-                <TabsTrigger
-                  key={category.name}
-                  value={category.name}
-                  className="data-[state=active]:bg-[#74CADC] data-[state=active]:text-[#0A5565] border border-zinc-200 hover:border-[#74CADC] px-4 py-2 rounded-xl"
-                >
-                  {category.name}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            {productCategories.map((category) => (
-              <TabsContent key={category.name} value={category.name}>
-                <div className="p-8 rounded-2xl bg-[#f7f7f7]">
-                  <div className="flex items-center text-[#0A5565] mb-6">
-                    <h3 className="text-2xl font-semibold">{category.name}</h3>
-                  </div>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {category.items.map((item, i) => (
-                      <div
-                        key={i}
-                        className="p-4 rounded-xl bg-white hover:bg-white/80 transition-colors group cursor-pointer border border-zinc-100"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-[#74CADC]/20 flex items-center justify-center">
-                            <span className="text-[#0A5565] text-sm font-medium">{i + 1}</span>
-                          </div>
-                          <span className="text-[#1d1d1f]/80 font-medium">{item}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-
-          <div className="p-8 rounded-2xl bg-[#f7f7f7] text-center">
-            <div className="max-w-2xl mx-auto space-y-6">
-              <div>
-                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-2">Don&apos;t see what you&apos;re looking for?</h3>
-                <p className="text-[#1d1d1f]/60">
-                  We can customize almost anything! Our mobile services bring the personalization to you.
-                </p>
-              </div>
-              <Button 
-                size="lg"
-                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]"
-                onClick={() => window.open("tel:3093736017", "_blank")}
-              >
-                <Phone className="mr-2 h-5 w-5" />
-                Call or Text (309) 373-6017
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* Partners Showcase */}
-        <section className="space-y-8">
-          <h2 className="text-2xl font-bold text-[#1d1d1f] text-center">Trusted By</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {partners.map((partner) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] lg:gap-[24px]">
+            {partners.map((partner, index) => (
               <div
                 key={partner.name}
-                className="p-6 rounded-2xl bg-[#f7f7f7] group hover:bg-white transition-all"
+                onMouseEnter={() => setHoveredPartner(index)}
+                onMouseLeave={() => setHoveredPartner(null)}
+                className="relative group"
               >
-                <div className="relative aspect-square">
-                  <Image
-                    src={partner.image}
-                    alt={partner.name}
-                    fill
-                    className="object-contain group-hover:scale-110 transition-transform duration-300"
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                  />
+                <div className="aspect-square p-[24px] lg:p-[32px] bg-white rounded-[24px] flex items-center justify-center transition-all duration-[0.25s] hover:shadow-lg hover:scale-105">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={partner.image}
+                      alt={partner.name}
+                      fill
+                      className="object-contain transition-all duration-[0.25s] group-hover:scale-110"
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                    />
+                  </div>
+                </div>
+                {/* Partner name on hover */}
+                <div className={`absolute -bottom-[32px] left-0 right-0 text-center transition-all duration-[0.25s] ${
+                  hoveredPartner === index ? 'opacity-100' : 'opacity-0'
+                }`}>
+                  <span className="text-[12px] leading-[130%] text-black/[0.44] font-medium">
+                    {partner.name}
+                  </span>
                 </div>
               </div>
             ))}
           </div>
-        </section>
+        </Container>
+      </section>
 
-        {/* Newsletter & Social */}
-        <div className="p-12 rounded-2xl bg-[#f7f7f7]">
-          <div className="max-w-xl mx-auto space-y-8">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-[#1d1d1f] mb-2">Stay Connected</h3>
-              <p className="text-[#1d1d1f]/60">Get the latest updates and join our community.</p>
-            </div>
-            
-            <div className="space-y-6">
-              <form className="flex gap-3">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 px-4 py-3 rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm"
-                />
-                <Button 
-                  type="submit"
-                  size="lg"
-                  className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] whitespace-nowrap"
-                >
-                  Subscribe
-                  <Mail className="ml-2 h-5 w-5" />
-                </Button>
-              </form>
-
-              <div className="flex justify-center gap-4">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="text-[#0A5565] hover:bg-white border-zinc-200"
-                  onClick={() => window.open("https://www.facebook.com/stitchpleaseqc", "_blank")}
-                >
-                  <Facebook className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="text-[#0A5565] hover:bg-white border-zinc-200"
-                  onClick={() => window.open("https://www.instagram.com/stitchpleaseqc", "_blank")}
-                >
-                  <Instagram className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Container>
+      {/* Newsletter Section - NEO Style */}
+      <NewsletterSection showPhone={true} />
+    </main>
   );
 }
