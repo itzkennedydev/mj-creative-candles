@@ -17,39 +17,53 @@ export function middleware(request: NextRequest) {
   // Apply CORS headers for API routes
   if (request.nextUrl.pathname.startsWith('/api/')) {
     const origin = request.headers.get('origin');
-    const corsHeaders = getCorsHeaders(origin);
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        response.headers.set(key, String(value));
-      }
-    });
+    const isStripeWebhook = request.nextUrl.pathname === '/api/stripe/webhook';
+    
+    // Special CORS handling for Stripe webhooks
+    if (isStripeWebhook) {
+      // Stripe doesn't send Origin header, allow all origins for webhooks
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, stripe-signature');
+      response.headers.set('Access-Control-Max-Age', '86400');
+    } else {
+      const corsHeaders = getCorsHeaders(origin);
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          response.headers.set(key, String(value));
+        }
+      });
+    }
 
     // Handle preflight requests
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 200, headers: response.headers });
     }
 
-    // Apply rate limiting to API routes
-    const rateLimitResponse = rateLimit(request, 100, 15 * 60 * 1000); // 100 requests per 15 minutes
-    if (rateLimitResponse) {
-      logSecurityEvent(request, 'RATE_LIMIT_EXCEEDED');
-      return rateLimitResponse;
-    }
+    // Skip rate limiting and security checks for Stripe webhooks (they can come in bursts)
+    if (!isStripeWebhook) {
+      // Apply rate limiting to API routes (except webhooks)
+      const rateLimitResponse = rateLimit(request, 100, 15 * 60 * 1000); // 100 requests per 15 minutes
+      if (rateLimitResponse) {
+        logSecurityEvent(request, 'RATE_LIMIT_EXCEEDED');
+        return rateLimitResponse;
+      }
 
-    // Log suspicious activities
-    const userAgent = request.headers.get('user-agent') ?? '';
-    if (userAgent.includes('bot') || userAgent.includes('crawler') || userAgent.includes('spider')) {
-      logSecurityEvent(request, 'SUSPICIOUS_USER_AGENT', { userAgent });
-    }
+      // Log suspicious activities (skip for webhooks - Stripe may use bot-like user agents)
+      const userAgent = request.headers.get('user-agent') ?? '';
+      if (userAgent.includes('bot') || userAgent.includes('crawler') || userAgent.includes('spider')) {
+        logSecurityEvent(request, 'SUSPICIOUS_USER_AGENT', { userAgent });
+      }
 
-    // Check for common attack patterns
-    const path = request.nextUrl.pathname;
-    if (path.includes('..') || path.includes('//') || path.includes('\\')) {
-      logSecurityEvent(request, 'PATH_TRAVERSAL_ATTEMPT', { path });
-      return NextResponse.json(
-        { error: 'Invalid request path' },
-        { status: 400 }
-      );
+      // Check for common attack patterns
+      const path = request.nextUrl.pathname;
+      if (path.includes('..') || path.includes('//') || path.includes('\\')) {
+        logSecurityEvent(request, 'PATH_TRAVERSAL_ATTEMPT', { path });
+        return NextResponse.json(
+          { error: 'Invalid request path' },
+          { status: 400 }
+        );
+      }
     }
   }
 

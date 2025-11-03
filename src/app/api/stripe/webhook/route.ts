@@ -7,6 +7,22 @@ import { ObjectId } from 'mongodb';
 import { sendOrderConfirmationEmail } from '~/lib/email-service';
 import type { Order } from '~/lib/order-types';
 
+// Configure route to use Node.js runtime and disable body parsing
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+// Handle OPTIONS preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, stripe-signature',
+    },
+  });
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get('stripe-signature');
@@ -21,15 +37,36 @@ export async function POST(request: NextRequest) {
   let event;
 
   try {
+    // Verify webhook signature
+    if (!env.STRIPE_WEBHOOK_SECRET) {
+      console.error('STRIPE_WEBHOOK_SECRET is not set in environment variables');
+      return NextResponse.json(
+        { error: 'Webhook secret not configured' },
+        { status: 500 }
+      );
+    }
+
     event = stripe.webhooks.constructEvent(
       body,
       signature,
       env.STRIPE_WEBHOOK_SECRET
     );
+    
+    console.log(`✅ Webhook signature verified for event: ${event.type} (${event.id})`);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err);
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    console.error('❌ Webhook signature verification failed:', {
+      error: errorMessage,
+      signatureLength: signature?.length,
+      bodyLength: body?.length,
+      hasWebhookSecret: !!env.STRIPE_WEBHOOK_SECRET,
+      webhookSecretPrefix: env.STRIPE_WEBHOOK_SECRET?.substring(0, 10) + '...'
+    });
     return NextResponse.json(
-      { error: 'Invalid signature' },
+      { 
+        error: 'Invalid signature',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
       { status: 400 }
     );
   }
@@ -166,9 +203,19 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Webhook handler error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('❌ Webhook handler error:', {
+      error: errorMessage,
+      stack: errorStack,
+      eventId: event?.id,
+      eventType: event?.type
+    });
     return NextResponse.json(
-      { error: 'Webhook handler failed' },
+      { 
+        error: 'Webhook handler failed',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
       { status: 500 }
     );
   }
