@@ -107,6 +107,15 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    // Exclude webhook route from middleware to avoid 405 errors
+    // The pattern excludes: _next/static, _next/image, favicon.ico, and api/stripe/webhook
+    /*
+     * Match all routes except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico
+     * - api/stripe/webhook (Stripe webhook endpoint)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|api/stripe/webhook).*)',
   ],
 };

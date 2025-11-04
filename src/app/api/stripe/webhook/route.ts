@@ -11,6 +11,10 @@ import type { Order } from '~/lib/order-types';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// In App Router, Next.js automatically parses the body based on Content-Type
+// We need to read the raw body as text for Stripe signature verification
+// Using request.text() gives us the raw body string which is what Stripe needs
+
 // Handle OPTIONS preflight requests
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -23,29 +27,69 @@ export async function OPTIONS() {
   });
 }
 
+// Handle GET requests (for testing/debugging)
+export async function GET() {
+  return NextResponse.json(
+    { 
+      error: 'Method not allowed',
+      message: 'This endpoint only accepts POST requests from Stripe webhooks',
+      allowedMethods: ['POST', 'OPTIONS']
+    },
+    { status: 405, headers: { 'Allow': 'POST, OPTIONS' } }
+  );
+}
+
 export async function POST(request: NextRequest) {
+  // Log incoming webhook request for debugging
+  console.log('🔔 Stripe webhook POST request received:', {
+    method: request.method,
+    url: request.url,
+    hasSignature: !!request.headers.get('stripe-signature'),
+    contentType: request.headers.get('content-type'),
+  });
+
+  // Read the raw body as text - this is critical for signature verification
+  // Stripe needs the exact raw body string that was sent
   const body = await request.text();
   const signature = request.headers.get('stripe-signature');
 
   if (!signature) {
+    console.error('❌ Webhook request missing stripe-signature header');
     return NextResponse.json(
       { error: 'No signature provided' },
       { status: 400 }
     );
   }
 
+  // Verify webhook secret is configured
+  if (!env.STRIPE_WEBHOOK_SECRET) {
+    console.error('❌ STRIPE_WEBHOOK_SECRET is not set in environment variables');
+    console.error('❌ This is likely a production environment variable issue');
+    console.error('❌ Please set STRIPE_WEBHOOK_SECRET in your hosting platform (Vercel/etc)');
+    return NextResponse.json(
+      { error: 'Webhook secret not configured' },
+      { status: 500 }
+    );
+  }
+
+  // Validate webhook secret format
+  if (!env.STRIPE_WEBHOOK_SECRET.startsWith('whsec_')) {
+    console.error('❌ STRIPE_WEBHOOK_SECRET has invalid format - should start with "whsec_"');
+    console.error(`❌ Current prefix: ${env.STRIPE_WEBHOOK_SECRET.substring(0, 10)}...`);
+    return NextResponse.json(
+      { error: 'Invalid webhook secret format' },
+      { status: 500 }
+    );
+  }
+
   let event;
 
   try {
-    // Verify webhook signature
-    if (!env.STRIPE_WEBHOOK_SECRET) {
-      console.error('STRIPE_WEBHOOK_SECRET is not set in environment variables');
-      return NextResponse.json(
-        { error: 'Webhook secret not configured' },
-        { status: 500 }
-      );
-    }
-
+    // Verify webhook signature using Stripe's constructEvent
+    // This requires:
+    // 1. The raw body string (exactly as sent by Stripe)
+    // 2. The stripe-signature header
+    // 3. The webhook secret from Stripe Dashboard (starting with whsec_)
     event = stripe.webhooks.constructEvent(
       body,
       signature,
@@ -55,16 +99,29 @@ export async function POST(request: NextRequest) {
     console.log(`✅ Webhook signature verified for event: ${event.type} (${event.id})`);
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
+    
+    // Log detailed error information for debugging
+    const webhookSecretPreview = env.STRIPE_WEBHOOK_SECRET 
+      ? `${env.STRIPE_WEBHOOK_SECRET.substring(0, 7)}...${env.STRIPE_WEBHOOK_SECRET.substring(env.STRIPE_WEBHOOK_SECRET.length - 4)}`
+      : 'NOT SET';
+    
     console.error('❌ Webhook signature verification failed:', {
       error: errorMessage,
       signatureLength: signature?.length,
+      signaturePrefix: signature?.substring(0, 20) + '...',
       bodyLength: body?.length,
-      hasWebhookSecret: !!env.STRIPE_WEBHOOK_SECRET,
-      webhookSecretPrefix: env.STRIPE_WEBHOOK_SECRET?.substring(0, 10) + '...'
+      bodyPreview: body?.substring(0, 100) + '...',
+      webhookSecretPrefix: webhookSecretPreview,
+      webhookSecretLength: env.STRIPE_WEBHOOK_SECRET?.length,
+      expectedPrefix: 'whsec_',
+      actualPrefix: env.STRIPE_WEBHOOK_SECRET?.substring(0, 6),
+      hint: 'Common issues: 1) Webhook secret mismatch (check Stripe Dashboard), 2) Body was parsed/modified before verification, 3) Wrong endpoint URL configured in Stripe'
     });
+    
     return NextResponse.json(
       { 
         error: 'Invalid signature',
+        message: 'Webhook signature verification failed. Please verify your webhook secret matches the one in Stripe Dashboard for this endpoint.',
         details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
       },
       { status: 400 }
@@ -197,8 +254,47 @@ export async function POST(request: NextRequest) {
         break;
       }
 
+      case 'payment_intent.succeeded': {
+        // Handle payment_intent.succeeded events
+        // These can be sent before checkout.session.completed in some cases
+        const paymentIntent = event.data.object;
+        
+        console.log(`Payment intent succeeded: ${paymentIntent.id}`, {
+          amount: paymentIntent.amount,
+          currency: paymentIntent.currency,
+          metadata: paymentIntent.metadata,
+        });
+
+        // Try to find order by payment intent ID (if it was stored previously)
+        const order = await db.collection('orders').findOne({
+          paymentIntentId: paymentIntent.id
+        });
+
+        if (order && order.status !== 'paid') {
+          await db.collection('orders').updateOne(
+            { _id: order._id },
+            {
+              $set: {
+                paymentIntentId: paymentIntent.id,
+                status: 'paid',
+                paidAt: new Date(),
+                webhookEventId: eventId,
+                updatedAt: new Date(),
+              }
+            }
+          );
+          console.log(`✅ Updated order ${order._id.toString()} from payment_intent.succeeded event`);
+        } else {
+          console.log(`Payment intent ${paymentIntent.id} succeeded, but no matching order found (may be handled by checkout.session.completed)`);
+        }
+        
+        // Always return success - payment_intent.succeeded is informational
+        // The checkout.session.completed event will handle the main order update
+        break;
+      }
+
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`Unhandled event type: ${event.type} - returning success to acknowledge receipt`);
     }
 
     return NextResponse.json({ received: true });
