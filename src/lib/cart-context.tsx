@@ -86,7 +86,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const getTotalPrice = () => {
     return items.reduce((sum, item) => {
-      const sizeSurcharge = item.selectedSize === 'XXL' ? 3 : 0;
+      const sizeSurcharge = item.selectedSize === 'XXL' ? 3 : item.selectedSize === '3XL' ? 5 : 0;
       const itemPrice = item.product.price + sizeSurcharge;
       return sum + (itemPrice * item.quantity);
     }, 0);

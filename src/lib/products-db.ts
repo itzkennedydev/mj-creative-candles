@@ -34,7 +34,7 @@ const initialProducts: Omit<Product, 'id'>[] = [
     shopType: "spirit-wear",
     school: "united-township",
     inStock: true,
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["S", "M", "L", "XL", "XXL", "3XL"],
     colors: ["Black"]
   },
   {
@@ -46,7 +46,7 @@ const initialProducts: Omit<Product, 'id'>[] = [
     shopType: "spirit-wear",
     school: "united-township",
     inStock: true,
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["S", "M", "L", "XL", "XXL", "3XL"],
     colors: ["Black"]
   }
 ];

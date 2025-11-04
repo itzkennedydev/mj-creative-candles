@@ -45,8 +45,8 @@ export function ProductCard({ product }: ProductCardProps) {
     ...(product.images || []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }))
   ] : (product.images || []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }));
 
-  // Calculate price with XXL surcharge
-  const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : 0);
+  // Calculate price with XXL and 3XL surcharge
+  const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : selectedSize === '3XL' ? 5 : 0);
 
   // Set default selections when component mounts if there's only one option
   useEffect(() => {

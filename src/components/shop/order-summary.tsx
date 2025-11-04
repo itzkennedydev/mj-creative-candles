@@ -67,7 +67,7 @@ export function OrderSummary() {
                 </div>
                 <div className="text-right">
                   <p className="font-medium text-gray-900">
-                    ${((item.product.price + (item.selectedSize === 'XXL' ? 3 : 0)) * item.quantity).toFixed(2)}
+                    ${((item.product.price + (item.selectedSize === 'XXL' ? 3 : item.selectedSize === '3XL' ? 5 : 0)) * item.quantity).toFixed(2)}
                   </p>
                 </div>
               </div>

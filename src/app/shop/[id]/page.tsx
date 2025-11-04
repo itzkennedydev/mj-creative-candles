@@ -152,7 +152,7 @@ export default function ProductDetailPage() {
     });
   };
 
-  const displayPrice = product ? product.price + (selectedSize === 'XXL' ? 3 : 0) : 0;
+  const displayPrice = product ? product.price + (selectedSize === 'XXL' ? 3 : selectedSize === '3XL' ? 5 : 0) : 0;
 
   // Handle swipe gestures for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -537,7 +537,7 @@ export default function ProductDetailPage() {
                       <div className="bg-black/[0.06] rounded-[20px] sm:rounded-[24px] p-[4px] mt-[20px] sm:mt-[24px]">
                         {product.sizes.map((size) => {
                           const isSelected = selectedSize === size;
-                          const sizePrice = size === 'XXL' ? product.price + 3 : product.price;
+                          const sizePrice = size === 'XXL' ? product.price + 3 : size === '3XL' ? product.price + 5 : product.price;
                           
                           return (
                             <button
