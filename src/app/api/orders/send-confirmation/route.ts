@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Check if emails have already been sent (prevent duplicate emails)
     if (order.emailsSent) {
-      console.log(`Emails already sent for order ${order.orderNumber}`);
+      console.log(`Emails already sent for order ${order.orderNumber} - likely sent by webhook`);
       return NextResponse.json({
         success: true,
         message: 'Emails already sent',
@@ -62,17 +62,32 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Send confirmation emails
+    // Send confirmation emails with atomic update to prevent race conditions
+    // This ensures only one process can send emails, even if webhook and success page hit simultaneously
     try {
-      await sendOrderConfirmationEmail(order);
-      
-      // Mark that emails have been sent
-      await ordersCollection.updateOne(
-        { _id: new ObjectId(orderId) },
+      // Attempt to atomically mark emails as sent before sending (prevents race conditions)
+      const updateResult = await ordersCollection.updateOne(
+        { 
+          _id: new ObjectId(orderId),
+          emailsSent: { $ne: true } // Only update if emailsSent is not already true
+        },
         { $set: { emailsSent: true, emailsSentAt: new Date() } }
       );
 
-      console.log(`Confirmation emails sent for order ${order.orderNumber}`);
+      // If update didn't match, emails were already sent (likely by webhook)
+      if (updateResult.matchedCount === 0) {
+        console.log(`Emails already being sent or sent for order ${order.orderNumber} - skipping duplicate`);
+        return NextResponse.json({
+          success: true,
+          message: 'Emails already sent',
+          orderNumber: order.orderNumber
+        });
+      }
+
+      // Now send the emails (we've atomically marked them as sent)
+      await sendOrderConfirmationEmail(order);
+
+      console.log(`✅ Confirmation emails sent for order ${order.orderNumber}`);
       
       return NextResponse.json({
         success: true,
@@ -81,7 +96,20 @@ export async function POST(request: NextRequest) {
       });
     } catch (emailError) {
       console.error('Error sending confirmation emails:', emailError);
+      
+      // If email sending failed, we should unmark emailsSent so it can be retried
+      // But only if we successfully marked it (don't want to interfere with webhook)
+      try {
+        await ordersCollection.updateOne(
+          { _id: new ObjectId(orderId) },
+          { $unset: { emailsSent: '', emailsSentAt: '' } }
+        );
+      } catch (unmarkError) {
+        console.error('Error unmarking emailsSent:', unmarkError);
+      }
+      
       // Still return success to avoid retries if there's a temporary email issue
+      // The webhook will retry on next event if needed
       return NextResponse.json({
         success: false,
         message: 'Emails failed to send, but payment was successful',

@@ -37,6 +37,11 @@ export interface Order {
   status: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed';
   paymentMethod: 'card';
   paymentIntentId?: string;
+  stripeSessionId?: string; // Stripe checkout session ID
+  stripeSubtotal?: number; // Amount from Stripe metadata
+  stripeTax?: number; // Tax amount from Stripe metadata
+  stripeTotal?: number; // Total amount from Stripe metadata
+  webhookEventId?: string; // Stripe webhook event ID that processed this order
   notes?: string;
   createdAt: Date;
   updatedAt: Date;

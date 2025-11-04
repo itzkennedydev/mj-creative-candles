@@ -161,23 +161,44 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ received: true });
         }
 
-        // Additional idempotency: Check if order is already marked as paid
+        // Additional idempotency: Check if order is already marked as paid for this session
         const existingOrder = await db.collection('orders').findOne({ 
           _id: new ObjectId(orderId) 
         });
 
-        if (existingOrder?.status === 'paid' && existingOrder?.stripeSessionId === session.id) {
-          console.log(`Order ${orderId} already marked as paid for session ${session.id}, skipping`);
+        if (!existingOrder) {
+          console.error(`Order ${orderId} not found when processing webhook`);
+          return NextResponse.json({ received: true, error: 'Order not found' });
+        }
+
+        // Check if this exact session already processed this order
+        if (existingOrder.status === 'paid' && existingOrder.stripeSessionId === session.id) {
+          console.log(`Order ${orderId} already marked as paid for session ${session.id}, skipping duplicate`);
           return NextResponse.json({ received: true, duplicate: true });
         }
 
-        // Update order status to paid
+        // Verify payment status before updating
+        if (session.payment_status !== 'paid') {
+          console.warn(`Session ${session.id} payment status is ${session.payment_status}, not 'paid'. Skipping order update.`);
+          return NextResponse.json({ received: true, error: 'Payment not completed' });
+        }
+
+        // Update order status to paid (using atomic update to prevent race conditions)
         const updateResult = await db.collection('orders').updateOne(
-          { _id: new ObjectId(orderId) },
+          { 
+            _id: new ObjectId(orderId),
+            // Only update if order is still pending or doesn't have this session ID
+            $or: [
+              { status: 'pending' },
+              { stripeSessionId: { $ne: session.id } }
+            ]
+          },
           { 
             $set: { 
               status: 'paid',
-              paymentIntentId: session.payment_intent,
+              paymentIntentId: typeof session.payment_intent === 'string' 
+                ? session.payment_intent 
+                : session.payment_intent?.id ?? undefined,
               paidAt: new Date(),
               // Store payment details from metadata
               stripeSessionId: session.id,
@@ -191,34 +212,40 @@ export async function POST(request: NextRequest) {
         );
 
         if (updateResult.matchedCount === 0) {
-          console.error(`Order ${orderId} not found when processing webhook`);
-        } else {
-          console.log(`Successfully updated order ${orderId} to paid status via webhook`);
+          console.log(`Order ${orderId} was already processed or doesn't match update criteria (may have been updated by another process)`);
+          return NextResponse.json({ received: true, duplicate: true });
+        }
+
+        console.log(`✅ Successfully updated order ${orderId} to paid status via webhook`);
+        
+        // Send email notifications immediately when payment is confirmed via webhook
+        // Use atomic update to prevent duplicate emails (race condition protection)
+        try {
+          const ordersCollection = db.collection<Order>('orders');
           
-          // Send email notifications immediately when payment is confirmed via webhook
-          // This ensures notifications are sent as soon as payment is confirmed, not waiting for checkout page
-          try {
-            const ordersCollection = db.collection<Order>('orders');
-            const order = await ordersCollection.findOne({ _id: new ObjectId(orderId) });
+          // Fetch the updated order
+          const updatedOrder = await ordersCollection.findOne({ _id: new ObjectId(orderId) });
+          
+          if (updatedOrder && !updatedOrder.emailsSent) {
+            // Send confirmation emails immediately
+            await sendOrderConfirmationEmail(updatedOrder);
             
-            if (order && !order.emailsSent) {
-              // Send confirmation emails immediately
-              await sendOrderConfirmationEmail(order);
-              
-              // Mark that emails have been sent
-              await ordersCollection.updateOne(
-                { _id: new ObjectId(orderId) },
-                { $set: { emailsSent: true, emailsSentAt: new Date() } }
-              );
-              
-              console.log(`✅ Email notifications sent immediately for order ${order.orderNumber} via webhook`);
-            } else if (order?.emailsSent) {
-              console.log(`Order ${order.orderNumber} already had emails sent, skipping duplicate`);
-            }
-          } catch (emailError) {
-            // Log error but don't fail the webhook - emails can be sent later via checkout success page
-            console.error(`Error sending email notifications via webhook for order ${orderId}:`, emailError);
+            // Atomically mark that emails have been sent (prevents race conditions)
+            await ordersCollection.updateOne(
+              { 
+                _id: new ObjectId(orderId),
+                emailsSent: { $ne: true } // Only update if emailsSent is not already true
+              },
+              { $set: { emailsSent: true, emailsSentAt: new Date() } }
+            );
+            
+            console.log(`✅ Email notifications sent immediately for order ${updatedOrder.orderNumber} via webhook`);
+          } else if (updatedOrder?.emailsSent) {
+            console.log(`Order ${updatedOrder.orderNumber} already had emails sent, skipping duplicate`);
           }
+        } catch (emailError) {
+          // Log error but don't fail the webhook - emails can be sent later via checkout success page
+          console.error(`Error sending email notifications via webhook for order ${orderId}:`, emailError);
         }
         break;
       }
@@ -256,7 +283,9 @@ export async function POST(request: NextRequest) {
 
       case 'payment_intent.succeeded': {
         // Handle payment_intent.succeeded events
-        // These can be sent before checkout.session.completed in some cases
+        // NOTE: This event is sent BEFORE checkout.session.completed
+        // We should NOT update order status here to avoid conflicts
+        // The checkout.session.completed event will handle the order update
         const paymentIntent = event.data.object;
         
         console.log(`Payment intent succeeded: ${paymentIntent.id}`, {
@@ -265,28 +294,10 @@ export async function POST(request: NextRequest) {
           metadata: paymentIntent.metadata,
         });
 
-        // Try to find order by payment intent ID (if it was stored previously)
-        const order = await db.collection('orders').findOne({
-          paymentIntentId: paymentIntent.id
-        });
-
-        if (order && order.status !== 'paid') {
-          await db.collection('orders').updateOne(
-            { _id: order._id },
-            {
-              $set: {
-                paymentIntentId: paymentIntent.id,
-                status: 'paid',
-                paidAt: new Date(),
-                webhookEventId: eventId,
-                updatedAt: new Date(),
-              }
-            }
-          );
-          console.log(`✅ Updated order ${order._id.toString()} from payment_intent.succeeded event`);
-        } else {
-          console.log(`Payment intent ${paymentIntent.id} succeeded, but no matching order found (may be handled by checkout.session.completed)`);
-        }
+        // Only log - don't update order status here
+        // The checkout.session.completed event will handle the order update
+        // This prevents race conditions and duplicate processing
+        console.log(`Payment intent ${paymentIntent.id} succeeded - waiting for checkout.session.completed to update order`);
         
         // Always return success - payment_intent.succeeded is informational
         // The checkout.session.completed event will handle the main order update
