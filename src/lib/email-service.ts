@@ -1300,7 +1300,7 @@ export async function sendBugReportEmail({
       to: ['itskennedy.dev@gmail.com'],
       subject: `Bug Report: ${subject}`,
       html: bugReportHtml,
-      replyTo: userEmail || 'noreply@stitchpleaseqc.com',
+      replyTo: userEmail ?? 'noreply@stitchpleaseqc.com',
     });
 
     console.log('✅ Bug report email sent successfully');
