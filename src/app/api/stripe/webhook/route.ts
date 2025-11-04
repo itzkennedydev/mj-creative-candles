@@ -293,6 +293,42 @@ export async function POST(request: NextRequest) {
         break;
       }
 
+      case 'charge.updated': {
+        // Handle charge.updated events
+        // These are informational updates about charge status changes
+        const charge = event.data.object;
+        
+        console.log(`Charge updated: ${charge.id}`, {
+          chargeId: charge.id,
+          paymentIntentId: charge.payment_intent,
+          status: charge.status,
+          amount: charge.amount,
+          currency: charge.currency,
+        });
+
+        // If we have a payment intent ID, try to update the order
+        const paymentIntentId = typeof charge.payment_intent === 'string' 
+          ? charge.payment_intent 
+          : charge.payment_intent?.id;
+          
+        if (paymentIntentId) {
+          const order = await db.collection('orders').findOne({
+            paymentIntentId: paymentIntentId
+          });
+
+          if (order) {
+            // Update order with charge information if needed
+            // This is mainly informational, so we just log it
+            console.log(`Charge ${charge.id} updated for order ${order._id.toString()}`);
+          } else {
+            console.log(`Charge ${charge.id} updated, but no matching order found for payment intent ${paymentIntentId}`);
+          }
+        }
+        
+        // Always return success - charge.updated is informational
+        break;
+      }
+
       default:
         console.log(`Unhandled event type: ${event.type} - returning success to acknowledge receipt`);
     }
