@@ -391,7 +391,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Color Selection */}
-        {product.colors && product.colors.length > 0 && (
+        {product.colors && product.colors.length > 1 && (
           <div className="flex-shrink-0">
             <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Color</label>
             <div className="flex flex-wrap gap-1 md:gap-2">

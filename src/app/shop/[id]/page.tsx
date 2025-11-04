@@ -110,7 +110,7 @@ export default function ProductDetailPage() {
       if (product.sizes && product.sizes.length > 0 && !selectedSize) {
         setSelectedSize(product.sizes[0] ?? "");
       }
-      if (product.colors && product.colors.length > 0 && !selectedColor) {
+      if (product.colors && product.colors.length > 1 && !selectedColor) {
         setSelectedColor(product.colors[0] ?? "");
       }
     }
@@ -230,18 +230,18 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <main className="bg-white pt-[24px] pb-[16px] md:pt-[32px] md:pb-[12px] lg:pt-[40px] lg:pb-[16px]">
+    <main className="bg-white pt-[20px] sm:pt-[24px] md:pt-[32px] lg:pt-[40px] pb-[16px] md:pb-[12px] lg:pb-[16px]">
       <Container className="pb-[16px] md:pb-[12px] lg:pb-[16px]">
-        <div className="md:grid md:grid-cols-[1fr_1fr] md:gap-x-[20px] lg:grid-cols-[1fr_330px] lg:gap-x-[24px] lg:relative">
+        <div className="md:grid md:grid-cols-[1fr_1fr] md:gap-x-[16px] lg:gap-x-[20px] xl:grid-cols-[1fr_330px] xl:gap-x-[24px] lg:relative">
           {/* Left Panel - Product Images */}
           <section 
             ref={imageContainerRef}
-            className="h-[380px] sm:h-[480px] md:h-[600px] lg:h-[calc(90svh-84px)] overflow-hidden rounded-[24px] md:rounded-[32px] lg:rounded-[40px] relative lg:overflow-hidden lg:sticky lg:top-[59px] touch-pan-y"
+            className="h-[320px] xs:h-[380px] sm:h-[480px] md:h-[600px] lg:h-[calc(90svh-84px)] overflow-hidden rounded-[20px] sm:rounded-[24px] md:rounded-[32px] lg:rounded-[40px] relative lg:overflow-hidden lg:sticky lg:top-[59px] touch-pan-y"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            <div className="swiper h-full overflow-hidden rounded-[24px] md:rounded-[32px] lg:rounded-[40px] bg-[#F1F1EF] flex w-full">
+            <div className="swiper h-full overflow-hidden rounded-[20px] sm:rounded-[24px] md:rounded-[32px] lg:rounded-[40px] bg-[#F1F1EF] flex w-full">
               <div className="relative bg-[#F1F1EF] w-full h-full">
                 {allImages.length > 0 && (
                   <>
@@ -303,12 +303,12 @@ export default function ProductDetailPage() {
             
             {/* Image Dots Indicator */}
             {allImages.length > 1 && (
-              <div className="absolute bottom-[12px] sm:bottom-[16px] left-1/2 translate-x-[-50%] z-10 flex gap-x-[4px]">
+              <div className="absolute bottom-[10px] sm:bottom-[12px] md:bottom-[16px] left-1/2 translate-x-[-50%] z-10 flex gap-x-[4px]">
                 {allImages.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentImageIndex(idx)}
-                    className={`w-[6px] h-[6px] sm:w-[8px] sm:h-[8px] rounded-full transition-all duration-300 ${
+                    className={`w-[5px] h-[5px] sm:w-[6px] sm:h-[6px] md:w-[8px] md:h-[8px] rounded-full transition-all duration-300 ${
                       currentImageIndex === idx ? 'bg-white' : 'bg-white/30 hover:bg-white/70 active:bg-white/50'
                     }`}
                     aria-label={`Go to slide ${idx + 1}`}
@@ -321,10 +321,10 @@ export default function ProductDetailPage() {
             {allImages.length > 0 && (
               <button
                 onClick={() => setIsExpanded(true)}
-                className="absolute top-4 right-4 bg-white/90 hover:bg-white text-black p-2.5 md:p-3 rounded-full transition-all duration-200 z-20 shadow-lg active:scale-95"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-4 md:right-4 bg-white/90 hover:bg-white text-black p-2 sm:p-2.5 md:p-3 rounded-full transition-all duration-200 z-20 shadow-lg active:scale-95"
                 aria-label="Expand image"
               >
-                <Maximize2 className="h-5 w-5 md:h-6 md:w-6" />
+                <Maximize2 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
               </button>
             )}
           </section>
@@ -446,7 +446,7 @@ export default function ProductDetailPage() {
                   </div>
                   
                   {/* Color Selector */}
-                  {product.colors && product.colors.length > 0 && (
+                  {product.colors && product.colors.length > 1 && (
                     <div className="flex flex-col gap-y-[12px] md:mt-[24px] w-full md:w-auto">
                       <div className="flex gap-x-[6px] sm:gap-x-[8px] overflow-x-auto pb-2 scrollbar-hide md:overflow-x-visible md:justify-center">
                         {product.colors.map((color) => {

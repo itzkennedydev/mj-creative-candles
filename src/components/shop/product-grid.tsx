@@ -53,11 +53,11 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
   
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 auto-rows-fr">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 auto-rows-fr">
         {[...Array(6)].map((_, idx) => (
           <div key={idx} className="bg-white rounded-lg overflow-hidden animate-pulse h-full">
             <div className="aspect-square bg-gray-200"></div>
-            <div className="p-4 space-y-3">
+            <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
               <div className="h-4 bg-gray-200 rounded w-3/4"></div>
               <div className="h-4 bg-gray-200 rounded w-1/2"></div>
               <div className="h-8 bg-gray-200 rounded w-1/4"></div>
@@ -116,11 +116,11 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
       <div className="space-y-6">
         {/* School Tabs */}
         {(hasMoline || hasUnitedTownship) && (
-          <div className="flex flex-wrap gap-2 md:gap-3 border-b border-black/[0.06] pb-4">
+          <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 sm:gap-3 border-b border-black/[0.06] pb-3 sm:pb-4">
             {hasBoth && (
               <button
                 onClick={() => setActiveSchoolTab('all')}
-                className={`px-4 md:px-6 py-2 md:py-3 text-sm md:text-base font-medium rounded-md transition-all duration-200 ${
+                className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 whitespace-nowrap justify-center touch-manipulation ${
                   activeSchoolTab === 'all'
                     ? 'bg-gray-600 text-white shadow-sm'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
@@ -132,13 +132,13 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
             {hasMoline && (
               <button
                 onClick={() => setActiveSchoolTab('moline')}
-                className={`px-4 md:px-6 py-2 md:py-3 text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center gap-2 ${
+                className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
                   activeSchoolTab === 'moline'
                     ? 'bg-gray-600 text-white shadow-sm'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >
-                <div className="relative w-5 h-5 flex-shrink-0">
+                <div className="relative w-5 h-5 sm:w-5 sm:h-5 flex-shrink-0">
                   <Image
                     src="/schools/moline-logo.png"
                     alt="Moline"
@@ -149,19 +149,19 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
                     }}
                   />
                 </div>
-                <span>Moline High School</span>
+                <span className="whitespace-nowrap">Moline High School</span>
               </button>
             )}
             {hasUnitedTownship && (
               <button
                 onClick={() => setActiveSchoolTab('united-township')}
-                className={`px-4 md:px-6 py-2 md:py-3 text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center gap-2 ${
+                className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
                   activeSchoolTab === 'united-township'
                     ? 'bg-gray-600 text-white shadow-sm'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >
-                <div className="relative w-5 h-5 flex-shrink-0">
+                <div className="relative w-5 h-5 sm:w-5 sm:h-5 flex-shrink-0">
                   <Image
                     src="/schools/united-township-logo.png"
                     alt="United Township"
@@ -172,7 +172,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
                     }}
                   />
                 </div>
-                <span>United Township High School</span>
+                <span className="whitespace-nowrap">United Township High School</span>
               </button>
             )}
           </div>
@@ -180,14 +180,14 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
         
         {/* Products Grid */}
         {productsToShow.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 auto-rows-fr">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 auto-rows-fr">
             {productsToShow.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">No products available for this school</p>
+          <div className="text-center py-8 sm:py-12">
+            <p className="text-[13px] sm:text-[14px] text-gray-500 mb-4">No products available for this school</p>
           </div>
         )}
       </div>
@@ -196,7 +196,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
   
   // For regular shop, show normal grid
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 auto-rows-fr">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 auto-rows-fr">
       {filteredProducts.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
