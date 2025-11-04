@@ -3004,7 +3004,9 @@ export default function AdminPage() {
                             )}
                             {item.selectedColor && (
                               <span className="px-3 py-1 text-sm font-medium bg-gray-200 text-gray-700 rounded-md">
-                                Color: {item.selectedColor}
+                                Color: {item.selectedColor === "Custom" && item.customColorValue
+                                  ? `Custom (${item.customColorValue})`
+                                  : item.selectedColor}
                               </span>
                             )}
                             <span className="px-3 py-1 text-sm font-medium bg-gray-200 text-gray-700 rounded-md">

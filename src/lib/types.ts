@@ -16,6 +16,7 @@ export interface Product {
   images?: ProductImage[]; // Array of additional images
   category: string;
   shopType?: 'spirit-wear' | 'regular-shop'; // Type of shop: spirit-wear (UTHS) or regular-shop (Stitch Please)
+  school?: 'moline' | 'united-township'; // For spirit-wear: Moline High School (Maroons) or United Township High School (Panthers)
   inStock: boolean;
   sizes?: string[];
   colors?: string[];
@@ -39,6 +40,7 @@ export interface CartItem {
   quantity: number;
   selectedSize?: string;
   selectedColor?: string;
+  customColorValue?: string; // For custom color requests (when selectedColor is "Custom")
 }
 
 export interface CustomerInfo {

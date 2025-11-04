@@ -6,7 +6,7 @@ import type { CartItem, Product } from "./types";
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity: number, selectedSize?: string, selectedColor?: string) => void;
+  addItem: (product: Product, quantity: number, selectedSize?: string, selectedColor?: string, customColorValue?: string) => void;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -31,12 +31,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const addItem = (product: Product, quantity: number, selectedSize?: string, selectedColor?: string) => {
+  const addItem = (product: Product, quantity: number, selectedSize?: string, selectedColor?: string, customColorValue?: string) => {
     setItems(prev => {
       const existingItem = prev.find(item => 
         item.product.id === product.id && 
         item.selectedSize === selectedSize && 
-        item.selectedColor === selectedColor
+        item.selectedColor === selectedColor &&
+        item.customColorValue === customColorValue
       );
       
       if (existingItem) {
@@ -51,14 +52,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
         product,
         quantity,
         selectedSize,
-        selectedColor
+        selectedColor,
+        customColorValue
       }];
     });
   };
 
   const removeItem = (itemId: string) => {
     setItems(prev => prev.filter(item => 
-      `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}` !== itemId
+      `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}-${item.customColorValue ?? 'default'}` !== itemId
     ));
   };
 
@@ -69,7 +71,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     setItems(prev => prev.map(item => {
-      const currentItemId = `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}`;
+      const currentItemId = `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}-${item.customColorValue ?? 'default'}`;
       return currentItemId === itemId ? { ...item, quantity } : item;
     }));
   };

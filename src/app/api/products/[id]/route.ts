@@ -45,6 +45,7 @@ export async function GET(
       images: product.images ?? [],
       category: product.category,
       shopType: product.shopType,
+      school: product.school,
       inStock: product.inStock,
       sizes: product.sizes,
       colors: product.colors,
@@ -103,6 +104,7 @@ export async function PUT(
     if (body.images !== undefined) updateData.images = body.images; // Include images array
     if (body.category !== undefined) updateData.category = body.category;
     if (body.shopType !== undefined) updateData.shopType = body.shopType;
+    if (body.school !== undefined) updateData.school = body.school;
     if (body.inStock !== undefined) updateData.inStock = body.inStock;
     if (body.sizes !== undefined) updateData.sizes = body.sizes;
     if (body.colors !== undefined) updateData.colors = body.colors;
@@ -136,6 +138,7 @@ export async function PUT(
         images: updatedProduct.images ?? [], // Include images array
         category: updatedProduct.category,
         shopType: updatedProduct.shopType,
+        school: updatedProduct.school,
         inStock: updatedProduct.inStock,
         sizes: updatedProduct.sizes,
         colors: updatedProduct.colors,

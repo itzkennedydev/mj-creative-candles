@@ -5,6 +5,7 @@ export interface OrderItem {
   quantity: number;
   selectedSize?: string;
   selectedColor?: string;
+  customColorValue?: string; // For custom color requests
 }
 
 export interface CustomerInfo {

@@ -12,6 +12,7 @@ interface ProductDocument {
   image: string;
   category: string;
   shopType?: 'spirit-wear' | 'regular-shop';
+  school?: 'moline' | 'united-township';
   inStock: boolean;
   sizes?: string[];
   colors?: string[];
@@ -31,6 +32,7 @@ const initialProducts: Omit<Product, 'id'>[] = [
     image: "/placeholder-black-tshirt.png",
     category: "Apparel",
     shopType: "spirit-wear",
+    school: "united-township",
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["Black"]
@@ -42,6 +44,7 @@ const initialProducts: Omit<Product, 'id'>[] = [
     image: "/placeholder-black-hoodie.png",
     category: "Apparel",
     shopType: "spirit-wear",
+    school: "united-township",
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["Black"]
@@ -92,6 +95,7 @@ export async function getProducts(): Promise<Product[]> {
       image: product.image,
       category: product.category,
       shopType: product.shopType,
+      school: product.school,
       inStock: product.inStock,
       sizes: product.sizes,
       colors: product.colors,
@@ -159,6 +163,7 @@ export async function updateProduct(id: string, productData: Partial<Product>): 
       image: updatedProduct.image,
       category: updatedProduct.category,
       shopType: updatedProduct.shopType,
+      school: updatedProduct.school,
       inStock: updatedProduct.inStock,
       sizes: updatedProduct.sizes,
       colors: updatedProduct.colors,

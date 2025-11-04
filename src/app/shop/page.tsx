@@ -57,7 +57,7 @@ export default function ShopPage() {
                   onClick={() => setActiveShop("spirit-wear")}
                   className={`relative px-[22px] py-[11px] text-[14px] leading-[130%] rounded-md transition-all duration-[0.25s] whitespace-nowrap ${
                     activeShop === 'spirit-wear' 
-                      ? 'bg-[#74CADC] text-[#0A5565] font-medium shadow-sm' 
+                      ? 'bg-gray-600 text-white font-medium shadow-sm' 
                       : 'text-black/[0.72] hover:text-black'
                   }`}
                 >

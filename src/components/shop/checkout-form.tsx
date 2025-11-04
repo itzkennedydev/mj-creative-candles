@@ -80,9 +80,23 @@ export function CheckoutForm() {
           productPrice: finalPrice,
           quantity: item.quantity,
           selectedSize: item.selectedSize,
-          selectedColor: item.selectedColor
+          selectedColor: item.selectedColor,
+          customColorValue: item.customColorValue
         };
       });
+
+      // Build notes with custom color information
+      const customColorNotes: string[] = [];
+      cartItems.forEach(item => {
+        if (item.customColorValue && item.selectedColor === "Custom") {
+          customColorNotes.push(`${item.product.name}: Custom color - ${item.customColorValue}`);
+        }
+      });
+      
+      const allNotes = [
+        ...(customColorNotes.length > 0 ? customColorNotes : []),
+        ...(notes.trim() ? [notes.trim()] : [])
+      ].join('\n\n');
 
       // Prepare order data for database
       const orderData: CreateOrderRequest = {
@@ -100,7 +114,7 @@ export function CheckoutForm() {
         shippingCost,
         total,
         paymentMethod,
-        notes: notes.trim() || undefined
+        notes: allNotes || undefined
       };
       
       // Save order to database first using secure API client
@@ -274,7 +288,7 @@ export function CheckoutForm() {
               />
               {cartItems.some(item => item.product.requiresBabyClothes) && (
                 <p className="mt-2 text-xs text-gray-500">
-                  💡 <strong>Mama Keepsake Sweatshirt:</strong> If you don&apos;t see your preferred sweatshirt color in the options above, please specify it here. You have {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days to bring in your baby clothes after placing your order.
+                  💡 <strong>Mama Keepsake Sweatshirt:</strong> Looking for a different sweatshirt color? Just let us know here! Please bring your baby clothes within {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days of placing your order.
                 </p>
               )}
             </div>

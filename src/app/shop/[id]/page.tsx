@@ -32,6 +32,7 @@ export default function ProductDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [customColorValue, setCustomColorValue] = useState<string>("");
   const quantity = 1;
   const [activeTab, setActiveTab] = useState<string>("product");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -134,8 +135,16 @@ export default function ProductDetailPage() {
       });
       return;
     }
+    if (selectedColor === "Custom" && !customColorValue.trim()) {
+      addToast({
+        title: "Custom Color Required",
+        description: "Please specify your custom color.",
+        type: "warning"
+      });
+      return;
+    }
     
-    addItem(product, quantity, selectedSize, selectedColor);
+    addItem(product, quantity, selectedSize, selectedColor, selectedColor === "Custom" ? customColorValue : undefined);
     addToast({
       title: "Added to Cart!",
       description: `${product.name} has been added to your cart.`,
@@ -461,20 +470,61 @@ export default function ProductDetailPage() {
                           return (
                             <div key={color} className="flex flex-col items-center gap-y-[6px] flex-shrink-0">
                               <button
-                                onClick={() => setSelectedColor(color)}
-                                className={`w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] md:w-[40px] md:h-[40px] rounded-full flex items-center justify-center transition-all active:scale-95 touch-manipulation`}
-                                style={{ backgroundColor: colorValue }}
+                                onClick={() => {
+                                  setSelectedColor(color);
+                                  setCustomColorValue("");
+                                }}
+                                className={`w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] md:w-[40px] md:h-[40px] rounded-full flex items-center justify-center transition-all active:scale-95 touch-manipulation border-2 ${
+                                  isSelected 
+                                    ? 'border-[#74CADC] bg-[#74CADC]' 
+                                    : 'border-gray-300'
+                                }`}
+                                style={{ backgroundColor: isSelected ? '#74CADC' : colorValue }}
                                 aria-label={`${product.name.toLowerCase()}-${color.toLowerCase()}-color-selector`}
                               >
                                 {isSelected && (
                                   <span className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] md:w-[12px] md:h-[12px] block rounded-full bg-white"></span>
                                 )}
                               </button>
-                              <span className="text-[11px] sm:text-[12px] leading-[130%] text-black/[0.72] whitespace-nowrap">{color}</span>
+                              <span className={`text-[11px] sm:text-[12px] leading-[130%] whitespace-nowrap transition-colors ${
+                                isSelected ? 'text-black/[0.72] font-medium' : 'text-black/[0.72]'
+                              }`}>{color}</span>
                             </div>
                           );
                         })}
+                        {/* Custom Color Option for Keepsake Sweater */}
+                        {product.requiresBabyClothes && (
+                          <div className="flex flex-col items-center gap-y-[6px] flex-shrink-0">
+                            <button
+                              onClick={() => setSelectedColor("Custom")}
+                              className={`w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] md:w-[40px] md:h-[40px] rounded-full flex items-center justify-center transition-all active:scale-95 touch-manipulation border-2 ${
+                                selectedColor === "Custom" 
+                                  ? 'border-[#74CADC] bg-[#74CADC]' 
+                                  : 'border-gray-300 hover:border-gray-400'
+                              }`}
+                              style={{ backgroundColor: selectedColor === "Custom" ? '#74CADC' : "transparent" }}
+                              aria-label="custom-color-selector"
+                            >
+                              <span className="text-[18px]">🎨</span>
+                            </button>
+                            <span className={`text-[11px] sm:text-[12px] leading-[130%] whitespace-nowrap transition-colors ${
+                              selectedColor === "Custom" ? 'text-black/[0.72] font-medium' : 'text-black/[0.72]'
+                            }`}>Custom</span>
+                          </div>
+                        )}
                       </div>
+                      {/* Custom Color Input */}
+                      {selectedColor === "Custom" && product.requiresBabyClothes && (
+                        <div className="mt-2 w-full">
+                          <input
+                            type="text"
+                            value={customColorValue}
+                            onChange={(e) => setCustomColorValue(e.target.value)}
+                            placeholder="Enter your custom color"
+                            className="w-full px-3 py-2 text-[13px] sm:text-[14px] border border-gray-300 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -495,15 +545,17 @@ export default function ProductDetailPage() {
                               onClick={() => setSelectedSize(size)}
                               className="p-[14px] sm:p-[16px] relative block w-full active:opacity-80 touch-manipulation"
                             >
-                              <div className="flex justify-between relative z-[2]">
-                                <h2 className="text-[13px] sm:text-[14px] leading-[130%] font-bold">{size}</h2>
-                                <h3 className="text-[13px] sm:text-[14px] leading-[130%] font-bold">
+                              <div className={`flex justify-between relative z-[2] transition-colors ${
+                                isSelected ? 'text-[#0A5565]' : 'text-black/[0.72]'
+                              }`}>
+                                <h2 className={`text-[13px] sm:text-[14px] leading-[130%] font-bold ${isSelected ? 'text-[#0A5565]' : 'text-black/[0.72]'}`}>{size}</h2>
+                                <h3 className={`text-[13px] sm:text-[14px] leading-[130%] font-bold ${isSelected ? 'text-[#0A5565]' : 'text-black/[0.72]'}`}>
                                   ${sizePrice.toFixed(2)}
                                 </h3>
                               </div>
                               {isSelected && (
                                 <div 
-                                  className="w-full h-full absolute rounded-[18px] sm:rounded-[20px] bg-white top-0 left-0" 
+                                  className="w-full h-full absolute rounded-[18px] sm:rounded-[20px] bg-[#74CADC] top-0 left-0" 
                                   style={{ opacity: 1 }}
                                 />
                               )}
@@ -522,10 +574,10 @@ export default function ProductDetailPage() {
                     {product.requiresBabyClothes && (
                       <div className="mt-5 sm:mt-6 bg-black/[0.03] rounded-[20px] sm:rounded-[24px] p-3 sm:p-4">
                         <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold text-black/[0.72] mb-1">
-                          Bring Your Baby Clothes!
+                          Don&apos;t forget to bring your baby clothes!
                         </p>
                         <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-black/[0.44]">
-                          You have {product.babyClothesDeadlineDays ?? 5} days to bring in your baby clothes after ordering.
+                          Please bring your baby clothes within {product.babyClothesDeadlineDays ?? 5} days of placing your order.
                         </p>
                       </div>
                     )}
@@ -582,7 +634,7 @@ export default function ProductDetailPage() {
                   </h3>
                   {product.requiresBabyClothes && (
                     <h3 className="text-[12px] sm:text-[14px] leading-[130%] text-center text-black/[0.72] opacity-50 font-normal mt-1">
-                      Bring baby clothes within {product.babyClothesDeadlineDays ?? 5} days
+                      Please bring baby clothes within {product.babyClothesDeadlineDays ?? 5} days
                     </h3>
                   )}
                   {!product.inStock && (

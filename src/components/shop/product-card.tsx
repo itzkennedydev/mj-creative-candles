@@ -20,6 +20,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [customColorValue, setCustomColorValue] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
@@ -138,8 +139,16 @@ export function ProductCard({ product }: ProductCardProps) {
       });
       return;
     }
+    if (selectedColor === "Custom" && !customColorValue.trim()) {
+      addToast({
+        title: "Custom Color Required",
+        description: "Please specify your custom color.",
+        type: "warning"
+      });
+      return;
+    }
     
-    addItem(product, quantity, selectedSize, selectedColor);
+    addItem(product, quantity, selectedSize, selectedColor, selectedColor === "Custom" ? customColorValue : undefined);
     addToast({
       title: "Added to Cart!",
       description: `${product.name} has been added to your cart.`,
@@ -337,11 +346,11 @@ export function ProductCard({ product }: ProductCardProps) {
             {/* Special Instructions for Mama Keepsake Sweatshirt */}
             {product.requiresBabyClothes && (
               <div className="mt-3 p-3 bg-pink-50 border border-pink-200 rounded-md">
-                <p className="text-sm font-medium text-pink-900 mb-1">Bring Your Baby Clothes!</p>
+                <p className="text-sm font-medium text-pink-900 mb-1">Don&apos;t forget to bring your baby clothes!</p>
                 <p className="text-xs text-pink-800">
-                  You have {product.babyClothesDeadlineDays || 5} days to bring in your baby clothes after ordering.
+                  Please bring your baby clothes within {product.babyClothesDeadlineDays || 5} days of placing your order.
                   {product.colors && product.colors.length > 0 && (
-                    <span className="block mt-1">Don&apos;t see your preferred color? Add it in the order notes during checkout.</span>
+                    <span className="block mt-1">Looking for a different color? Just let us know in the order notes during checkout!</span>
                   )}
                 </p>
               </div>
@@ -361,19 +370,22 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex-shrink-0">
             <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Size</label>
             <div className="flex flex-wrap gap-1 md:gap-2">
-              {product.sizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`px-3 md:px-4 py-2 text-sm border rounded-md transition-colors ${
-                    selectedSize === size
-                      ? "border-gray-900 text-gray-900"
-                      : "border-gray-300 text-gray-600 hover:border-gray-400"
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
+              {product.sizes.map((size) => {
+                const isSelected = selectedSize === size;
+                return (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`px-3 md:px-4 py-2 text-sm border rounded-md transition-colors ${
+                      isSelected
+                        ? "border-[#74CADC] bg-[#74CADC] text-[#0A5565]"
+                        : "border-gray-300 text-gray-700 hover:border-gray-400"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -383,20 +395,51 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex-shrink-0">
             <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Color</label>
             <div className="flex flex-wrap gap-1 md:gap-2">
-              {product.colors.map((color) => (
+              {product.colors.map((color) => {
+                const isSelected = selectedColor === color;
+                return (
+                  <button
+                    key={color}
+                    onClick={() => {
+                      setSelectedColor(color);
+                      setCustomColorValue("");
+                    }}
+                    className={`px-3 md:px-4 py-2 text-sm border rounded-md transition-colors ${
+                      isSelected
+                        ? "border-[#74CADC] bg-[#74CADC] text-[#0A5565]"
+                        : "border-gray-300 text-gray-700 hover:border-gray-400"
+                    }`}
+                  >
+                    {color}
+                  </button>
+                );
+              })}
+              {/* Custom Color Option for Keepsake Sweater */}
+              {product.requiresBabyClothes && (
                 <button
-                  key={color}
-                  onClick={() => setSelectedColor(color)}
+                  onClick={() => setSelectedColor("Custom")}
                   className={`px-3 md:px-4 py-2 text-sm border rounded-md transition-colors ${
-                    selectedColor === color
-                      ? "border-gray-900 text-gray-900"
-                      : "border-gray-300 text-gray-600 hover:border-gray-400"
+                    selectedColor === "Custom"
+                      ? "border-[#74CADC] bg-[#74CADC] text-[#0A5565]"
+                      : "border-gray-300 text-gray-700 hover:border-gray-400"
                   }`}
                 >
-                  {color}
+                  Custom 🎨
                 </button>
-              ))}
+              )}
             </div>
+            {/* Custom Color Input */}
+            {selectedColor === "Custom" && product.requiresBabyClothes && (
+              <div className="mt-2">
+                <input
+                  type="text"
+                  value={customColorValue}
+                  onChange={(e) => setCustomColorValue(e.target.value)}
+                  placeholder="Enter your custom color"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+              </div>
+            )}
           </div>
         )}
 

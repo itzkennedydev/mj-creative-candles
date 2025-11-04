@@ -24,6 +24,7 @@ export async function GET() {
       images: product.images ?? [], // Include images array
       category: product.category,
       shopType: product.shopType,
+      school: product.school,
       inStock: product.inStock,
       sizes: product.sizes,
       colors: product.colors,
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
       images: body.images ?? [], // Include images array
       category: body.category ?? 'Apparel',
       shopType: body.shopType,
+      school: body.school,
       inStock: body.inStock ?? true,
       sizes: body.sizes ?? [],
       colors: body.colors ?? [],

@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { Plus, Minus } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
 
 export function OrderSummary() {
-  const { items: cartItems, getTotalPrice } = useCart();
+  const { items: cartItems, getTotalPrice, updateQuantity } = useCart();
   
   const subtotal = getTotalPrice();
   const tax = subtotal * 0.085; // 8.5% tax
@@ -22,32 +23,56 @@ export function OrderSummary() {
             <p>Your cart is empty</p>
           </div>
         ) : (
-          cartItems.map((item) => (
-            <div key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}`} className="flex gap-4">
-              <div className="w-16 h-16 relative rounded-md overflow-hidden">
-                <Image
-                  src={item.product.image}
-                  alt={item.product.name}
-                  fill
-                  className="object-cover"
-                />
+          cartItems.map((item) => {
+            const itemId = `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}-${item.customColorValue ?? 'default'}`;
+            return (
+              <div key={itemId} className="flex gap-4">
+                <div className="w-16 h-16 relative rounded-md overflow-hidden flex-shrink-0">
+                  <Image
+                    src={item.product.image}
+                    alt={item.product.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-900">{item.product.name}</h3>
+                  <p className="text-sm text-gray-600">
+                    {item.selectedSize && `Size: ${item.selectedSize}`}
+                    {item.selectedSize && item.selectedColor && " • "}
+                    {item.selectedColor && item.selectedColor === "Custom" && item.customColorValue
+                      ? `Color: Custom (${item.customColorValue})`
+                      : item.selectedColor && `Color: ${item.selectedColor}`}
+                  </p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="text-sm text-gray-600">Qty:</span>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => updateQuantity(itemId, item.quantity - 1)}
+                        className="p-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <span className="text-sm font-medium text-gray-900 min-w-[2rem] text-center">{item.quantity}</span>
+                      <button 
+                        onClick={() => updateQuantity(itemId, item.quantity + 1)}
+                        className="p-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                        aria-label="Increase quantity"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium text-gray-900">
+                    ${((item.product.price + (item.selectedSize === 'XXL' ? 3 : 0)) * item.quantity).toFixed(2)}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-900">{item.product.name}</h3>
-                <p className="text-sm text-gray-600">
-                  {item.selectedSize && `Size: ${item.selectedSize}`}
-                  {item.selectedSize && item.selectedColor && " • "}
-                  {item.selectedColor && `Color: ${item.selectedColor}`}
-                </p>
-                <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-              </div>
-              <div className="text-right">
-                <p className="font-medium text-gray-900">
-                  ${((item.product.price + (item.selectedSize === 'XXL' ? 3 : 0)) * item.quantity).toFixed(2)}
-                </p>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

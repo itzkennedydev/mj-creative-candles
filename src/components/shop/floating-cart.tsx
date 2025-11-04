@@ -16,10 +16,10 @@ export function FloatingCart() {
 
   return (
     <>
-      {/* Floating Cart Button */}
+      {/* Floating Cart Button - Hidden on desktop (lg and above) */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 bg-[#74CADC] text-[#0A5565] px-4 py-3 md:px-6 md:py-4 rounded-lg shadow-lg hover:bg-[#74CADC]/90 transition-colors z-40 flex items-center gap-2 md:gap-3"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 lg:hidden bg-[#74CADC] text-[#0A5565] px-4 py-3 md:px-6 md:py-4 rounded-lg shadow-lg hover:bg-[#74CADC]/90 transition-colors z-40 flex items-center gap-2 md:gap-3"
       >
         <div className="relative">
           <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
@@ -67,7 +67,7 @@ export function FloatingCart() {
                 ) : (
                   <div className="space-y-4">
                     {cartItems.map((item) => {
-                      const itemId = `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}`;
+                      const itemId = `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}-${item.customColorValue ?? 'default'}`;
                       return (
                         <div key={itemId} className="flex gap-4 border-b border-gray-100 pb-4">
                           <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden">
@@ -84,7 +84,9 @@ export function FloatingCart() {
                             <p className="text-gray-500 text-xs">
                               {item.selectedSize && `Size: ${item.selectedSize}`}
                               {item.selectedSize && item.selectedColor && " • "}
-                              {item.selectedColor && `Color: ${item.selectedColor}`}
+                              {item.selectedColor && item.selectedColor === "Custom" && item.customColorValue
+                                ? `Color: Custom (${item.customColorValue})`
+                                : item.selectedColor && `Color: ${item.selectedColor}`}
                             </p>
                             <div className="flex items-center justify-between mt-2">
                               <div className="flex items-center gap-2">
