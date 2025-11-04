@@ -451,7 +451,7 @@ export default function ProductDetailPage() {
                       <div className="flex gap-x-[6px] sm:gap-x-[8px] overflow-x-auto pb-2 scrollbar-hide md:overflow-x-visible md:justify-center">
                         {product.colors.map((color) => {
                           const colorMap: Record<string, string> = {
-                            'Black': '#47433D',
+                            'Black': '#000000',
                             'White': '#F7F7F5',
                             'Cream': '#D5CCBF',
                             'Grey': '#8F9AA6',
@@ -459,13 +459,27 @@ export default function ProductDetailPage() {
                             'Navy': '#4A5568',
                             'Pink': '#FFC0CB',
                             'Purple': '#9F7AEA',
-                            'Maroon': '#B91C1C',
+                            'Maroon': '#800000',
                             'Blue': '#74CADC',
                             'Green': '#68D391',
                             'Red': '#F56565',
                           };
                           const colorValue = colorMap[color] ?? '#CCCCCC';
                           const isSelected = selectedColor === color;
+                          
+                          // Determine if color is dark (use white dot) or light (use black dot)
+                          const hex = colorValue.replace('#', '');
+                          let r = 0, g = 0, b = 0;
+                          if (hex.length === 6) {
+                            r = parseInt(hex.substring(0, 2), 16);
+                            g = parseInt(hex.substring(2, 4), 16);
+                            b = parseInt(hex.substring(4, 6), 16);
+                          } else if (hex.length === 3) {
+                            r = parseInt((hex[0] ?? '0') + (hex[0] ?? '0'), 16);
+                            g = parseInt((hex[1] ?? '0') + (hex[1] ?? '0'), 16);
+                            b = parseInt((hex[2] ?? '0') + (hex[2] ?? '0'), 16);
+                          }
+                          const brightness = (r * 299 + g * 587 + b * 114) / 1000;
                           
                           return (
                             <div key={color} className="flex flex-col items-center gap-y-[6px] flex-shrink-0">
@@ -476,14 +490,14 @@ export default function ProductDetailPage() {
                                 }}
                                 className={`w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] md:w-[40px] md:h-[40px] rounded-full flex items-center justify-center transition-all active:scale-95 touch-manipulation border-2 ${
                                   isSelected 
-                                    ? 'border-[#74CADC] bg-[#74CADC]' 
-                                    : 'border-gray-300'
+                                    ? 'border-transparent' 
+                                    : 'border-gray-300 hover:border-gray-400'
                                 }`}
-                                style={{ backgroundColor: isSelected ? '#74CADC' : colorValue }}
+                                style={{ backgroundColor: colorValue }}
                                 aria-label={`${product.name.toLowerCase()}-${color.toLowerCase()}-color-selector`}
                               >
                                 {isSelected && (
-                                  <span className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] md:w-[12px] md:h-[12px] block rounded-full bg-white"></span>
+                                  <span className={`w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] md:w-[12px] md:h-[12px] block rounded-full ${brightness < 128 ? 'bg-white' : 'bg-gray-900'}`}></span>
                                 )}
                               </button>
                               <span className={`text-[11px] sm:text-[12px] leading-[130%] whitespace-nowrap transition-colors ${
