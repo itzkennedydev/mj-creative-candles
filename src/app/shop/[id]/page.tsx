@@ -467,20 +467,6 @@ export default function ProductDetailPage() {
                           const colorValue = colorMap[color] ?? '#CCCCCC';
                           const isSelected = selectedColor === color;
                           
-                          // Determine if color is dark (use white dot) or light (use black dot)
-                          const hex = colorValue.replace('#', '');
-                          let r = 0, g = 0, b = 0;
-                          if (hex.length === 6) {
-                            r = parseInt(hex.substring(0, 2), 16);
-                            g = parseInt(hex.substring(2, 4), 16);
-                            b = parseInt(hex.substring(4, 6), 16);
-                          } else if (hex.length === 3) {
-                            r = parseInt((hex[0] ?? '0') + (hex[0] ?? '0'), 16);
-                            g = parseInt((hex[1] ?? '0') + (hex[1] ?? '0'), 16);
-                            b = parseInt((hex[2] ?? '0') + (hex[2] ?? '0'), 16);
-                          }
-                          const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-                          
                           return (
                             <div key={color} className="flex flex-col items-center gap-y-[6px] flex-shrink-0">
                               <button
@@ -497,7 +483,7 @@ export default function ProductDetailPage() {
                                 aria-label={`${product.name.toLowerCase()}-${color.toLowerCase()}-color-selector`}
                               >
                                 {isSelected && (
-                                  <span className={`w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] md:w-[12px] md:h-[12px] block rounded-full ${brightness < 128 ? 'bg-white' : 'bg-gray-900'}`}></span>
+                                  <span className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] md:w-[12px] md:h-[12px] block rounded-full bg-white"></span>
                                 )}
                               </button>
                               <span className={`text-[11px] sm:text-[12px] leading-[130%] whitespace-nowrap transition-colors ${
