@@ -36,11 +36,14 @@ export default function ProductDetailPage() {
   const quantity = 1;
   const [activeTab, setActiveTab] = useState<string>("product");
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const { addItem } = useCart();
   const { addToast } = useToast();
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
+  const imageRef = useRef<HTMLDivElement>(null);
 
   // Debug log
   useEffect(() => {
@@ -185,6 +188,30 @@ export default function ProductDetailPage() {
     touchEndX.current = 0;
   };
 
+  // Handle mouse move for zoom effect
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageRef.current || !isZoomed) return;
+    
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    setZoomPosition({
+      x: Math.max(0, Math.min(100, x)),
+      y: Math.max(0, Math.min(100, y))
+    });
+  };
+
+  // Handle mouse enter/leave for zoom
+  const handleMouseEnter = () => {
+    // Only enable zoom on desktop (md and above) - check via media query
+    setIsZoomed(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsZoomed(false);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -242,20 +269,39 @@ export default function ProductDetailPage() {
             onTouchEnd={handleTouchEnd}
           >
             <div className="swiper h-full overflow-hidden rounded-[20px] sm:rounded-[24px] md:rounded-[32px] lg:rounded-[40px] bg-[#F1F1EF] flex w-full">
-              <div className="relative bg-[#F1F1EF] w-full h-full">
+              <div 
+                ref={imageRef}
+                className="relative bg-[#F1F1EF] w-full h-full cursor-zoom-in md:cursor-crosshair md:group"
+                onMouseMove={handleMouseMove}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
                 {allImages.length > 0 && (
                   <>
-                    <div className="transition-opacity duration-300 opacity-100 relative h-full z-10">
+                    <div className="transition-opacity duration-300 opacity-100 relative h-full z-10 overflow-hidden">
                       <Image
                         src={allImages[currentImageIndex]?.src ?? '/placeholder.jpg'}
                         alt={product.name}
                         fill
-                        className="w-full h-full transition-opacity duration-500 object-cover relative object-top"
+                        className={`w-full h-full transition-opacity duration-500 object-cover relative object-top ${
+                          isZoomed ? 'md:scale-150' : ''
+                        }`}
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, calc(100vw - 354px)"
                         priority
-                        style={{ color: 'transparent' }}
+                        style={{ 
+                          color: 'transparent',
+                          transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                          transition: isZoomed ? 'none' : 'transform 0.3s ease-out'
+                        }}
                       />
                     </div>
+                    
+                    {/* Zoom indicator hint - only show on desktop when not zoomed */}
+                    {!isZoomed && (
+                      <div className="hidden md:block absolute bottom-16 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full z-30 pointer-events-none opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
+                        Hover to zoom • Move to pan
+                      </div>
+                    )}
                     
                     {/* Navigation Arrows - Show on tablet and desktop */}
                     {allImages.length > 1 && (
