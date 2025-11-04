@@ -47,7 +47,7 @@ export default function ShopPage() {
                   onClick={() => setActiveShop("regular-shop")}
                   className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-[0.25s] whitespace-nowrap ${
                     activeShop === 'regular-shop' 
-                      ? 'bg-[#74CADC] text-[#0A5565] font-medium shadow-sm' 
+                      ? 'bg-gray-600 text-white font-medium shadow-sm' 
                       : 'text-black/[0.72] hover:text-black'
                   }`}
                 >
@@ -173,7 +173,7 @@ function ShopSidebarNeo({ shopType }: { shopType: string }) {
               variant={selectedCategory === category ? 'default' : 'ghost'}
               className={`w-full justify-start px-[14px] sm:px-[16px] py-[10px] sm:py-[12px] rounded-[12px] text-[13px] sm:text-[14px] leading-[130%] transition-all duration-[0.25s] ${
                 selectedCategory === category
-                  ? 'bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]'
+                  ? 'bg-gray-600 hover:bg-gray-700 text-white'
                   : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
               }`}
             >

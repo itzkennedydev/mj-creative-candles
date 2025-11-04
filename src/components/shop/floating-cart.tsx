@@ -19,7 +19,7 @@ export function FloatingCart() {
       {/* Floating Cart Button - Hidden on desktop (lg and above) */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 md:bottom-6 md:right-6 lg:hidden bg-[#74CADC] text-[#0A5565] px-3 py-2.5 sm:px-4 sm:py-3 md:px-6 md:py-4 rounded-lg shadow-lg hover:bg-[#74CADC]/90 active:bg-[#74CADC]/80 transition-colors z-40 flex items-center gap-2 sm:gap-2.5 md:gap-3 touch-manipulation"
+        className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 md:bottom-6 md:right-6 lg:hidden bg-gray-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 md:px-6 md:py-4 rounded-lg shadow-lg hover:bg-gray-700 active:bg-gray-800 transition-colors z-40 flex items-center gap-2 sm:gap-2.5 md:gap-3 touch-manipulation"
       >
         <div className="relative">
           <ShoppingCart className="h-4 w-4 sm:h-[18px] sm:w-[18px] md:h-5 md:w-5" />
@@ -125,7 +125,7 @@ export function FloatingCart() {
                   </div>
                   <Link href="/shop/checkout">
                     <Button 
-                      className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 active:bg-[#74CADC]/80 text-[#0A5565] py-2.5 sm:py-2 md:py-3 text-sm sm:text-base font-medium touch-manipulation transition-all active:scale-[0.98]"
+                      className="w-full bg-gray-600 hover:bg-gray-700 active:bg-gray-800 text-white py-2.5 sm:py-2 md:py-3 text-sm sm:text-base font-medium touch-manipulation transition-all active:scale-[0.98]"
                       onClick={() => setIsOpen(false)}
                     >
                       Checkout
