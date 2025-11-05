@@ -52,6 +52,79 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // IMPORTANT: Only send emails if the order status is 'paid' in the database
+    // This ensures the webhook has verified and processed the payment first
+    // The webhook is the authoritative source - it verifies Stripe's signature
+    // and updates the order status to 'paid' after verification
+    if (order.status !== 'paid') {
+      // In development, allow direct verification via Stripe API as a fallback
+      // since webhooks may not be configured for localhost
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      
+      if (isDevelopment && session.payment_status === 'paid') {
+        console.log(`[DEV MODE] Order ${order.orderNumber} is pending but Stripe confirms payment. Updating order status to 'paid'.`);
+        
+        // Update order status to paid (similar to webhook logic)
+        const updateResult = await ordersCollection.updateOne(
+          { 
+            _id: new ObjectId(orderId),
+            status: 'pending' // Only update if still pending
+          },
+          { 
+            $set: { 
+              status: 'paid',
+              paymentIntentId: typeof session.payment_intent === 'string' 
+                ? session.payment_intent 
+                : session.payment_intent?.id ?? undefined,
+              paidAt: new Date(),
+              stripeSessionId: session.id,
+              stripeSubtotal: session.metadata?.subtotal ? parseFloat(session.metadata.subtotal) : undefined,
+              stripeTax: session.metadata?.tax ? parseFloat(session.metadata.tax) : undefined,
+              stripeTotal: session.metadata?.total ? parseFloat(session.metadata.total) : undefined,
+              updatedAt: new Date(),
+            }
+          }
+        );
+
+        if (updateResult.matchedCount === 0) {
+          // Order was already updated, fetch it again
+          const updatedOrder = await ordersCollection.findOne({ _id: new ObjectId(orderId) });
+          if (updatedOrder && updatedOrder.status === 'paid') {
+            // Order is now paid, continue with email sending
+            Object.assign(order, updatedOrder);
+          } else {
+            console.log(`[DEV MODE] Order ${order.orderNumber} update failed or was already processed.`);
+            return NextResponse.json({
+              success: false,
+              message: 'Payment verification failed',
+              orderNumber: order.orderNumber,
+              orderStatus: order.status,
+            }, { status: 202 });
+          }
+        } else {
+          // Update successful, refresh order object
+          const updatedOrder = await ordersCollection.findOne({ _id: new ObjectId(orderId) });
+          if (updatedOrder) {
+            Object.assign(order, updatedOrder);
+          }
+        }
+        
+        console.log(`[DEV MODE] ✅ Order ${order.orderNumber} updated to paid status via direct Stripe verification`);
+      } else {
+        // Production: Wait for webhook verification
+        console.log(`Order ${order.orderNumber} status is '${order.status}', not 'paid'. Waiting for webhook to verify payment.`);
+        return NextResponse.json({
+          success: false,
+          message: 'Payment not yet verified by webhook',
+          orderNumber: order.orderNumber,
+          orderStatus: order.status,
+          note: isDevelopment 
+            ? 'In development, ensure Stripe CLI is forwarding webhooks or webhook secret is configured'
+            : 'Emails will be sent automatically once the webhook verifies payment'
+        }, { status: 202 }); // 202 Accepted - payment is pending webhook verification
+      }
+    }
+
     // Check if emails have already been sent (prevent duplicate emails)
     if (order.emailsSent) {
       console.log(`Emails already sent for order ${order.orderNumber} - likely sent by webhook`);
@@ -85,7 +158,25 @@ export async function POST(request: NextRequest) {
       }
 
       // Now send the emails (we've atomically marked them as sent)
-      await sendOrderConfirmationEmail(order);
+      // Note: sendOrderConfirmationEmail has its own security check - it will return false
+      // if order.status !== 'paid', providing defense in depth
+      const emailSent = await sendOrderConfirmationEmail(order);
+
+      if (!emailSent) {
+        // Email function returned false - could be due to security check or other error
+        // Unmark emailsSent so it can be retried
+        await ordersCollection.updateOne(
+          { _id: new ObjectId(orderId) },
+          { $unset: { emailsSent: '', emailsSentAt: '' } }
+        );
+        
+        console.error(`Failed to send confirmation emails for order ${order.orderNumber} - email function returned false`);
+        return NextResponse.json({
+          success: false,
+          message: 'Failed to send confirmation emails - payment verification required',
+          orderNumber: order.orderNumber
+        }, { status: 500 });
+      }
 
       console.log(`✅ Confirmation emails sent for order ${order.orderNumber}`);
       

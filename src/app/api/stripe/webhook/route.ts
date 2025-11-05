@@ -227,19 +227,34 @@ export async function POST(request: NextRequest) {
           const updatedOrder = await ordersCollection.findOne({ _id: new ObjectId(orderId) });
           
           if (updatedOrder && !updatedOrder.emailsSent) {
-            // Send confirmation emails immediately
-            await sendOrderConfirmationEmail(updatedOrder);
-            
-            // Atomically mark that emails have been sent (prevents race conditions)
-            await ordersCollection.updateOne(
-              { 
-                _id: new ObjectId(orderId),
-                emailsSent: { $ne: true } // Only update if emailsSent is not already true
-              },
-              { $set: { emailsSent: true, emailsSentAt: new Date() } }
-            );
-            
-            console.log(`✅ Email notifications sent immediately for order ${updatedOrder.orderNumber} via webhook`);
+            // Verify order status is 'paid' before sending emails (defense in depth)
+            // This should always be true since we just updated it, but provides extra safety
+            if (updatedOrder.status === 'paid') {
+              // Send confirmation emails immediately
+              // Note: sendOrderConfirmationEmail has its own security check - it will return false
+              // if order.status !== 'paid', providing defense in depth
+              const emailSent = await sendOrderConfirmationEmail(updatedOrder);
+              
+              if (emailSent) {
+                // Atomically mark that emails have been sent (prevents race conditions)
+                await ordersCollection.updateOne(
+                  { 
+                    _id: new ObjectId(orderId),
+                    emailsSent: { $ne: true } // Only update if emailsSent is not already true
+                  },
+                  { $set: { emailsSent: true, emailsSentAt: new Date() } }
+                );
+                
+                console.log(`✅ Email notifications sent immediately for order ${updatedOrder.orderNumber} via webhook`);
+              } else {
+                console.error(`Failed to send email notifications for order ${updatedOrder.orderNumber} - email function returned false`);
+                // Don't mark as sent if email function returned false
+                // This could happen if there's a security check failure or email service error
+              }
+            } else {
+              console.warn(`Order ${updatedOrder.orderNumber} status is '${updatedOrder.status}', not 'paid'. Skipping email send.`);
+              // Don't fail the webhook - order was updated successfully, email can be sent later
+            }
           } else if (updatedOrder?.emailsSent) {
             console.log(`Order ${updatedOrder.orderNumber} already had emails sent, skipping duplicate`);
           }

@@ -326,13 +326,21 @@ function generateVerificationEmailTemplate(code: string): string {
 
 export async function sendOrderConfirmationEmail(order: Order) {
   try {
+    // SECURITY: Only send confirmation emails if payment has been verified
+    // The order status must be 'paid' - this ensures the Stripe webhook has verified payment
+    // Never send customer confirmation emails for unpaid orders
+    if (order.status !== 'paid') {
+      console.warn(`[SECURITY] Attempted to send order confirmation email for order ${order.orderNumber} with status '${order.status}'. Customer emails are only sent after payment verification.`);
+      return false;
+    }
+
     // Skip email sending during build time or if no API key
     if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
       console.log('Skipping email sending - no valid Mailgun API key');
       return true;
     }
 
-    // Customer email
+    // Customer email - only sent after payment verification (status === 'paid')
     const customerEmailHtml = generateCustomerEmailTemplate(order);
     
     await mg.messages.create('stitchpleaseqc.com', {
@@ -342,7 +350,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
       html: customerEmailHtml
     });
 
-    // Owner email
+    // Owner email - only sent after payment verification (status === 'paid')
     const ownerEmailHtml = generateOwnerEmailTemplate(order);
     
     // Get admin emails from database

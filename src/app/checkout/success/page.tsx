@@ -4,8 +4,17 @@ import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Container } from '~/components/ui/container';
 
+interface ConfirmationResponse {
+  success: boolean;
+  message?: string;
+  orderNumber?: string;
+  orderStatus?: string;
+  note?: string;
+  error?: string;
+}
+
 export default function CheckoutSuccessPage() {
-  const [sessionId, setSessionId] = useState<string>('');
+  const [orderNumber, setOrderNumber] = useState<string>('');
   const emailsSentRef = useRef(false);
 
   useEffect(() => {
@@ -14,9 +23,11 @@ export default function CheckoutSuccessPage() {
     const sessionIdParam = urlParams.get('session_id');
     
     if (sessionIdParam) {
-      setSessionId(sessionIdParam);
-      
-      // Send confirmation emails after payment is confirmed
+      // Attempt to send confirmation emails as a fallback
+      // NOTE: Emails are primarily sent by the Stripe webhook handler after verifying payment.
+      // This is just a fallback in case the webhook hasn't processed yet.
+      // The endpoint will only send emails if the order status is 'paid' in the database,
+      // which ensures the webhook has verified the payment first.
       // Only send once, even if component re-renders
       if (!emailsSentRef.current) {
         emailsSentRef.current = true;
@@ -29,17 +40,24 @@ export default function CheckoutSuccessPage() {
           body: JSON.stringify({ sessionId: sessionIdParam }),
         })
           .then(async (response) => {
-            const data = await response.json();
-            if (response.ok) {
-              console.log('Confirmation emails sent successfully:', data);
+            const data = await response.json() as ConfirmationResponse;
+            if (response.ok || response.status === 202) {
+              // 202 means payment is pending webhook verification - emails will be sent by webhook
+              // 200 means emails were sent successfully (as fallback)
+              console.log('Email confirmation status:', data);
+              
+              // Set order number if available in response
+              if (data.orderNumber) {
+                setOrderNumber(data.orderNumber);
+              }
             } else {
               console.error('Failed to send confirmation emails:', data);
-              // Don't show error to user - payment was successful
+              // Don't show error to user - payment was successful and webhook will handle emails
             }
           })
           .catch((error) => {
             console.error('Error sending confirmation emails:', error);
-            // Don't show error to user - payment was successful
+            // Don't show error to user - payment was successful and webhook will handle emails
           });
       }
     }
@@ -93,13 +111,13 @@ export default function CheckoutSuccessPage() {
               </div>
             </div>
 
-            {sessionId && (
+            {orderNumber && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
                 <p className="text-sm text-blue-800">
-                  <strong>Session ID:</strong> {sessionId}
+                  <strong>Order Number:</strong> {orderNumber}
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  Keep this for your records
+                  Keep this for your records. You&apos;ll receive a confirmation email shortly.
                 </p>
               </div>
             )}
