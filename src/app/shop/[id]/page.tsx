@@ -522,7 +522,7 @@ export default function ProductDetailPage() {
                                 }}
                                 className={`w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] md:w-[40px] md:h-[40px] rounded-full flex items-center justify-center transition-all active:scale-95 touch-manipulation border-2 ${
                                   isSelected 
-                                    ? 'border-transparent' 
+                                    ? 'border-[#74CADC]' 
                                     : 'border-gray-300 hover:border-gray-400'
                                 }`}
                                 style={{ backgroundColor: colorValue }}
@@ -592,16 +592,16 @@ export default function ProductDetailPage() {
                               className="p-[14px] sm:p-[16px] relative block w-full active:opacity-80 touch-manipulation"
                             >
                               <div className={`flex justify-between relative z-[2] transition-colors ${
-                                isSelected ? 'text-white' : 'text-black/[0.72]'
+                                isSelected ? 'text-[#0A5565]' : 'text-black/[0.72]'
                               }`}>
-                                <h2 className={`text-[13px] sm:text-[14px] leading-[130%] font-bold ${isSelected ? 'text-white' : 'text-black/[0.72]'}`}>{size}</h2>
-                                <h3 className={`text-[13px] sm:text-[14px] leading-[130%] font-bold ${isSelected ? 'text-white' : 'text-black/[0.72]'}`}>
+                                <h2 className={`text-[13px] sm:text-[14px] leading-[130%] font-bold ${isSelected ? 'text-[#0A5565]' : 'text-black/[0.72]'}`}>{size}</h2>
+                                <h3 className={`text-[13px] sm:text-[14px] leading-[130%] font-bold ${isSelected ? 'text-[#0A5565]' : 'text-black/[0.72]'}`}>
                                   ${sizePrice.toFixed(2)}
                                 </h3>
                               </div>
                               {isSelected && (
                                 <div 
-                                  className="w-full h-full absolute rounded-[18px] sm:rounded-[20px] bg-gray-600 top-0 left-0" 
+                                  className="w-full h-full absolute rounded-[18px] sm:rounded-[20px] bg-[#74CADC] top-0 left-0" 
                                   style={{ opacity: 1 }}
                                 />
                               )}
@@ -691,7 +691,7 @@ export default function ProductDetailPage() {
                   <Button
                     onClick={handleAddToCart}
                     disabled={!product.inStock}
-                    className="w-full bg-gray-600 hover:bg-gray-700 active:bg-gray-800 text-white py-[13px] sm:py-[14px] mt-[20px] sm:mt-[24px] text-[13px] sm:text-[14px] leading-[130%] font-medium touch-manipulation transition-all active:scale-[0.98]"
+                    className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 active:bg-[#74CADC]/80 text-[#0A5565] py-[13px] sm:py-[14px] mt-[20px] sm:mt-[24px] text-[13px] sm:text-[14px] leading-[130%] font-medium touch-manipulation transition-all active:scale-[0.98]"
                   >
                     {product.inStock ? 'Add to Cart' : 'Out of Stock'}
                   </Button>
