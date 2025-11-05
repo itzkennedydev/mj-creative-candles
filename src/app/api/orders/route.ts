@@ -126,19 +126,44 @@ export async function GET(request: NextRequest) {
         const query: Record<string, unknown> = {};
         
         // Status filter
-        if (status && ['pending', 'processing', 'shipped', 'delivered', 'cancelled'].includes(status)) {
-          query.status = status as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+        if (status && ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'paid'].includes(status)) {
+          const statusFilter = status as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'paid';
+          if (statusFilter === 'pending') {
+            // For pending status, only show paid pending orders (exclude incomplete transactions)
+            query.status = 'pending';
+            query.paidAt = { $exists: true, $ne: null };
+          } else {
+            // For other statuses, use the status filter (these are already completed/cancelled, so no incomplete exclusion needed)
+            query.status = statusFilter;
+          }
+        } else {
+          // No status filter: Exclude incomplete transactions (pending orders without payment confirmation)
+          // Only show orders that have been paid or have progressed beyond pending
+          query.$or = [
+            { status: { $ne: 'pending' } }, // All non-pending orders
+            { status: 'pending', paidAt: { $exists: true, $ne: null } } // Pending orders that have been paid
+          ];
         }
 
         // Search filter
         if (search) {
-          query.$or = [
-            { orderNumber: { $regex: search, $options: 'i' } },
-            { 'customer.firstName': { $regex: search, $options: 'i' } },
-            { 'customer.lastName': { $regex: search, $options: 'i' } },
-            { 'customer.email': { $regex: search, $options: 'i' } },
-            { 'customer.phone': { $regex: search, $options: 'i' } }
-          ];
+          const searchFilter = {
+            $or: [
+              { orderNumber: { $regex: search, $options: 'i' } },
+              { 'customer.firstName': { $regex: search, $options: 'i' } },
+              { 'customer.lastName': { $regex: search, $options: 'i' } },
+              { 'customer.email': { $regex: search, $options: 'i' } },
+              { 'customer.phone': { $regex: search, $options: 'i' } }
+            ]
+          };
+          
+          // Combine search filter with existing query using $and
+          const existingConditions = { ...query };
+          query.$and = [existingConditions, searchFilter];
+          // Remove properties that are now in $and
+          Object.keys(existingConditions).forEach(key => {
+            delete query[key];
+          });
         }
 
     // Get total count for pagination
