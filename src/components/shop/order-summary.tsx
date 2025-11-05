@@ -1,16 +1,56 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Plus, Minus } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
 
+interface Settings {
+  taxRate: number;
+  pickupOnly: boolean;
+  freeShippingThreshold: number;
+  shippingCost: number;
+}
+
 export function OrderSummary() {
   const { items: cartItems, getTotalPrice, updateQuantity } = useCart();
+  const [settings, setSettings] = useState<Settings | null>(null);
   
   const subtotal = getTotalPrice();
-  const tax = subtotal * 0.085; // 8.5% tax
-  const shipping = 0; // No shipping - pickup only
+  const taxRate = settings?.taxRate ?? 8.5;
+  const tax = subtotal * (taxRate / 100);
+  
+  // Calculate shipping based on settings
+  let shipping = 0;
+  if (settings && !settings.pickupOnly && subtotal < settings.freeShippingThreshold) {
+    shipping = settings.shippingCost;
+  }
+  
   const total = subtotal + tax + shipping;
+
+  // Load settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const data = await response.json() as { settings: Settings };
+          setSettings(data.settings);
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        // Use defaults on error
+        setSettings({
+          taxRate: 8.5,
+          pickupOnly: false,
+          freeShippingThreshold: 50,
+          shippingCost: 9.99,
+        });
+      }
+    };
+
+    void loadSettings();
+  }, []);
 
   return (
     <div className="bg-gray-50 rounded-lg p-6 md:p-8">
@@ -86,10 +126,22 @@ export function OrderSummary() {
           <span className="text-gray-600">Tax</span>
           <span className="text-gray-900">${tax.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Pickup</span>
-          <span className="text-gray-900">Free</span>
-        </div>
+        {settings?.pickupOnly ? (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Pickup</span>
+            <span className="text-gray-900">Free</span>
+          </div>
+        ) : shipping > 0 ? (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Shipping</span>
+            <span className="text-gray-900">${shipping.toFixed(2)}</span>
+          </div>
+        ) : subtotal >= (settings?.freeShippingThreshold ?? 50) ? (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Shipping</span>
+            <span className="text-gray-900">Free</span>
+          </div>
+        ) : null}
         <div className="border-t pt-2">
         <div className="flex justify-between text-lg font-medium">
           <span className="text-gray-900">Total</span>

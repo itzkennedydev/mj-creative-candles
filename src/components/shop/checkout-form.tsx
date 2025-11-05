@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/cart-context";
 import { useToast } from "~/lib/toast-context";
@@ -8,9 +8,19 @@ import type { CustomerInfo } from "~/lib/types";
 import type { CreateOrderRequest } from "~/lib/order-types";
 import { api, handleApiError } from "~/lib/api-client";
 
+interface Settings {
+  taxRate: number;
+  pickupOnly: boolean;
+  freeShippingThreshold: number;
+  shippingCost: number;
+  pickupInstructions: string;
+}
+
 export function CheckoutForm() {
   const { items: cartItems, getTotalPrice } = useCart();
   const { addToast } = useToast();
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(true);
   
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     firstName: "",
@@ -19,14 +29,48 @@ export function CheckoutForm() {
     phone: ""
   });
 
-  // Removed shipping address - pickup only
-
   const [paymentMethod, setPaymentMethod] = useState<'card'>('card');
   const [notes, setNotes] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Load settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const data = await response.json() as { settings: Settings };
+          setSettings(data.settings);
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        // Use defaults on error
+        setSettings({
+          taxRate: 8.5,
+          pickupOnly: false,
+          freeShippingThreshold: 50,
+          shippingCost: 9.99,
+          pickupInstructions: "Please call (309) 373-6017 to schedule pickup. Available Monday-Friday 9AM-5PM.",
+        });
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+
+    void loadSettings();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!settings) {
+      addToast({
+        title: 'Error',
+        description: 'Settings are still loading. Please wait a moment.',
+        type: 'error'
+      });
+      return;
+    }
     
     // Validate required fields
     if (!customerInfo.firstName.trim() || !customerInfo.lastName.trim() || 
@@ -63,10 +107,16 @@ export function CheckoutForm() {
     setIsProcessing(true);
     
     try {
-      // Calculate totals
+      // Calculate totals using settings
       const subtotal = getTotalPrice();
-      const tax = subtotal * 0.085; // 8.5% tax
-      const shippingCost = 0; // No shipping - pickup only
+      const tax = subtotal * (settings.taxRate / 100);
+      
+      // Calculate shipping cost based on settings
+      let shippingCost = 0;
+      if (!settings.pickupOnly && subtotal < settings.freeShippingThreshold) {
+        shippingCost = settings.shippingCost;
+      }
+      
       const total = subtotal + tax + shippingCost;
 
       // Prepare order items with XXL and 3XL surcharge
@@ -101,8 +151,14 @@ export function CheckoutForm() {
       // Prepare order data for database
       const orderData: CreateOrderRequest = {
         customer: customerInfo,
-        shipping: {
+        shipping: settings.pickupOnly ? {
           street: "Pickup Only",
+          city: "Pickup Location",
+          state: "Local",
+          zipCode: "00000",
+          country: "United States"
+        } : {
+          street: "Pickup Only", // Still pickup for now, but structure allows shipping
           city: "Pickup Location",
           state: "Local",
           zipCode: "00000",
@@ -130,6 +186,7 @@ export function CheckoutForm() {
         items: orderItems,
         subtotal,
         tax,
+        shippingCost,
         total,
         customerEmail: customerInfo.email
       });
@@ -152,6 +209,17 @@ export function CheckoutForm() {
       setIsProcessing(false);
     }
   };
+
+  if (settingsLoading) {
+    return (
+      <div className="bg-white" suppressHydrationWarning>
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading checkout...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white" suppressHydrationWarning>
@@ -234,8 +302,7 @@ export function CheckoutForm() {
                   <div className="ml-3">
                     <h4 className="text-sm font-medium text-green-800">Local Pickup Available</h4>
                     <p className="text-sm text-green-700 mt-1">
-                      Your order will be ready for pickup at our local location. 
-                      We&apos;ll contact you when your order is ready.
+                      {settings?.pickupInstructions || "Your order will be ready for pickup at our local location. We'll contact you when your order is ready."}
                     </p>
                   </div>
                 </div>
@@ -297,7 +364,7 @@ export function CheckoutForm() {
 
         <Button
           type="submit"
-          disabled={isProcessing}
+          disabled={isProcessing || !settings}
           className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-3 text-base font-medium"
         >
           {isProcessing ? "Processing..." : "Continue to Payment"}

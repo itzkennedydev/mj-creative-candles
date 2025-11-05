@@ -230,22 +230,22 @@ export async function POST(request: NextRequest) {
             // Verify order status is 'paid' before sending emails (defense in depth)
             // This should always be true since we just updated it, but provides extra safety
             if (updatedOrder.status === 'paid') {
-              // Send confirmation emails immediately
+            // Send confirmation emails immediately
               // Note: sendOrderConfirmationEmail has its own security check - it will return false
               // if order.status !== 'paid', providing defense in depth
               const emailSent = await sendOrderConfirmationEmail(updatedOrder);
-              
+            
               if (emailSent) {
-                // Atomically mark that emails have been sent (prevents race conditions)
-                await ordersCollection.updateOne(
-                  { 
-                    _id: new ObjectId(orderId),
-                    emailsSent: { $ne: true } // Only update if emailsSent is not already true
-                  },
-                  { $set: { emailsSent: true, emailsSentAt: new Date() } }
-                );
-                
-                console.log(`✅ Email notifications sent immediately for order ${updatedOrder.orderNumber} via webhook`);
+            // Atomically mark that emails have been sent (prevents race conditions)
+            await ordersCollection.updateOne(
+              { 
+                _id: new ObjectId(orderId),
+                emailsSent: { $ne: true } // Only update if emailsSent is not already true
+              },
+              { $set: { emailsSent: true, emailsSentAt: new Date() } }
+            );
+            
+            console.log(`✅ Email notifications sent immediately for order ${updatedOrder.orderNumber} via webhook`);
               } else {
                 console.error(`Failed to send email notifications for order ${updatedOrder.orderNumber} - email function returned false`);
                 // Don't mark as sent if email function returned false

@@ -12,32 +12,31 @@ import {
   X, 
   Menu, 
   Search,
-  Filter,
   DollarSign, 
   Clock, 
   CheckCircle, 
   Eye, 
   Plus, 
   BarChart3,
-  Activity
+  Activity,
+  Archive,
+  TrendingUp,
+  Trophy
 } from "lucide-react";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useProducts } from "~/lib/products-context";
 import { useToast } from "~/lib/toast-context";
 import type { Product, ProductImage } from "~/lib/types";
 import type { Order } from "~/lib/order-types";
-import { useOrders, useUpdateOrderStatus, useSendPickupNotification, useSendStatusEmail } from "~/lib/hooks/use-orders";
+import { useOrders, useUpdateOrderStatus, useSendPickupNotification, useSendStatusEmail, useArchiveOrder } from "~/lib/hooks/use-orders";
 import { useGallery } from "~/lib/hooks/use-gallery";
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { Image as ImageIcon } from "lucide-react";
-
-interface AdminSettings {
-  taxRate: number;
-  shippingEnabled: boolean;
-  pickupOnly: boolean;
-  freeShippingThreshold: number;
-  shippingCost: number;
-  pickupInstructions: string;
-}
+import { OrderTimer } from "./components/order-timer";
+import { Dashboard } from "./components/dashboard";
+import { Orders } from "./components/orders";
+import { formatTimeElapsed, calculateOrderScore } from "./components/utils";
+import type { AdminSettings } from "./components/types";
 
 export default function AdminPage() {
   const { products, addProduct, updateProduct, deleteProduct, loading: productsLoading, error: productsError } = useProducts();
@@ -56,6 +55,7 @@ export default function AdminPage() {
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState("orders");
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [showOrderModal, setShowOrderModal] = useState(false);
@@ -65,17 +65,96 @@ export default function AdminPage() {
   const { data: ordersData, isLoading: ordersLoading, refetch: refetchOrders } = useOrders(
     currentPage, 
     searchQuery,
+    statusFilter,
     isAuthenticated
   );
   const updateOrderStatus = useUpdateOrderStatus();
   const sendPickupNotification = useSendPickupNotification();
   const sendStatusEmail = useSendStatusEmail();
+  const archiveOrder = useArchiveOrder();
+  
+  // Pagination state for burndown
+  const [burndownPage, setBurndownPage] = useState(1);
+  const burndownOrdersPerPage = 20;
+  
+  // Pagination state for archive
+  const [archivePage, setArchivePage] = useState(1);
+  const [archiveSearchQuery, setArchiveSearchQuery] = useState("");
+  const archiveOrdersPerPage = 20;
   
   // Extract data from query result
   const orders = ordersData?.orders ?? [];
   const totalPages = ordersData?.totalPages ?? 1;
   const totalOrders = ordersData?.total ?? 0;
   const ordersPerPage = 10;
+
+  // Fetch all pending/processing orders for burndown tab
+  const { data: burndownOrdersData, isLoading: burndownLoading, refetch: refetchBurndown } = useQuery({
+    queryKey: ['burndown-orders'],
+    queryFn: async () => {
+      const token = sessionStorage.getItem('admin_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Fetch all orders with high limit to include all delivered orders for scoring
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '1000', // Increased to ensure we get all delivered orders
+      });
+
+      const response = await fetch(`/api/orders?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders');
+      }
+      return response.json() as Promise<{ success: boolean; orders: Order[]; total: number; totalPages: number; currentPage: number }>;
+    },
+    enabled: isAuthenticated && activeSection === 'burndown',
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const allOrdersForBurndown = burndownOrdersData?.orders ?? [];
+  
+  // Fetch archived orders for archive tab
+  const { data: archivedOrdersData, isLoading: archivedLoading, refetch: refetchArchived } = useQuery({
+    queryKey: ['archived-orders', archivePage, archiveSearchQuery],
+    queryFn: async () => {
+      const token = sessionStorage.getItem('admin_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const params = new URLSearchParams({
+        page: archivePage.toString(),
+        limit: archiveOrdersPerPage.toString(),
+        archived: 'true',
+        ...(archiveSearchQuery && { search: archiveSearchQuery }),
+      });
+
+      const response = await fetch(`/api/orders?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch archived orders');
+      }
+      return response.json() as Promise<{ success: boolean; orders: Order[]; total: number; totalPages: number; currentPage: number }>;
+    },
+    enabled: isAuthenticated && activeSection === 'archive',
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+  });
+
+  const archivedOrders = archivedOrdersData?.orders ?? [];
+  const archivedTotalPages = archivedOrdersData?.totalPages ?? 1;
+  const archivedTotal = archivedOrdersData?.total ?? 0;
+  
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showPickupModal, setShowPickupModal] = useState(false);
   const [pickupTime, setPickupTime] = useState("");
@@ -107,14 +186,49 @@ export default function AdminPage() {
   const galleryImages = galleryData?.images ?? [];
   const galleryLoading = isGalleryLoading || false;
   
+  // Burndown page state
+  const [showCharts, setShowCharts] = useState(false);
+  
   const [settings, setSettings] = useState<AdminSettings>({
     taxRate: 8.5,
     shippingEnabled: true,
     pickupOnly: false,
     freeShippingThreshold: 50,
     shippingCost: 9.99,
-    pickupInstructions: "Please call (309) 373-6017 to schedule pickup. Available Monday-Friday 9AM-5PM."
+    pickupInstructions: "Please call (309) 373-6017 to schedule pickup. Available Monday-Friday 9AM-5PM.",
+    burndownUrgentThreshold: 120, // 5 days (aligned with scoring)
+    burndownCriticalThreshold: 168, // 7 days (aligned with scoring)
   });
+  const [settingsLoading, setSettingsLoading] = useState(true);
+
+  // Load settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const token = sessionStorage.getItem('admin_token');
+        if (!token) return;
+
+        const response = await fetch('/api/admin/settings', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json() as { settings: AdminSettings };
+          if (data.settings) {
+            setSettings(data.settings);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+
+    void loadSettings();
+  }, []);
 
   const sidebarItems = [
     { 
@@ -130,6 +244,23 @@ export default function AdminPage() {
       icon: Package,
       description: "Manage Orders",
       badge: orders.filter(o => o.status === 'pending').length > 0 ? orders.filter(o => o.status === 'pending').length : null
+    },
+    { 
+      id: "burndown", 
+      label: "Burndown", 
+      icon: Clock,
+      description: "Order Priority & Timing",
+      badge: orders.filter(o => {
+        const now = new Date();
+        const created = new Date(o.createdAt);
+        const diffHours = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60));
+        return diffHours >= settings.burndownUrgentThreshold && (o.status === 'pending' || o.status === 'processing') && !o.archived;
+      }).length > 0 ? orders.filter(o => {
+        const now = new Date();
+        const created = new Date(o.createdAt);
+        const diffHours = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60));
+        return diffHours >= settings.burndownUrgentThreshold && (o.status === 'pending' || o.status === 'processing') && !o.archived;
+      }).length : null
     },
     { 
       id: "products", 
@@ -203,6 +334,12 @@ export default function AdminPage() {
     // TanStack Query will automatically refetch when searchQuery changes
   };
 
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilter(status);
+    setCurrentPage(1);
+    // TanStack Query will automatically refetch when statusFilter changes
+  };
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // TanStack Query will automatically refetch when currentPage changes
@@ -213,12 +350,63 @@ export default function AdminPage() {
     setShowOrderModal(true);
   };
 
+  const handleArchiveOrder = async (orderId: string, archived: boolean) => {
+    try {
+      await archiveOrder.mutateAsync({ orderId, archived });
+      
+      addToast({
+        title: archived ? "Order Archived" : "Order Unarchived",
+        description: `Order has been ${archived ? 'archived' : 'unarchived'} successfully`,
+        type: "success"
+      });
+    } catch (error) {
+      console.error('Error archiving order:', error);
+      addToast({
+        title: "Archive Failed",
+        description: `Failed to ${archived ? 'archive' : 'unarchive'} order`,
+        type: "error"
+      });
+    }
+  };
+
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     // If changing to "ready_for_pickup", open the modal instead
     if (newStatus === 'ready_for_pickup') {
       const order = orders.find(o => o._id?.toString() === orderId);
       if (order) {
         handlePickupReady(order);
+        return;
+      }
+    }
+
+    // If changing to "delivered", update directly without modal
+    if (newStatus === 'delivered') {
+      try {
+        await updateOrderStatus.mutateAsync({ orderId, status: newStatus });
+        
+        addToast({
+          title: "Order Delivered",
+          description: `Order marked as delivered. Score calculated!`,
+          type: "success"
+        });
+        
+        // Send status update email
+        try {
+          await sendStatusEmail.mutateAsync({ orderId, status: newStatus });
+        } catch (emailError) {
+          console.error('Error sending status email:', emailError);
+        }
+        
+        // Refetch burndown orders to update score display
+        void refetchBurndown();
+        return;
+      } catch (error) {
+        console.error('Error updating order status:', error);
+        addToast({
+          title: "Update Failed",
+          description: "Failed to update order status",
+          type: "error"
+        });
         return;
       }
     }
@@ -320,6 +508,10 @@ export default function AdminPage() {
         return 'Products';
       case 'orders':
         return 'Orders';
+      case 'burndown':
+        return 'Burndown';
+      case 'archive':
+        return 'Archive';
       case 'settings':
         return 'Settings';
       default:
@@ -327,22 +519,6 @@ export default function AdminPage() {
     }
   };
 
-  // Helper functions for dashboard metrics
-  const getOrderStats = () => {
-    const totalOrdersCount = totalOrders;
-    const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
-    const processingOrdersCount = orders.filter(o => o.status === 'processing').length;
-    const readyOrdersCount = orders.filter(o => o.status === 'ready_for_pickup').length;
-    const totalRevenueAmount = orders.reduce((sum, order) => sum + (order.total ?? 0), 0);
-    
-    return {
-      totalOrders: totalOrdersCount,
-      pendingOrders: pendingOrdersCount,
-      processingOrders: processingOrdersCount,
-      readyOrders: readyOrdersCount,
-      totalRevenue: totalRevenueAmount
-    };
-  };
 
 
   const handleSendCode = async (e: React.FormEvent) => {
@@ -444,14 +620,60 @@ export default function AdminPage() {
 
   // Remove unused handleLogout function
 
-  const handleSaveSettings = () => {
-    // TODO: Save to database/API
-    console.log("Saving settings:", settings);
-    addToast({
-      title: "Settings Saved",
-      description: "Your settings have been saved successfully!",
-      type: "success"
-    });
+  const handleSaveSettings = async () => {
+    try {
+      // Validate thresholds before saving
+      if (settings.burndownUrgentThreshold >= settings.burndownCriticalThreshold) {
+        addToast({
+          title: "Validation Error",
+          description: "Urgent threshold must be less than critical threshold",
+          type: "error"
+        });
+        return;
+      }
+
+      const token = sessionStorage.getItem('admin_token');
+      if (!token) {
+        addToast({
+          title: "Authentication Error",
+          description: "Please log in to save settings",
+          type: "error"
+        });
+        return;
+      }
+
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(settings),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json() as { error?: string };
+        throw new Error(errorData.error || 'Failed to save settings');
+      }
+
+      addToast({
+        title: "Settings Saved",
+        description: "Your settings have been saved successfully!",
+        type: "success"
+      });
+
+      // Refetch burndown orders to update with new thresholds
+      if (activeSection === 'burndown') {
+        void refetchBurndown();
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      addToast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to save settings. Please try again.',
+        type: "error"
+      });
+    }
   };
 
 
@@ -1004,344 +1226,15 @@ export default function AdminPage() {
 
 
   const renderDashboard = () => {
-    const stats = getOrderStats();
-    
     return (
-      <div className="space-y-8">
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-2">Welcome back! Here&apos;s what&apos;s happening with your store today.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              onClick={() => refetchOrders()}
-              disabled={ordersLoading}
-              className="flex items-center gap-2"
-            >
-              <Activity className="h-4 w-4" />
-              Refresh Data
-            </Button>
-          </div>
-        </div>
-
-        {/* Key Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-          {/* Total Orders */}
-          <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out group">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg md:rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-                <Package className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />
-              </div>
-              <div className="text-right">
-                <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalOrders}</div>
-                <p className="text-xs text-gray-500">Total Orders</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs md:text-sm text-gray-600">All time</span>
-              <div className="flex items-center text-gray-600 text-xs md:text-sm">
-                <Activity className="h-3 w-3 mr-1" />
-                <span className="hidden sm:inline">Active</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Pending Orders */}
-          <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out group">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg md:rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-                <Clock className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />
-              </div>
-              <div className="text-right">
-                <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.pendingOrders}</div>
-                <p className="text-xs text-gray-500">Pending</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs md:text-sm text-gray-600">Awaiting processing</span>
-              {stats.pendingOrders > 0 && (
-                <div className="flex items-center text-gray-700 text-xs md:text-sm">
-                  <Clock className="h-3 w-3 mr-1" />
-                  <span className="hidden sm:inline">Action needed</span>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Processing Orders */}
-          <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out group">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg md:rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-                <Activity className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />
-              </div>
-              <div className="text-right">
-                <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.processingOrders}</div>
-                <p className="text-xs text-gray-500">Processing</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs md:text-sm text-gray-600">In progress</span>
-              <div className="flex items-center text-gray-600 text-xs md:text-sm">
-                <Activity className="h-3 w-3 mr-1" />
-                <span className="hidden sm:inline">Working</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Ready for Pickup */}
-          <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out group">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg md:rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-                <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />
-              </div>
-              <div className="text-right">
-                <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.readyOrders}</div>
-                <p className="text-xs text-gray-500">Ready</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs md:text-sm text-gray-600">Awaiting pickup</span>
-              {stats.readyOrders > 0 && (
-                <div className="flex items-center text-gray-700 text-xs md:text-sm">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  <span className="hidden sm:inline">Ready</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Revenue & Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          {/* Revenue Card */}
-          <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
-            {/* Mobile-First Layout */}
-            <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
-              {/* Revenue Stats */}
-              <div className="space-y-6 md:flex md:flex-col md:justify-between md:h-full md:min-h-[200px]">
-                <div className="flex items-center gap-3 md:gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg md:rounded-xl flex items-center justify-center">
-                    <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg md:text-xl font-bold text-gray-900">Revenue Overview</h2>
-                    <p className="text-xs md:text-sm text-gray-600">Total revenue from all orders</p>
-                  </div>
-                </div>
-                
-                <div className="text-left py-4">
-                  <div className="text-4xl md:text-5xl font-bold text-green-600">
-                    ${(stats.totalRevenue ?? 0).toFixed(2)}
-                  </div>
-                </div>
-                
-                <div className="space-y-3 hidden md:block">
-                  <div className="text-sm text-gray-600">From {stats.totalOrders} orders</div>
-                  <div className="text-sm text-gray-500">Average: ${stats.totalOrders > 0 ? ((stats.totalRevenue ?? 0) / stats.totalOrders).toFixed(2) : '0.00'}</div>
-                </div>
-              </div>
-              
-              {/* Functional Chart */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-gray-500 font-medium">Revenue Trend</div>
-                  <div className="text-xs text-gray-400">
-                    {orders.length > 0 ? `Last ${Math.min(7, orders.length)} orders` : 'No data'}
-                  </div>
-                </div>
-                
-                {orders.length > 0 ? (
-                  <div className="space-y-3">
-                    {/* Chart Bars */}
-                    <div className="flex items-end justify-between space-x-2 h-20 border-b border-gray-100 pb-2">
-                      {orders.slice(0, 7).map((order, i) => {
-                        const orderTotal = order.total ?? 0;
-                        const maxOrderTotal = Math.max(...orders.map(o => o.total ?? 0));
-                        const height = maxOrderTotal > 0 ? (orderTotal / maxOrderTotal) * 50 + 10 : 10; // 10-60px range
-                        const isHighest = orderTotal === maxOrderTotal && maxOrderTotal > 0;
-                        
-                        return (
-                          <div key={order._id?.toString() ?? i} className="flex flex-col items-center flex-1">
-                            <div
-                              className={`w-full rounded-t-sm transition-all duration-300 hover:opacity-80 cursor-pointer ${
-                                isHighest ? 'bg-[#74CADC]' : 'bg-gray-300'
-                              }`}
-                              style={{ height: `${height}px` }}
-                              title={`Order #${order.orderNumber}: $${orderTotal.toFixed(2)}`}
-                            />
-                            <div className="text-xs text-gray-500 mt-1 font-medium">
-                              ${orderTotal.toFixed(0)}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    
-                    {/* Chart Legend */}
-                    <div className="flex items-center justify-between text-xs text-gray-400">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-[#74CADC] rounded-full"></div>
-                        <span>Highest Order</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                        <span>Other Orders</span>
-                      </div>
-                    </div>
-                    
-                    {/* Order Details */}
-                    <div className="space-y-1">
-                      {orders.slice(0, 3).map((order, i) => (
-                        <div key={order._id?.toString() ?? i} className="flex items-center justify-between text-xs">
-                          <span className="text-gray-600">Order #{order.orderNumber}</span>
-                          <span className="text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</span>
-                          <span className="font-medium text-gray-900">${(order.total ?? 0).toFixed(2)}</span>
-                        </div>
-                      ))}
-                      {orders.length > 3 && (
-                        <div className="text-xs text-gray-400 text-center pt-1">
-                          +{orders.length - 3} more orders
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-20 bg-gray-50 rounded-lg">
-                    <div className="text-center">
-                      <div className="text-gray-400 text-sm mb-1">No orders yet</div>
-                      <div className="text-xs text-gray-400">Start selling to see revenue trends</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Settings className="h-5 w-5 text-gray-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Quick Actions</h3>
-                <p className="text-sm text-gray-600">Common tasks</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <Button 
-                onClick={() => setActiveSection("products")}
-                className="w-full justify-start bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Product
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => setActiveSection("orders")}
-                className="w-full justify-start"
-              >
-                <Package className="h-4 w-4 mr-2" />
-                View All Orders
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => setActiveSection("settings")}
-                className="w-full justify-start"
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Store Settings
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Orders */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Package className="h-5 w-5 text-gray-600" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Recent Orders</h2>
-                <p className="text-sm text-gray-600">Latest orders requiring attention</p>
-              </div>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setActiveSection("orders")}
-              className="flex items-center gap-2"
-            >
-              View All
-              <Eye className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          {ordersLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 3 }, (_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              ))}
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="text-center py-12">
-              <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No orders yet</h3>
-              <p className="text-gray-500 mb-4">Orders will appear here once customers start placing them.</p>
-              <Button 
-                onClick={() => setActiveSection("products")}
-                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Products
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {orders.slice(0, 5).map((order) => (
-                <div key={order._id?.toString() ?? order.orderNumber} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200 group">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-semibold text-gray-900">Order #{order.orderNumber}</h4>
-                      <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                        order.status === 'pending' ? 'bg-orange-100 text-orange-800' :
-                        order.status === 'processing' ? 'bg-[#74CADC]/20 text-[#0A5565]' :
-                        order.status === 'ready_for_pickup' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {order.status.replace('_', ' ')}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span>{order.customer.firstName} {order.customer.lastName}</span>
-                      <span>•</span>
-                      <span className="font-semibold text-gray-900">${(order.total ?? 0).toFixed(2)}</span>
-                      <span>•</span>
-                      <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openOrderModal(order)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      <Dashboard
+        orders={orders}
+        ordersLoading={ordersLoading}
+        totalOrders={totalOrders}
+        onRefetchOrders={refetchOrders}
+        onViewOrder={openOrderModal}
+        onSetActiveSection={setActiveSection}
+      />
     );
   };
 
@@ -1561,442 +1454,957 @@ export default function AdminPage() {
     </div>
   );
 
-  const renderOrders = () => (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-600 mt-2">Manage customer orders and fulfillment</p>
+  const renderOrders = () => {
+    return (
+      <Orders
+        orders={orders}
+        ordersLoading={ordersLoading}
+        totalOrders={totalOrders}
+        totalPages={totalPages}
+        currentPage={currentPage}
+        ordersPerPage={ordersPerPage}
+        searchQuery={searchQuery}
+        statusFilter={statusFilter}
+        viewMode={viewMode}
+        onSearch={handleSearch}
+        onStatusFilterChange={handleStatusFilterChange}
+        onPageChange={handlePageChange}
+        onViewModeChange={setViewMode}
+        onRefetchOrders={refetchOrders}
+        onViewOrder={openOrderModal}
+        onStatusChange={handleStatusChange}
+        onPickupReady={handlePickupReady}
+        onArchiveOrder={handleArchiveOrder}
+      />
+    );
+  };
+
+  const renderBurndown = () => {
+    // Use settings thresholds
+    const urgentThreshold = settings.burndownUrgentThreshold;
+    const criticalThreshold = settings.burndownCriticalThreshold;
+    
+    // Sort orders by time elapsed (oldest first), but only show pending/processing/ready_for_pickup/delivered orders that aren't archived
+    const burndownOrders = [...allOrdersForBurndown]
+      .filter(order => (order.status === 'pending' || order.status === 'processing' || order.status === 'ready_for_pickup' || order.status === 'delivered') && !order.archived)
+      .sort((a, b) => {
+        const timeA = new Date(a.createdAt).getTime();
+        const timeB = new Date(b.createdAt).getTime();
+        return timeA - timeB; // Oldest first
+      });
+
+    // Group orders by urgency using configurable thresholds
+    // Note: Delivered orders are grouped separately
+    const criticalOrders = burndownOrders.filter(order => {
+      if (order.status === 'delivered' || order.status === 'ready_for_pickup') return false;
+      const now = new Date();
+      const created = new Date(order.createdAt);
+      const diffHours = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60));
+      return diffHours >= criticalThreshold;
+    });
+
+    const urgentOrders = burndownOrders.filter(order => {
+      if (order.status === 'delivered' || order.status === 'ready_for_pickup') return false;
+      const now = new Date();
+      const created = new Date(order.createdAt);
+      const diffHours = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60));
+      return diffHours >= urgentThreshold && diffHours < criticalThreshold;
+    });
+
+    const normalOrders = burndownOrders.filter(order => {
+      if (order.status === 'delivered' || order.status === 'ready_for_pickup') return false;
+      const now = new Date();
+      const created = new Date(order.createdAt);
+      const diffHours = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60));
+      return diffHours < urgentThreshold;
+    });
+
+    // Separate delivered orders
+    const deliveredOrders = burndownOrders.filter(order => order.status === 'delivered');
+    const readyOrders = burndownOrders.filter(order => order.status === 'ready_for_pickup');
+
+    // Calculate weekly score - average of individual order scores delivered this week
+    const allDeliveredOrders = allOrdersForBurndown.filter(order => order.status === 'delivered');
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Go to Sunday
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    // Filter orders delivered this week (based on when they were completed)
+    const weeklyDeliveredOrders = allDeliveredOrders.filter(order => {
+      // Use completedAt if available, otherwise use updatedAt as fallback
+      const completionDate = order.completedAt 
+        ? (order.completedAt instanceof Date ? order.completedAt : new Date(order.completedAt as string))
+        : (order.updatedAt instanceof Date ? order.updatedAt : new Date(order.updatedAt as string));
+      
+      return completionDate >= startOfWeek;
+    });
+    
+    // Calculate individual scores for each order and average them
+    const weeklyScores = weeklyDeliveredOrders.map(order => calculateOrderScore(order));
+    const weeklyTotalScore = weeklyScores.reduce((sum, score) => sum + score, 0);
+    const weeklyAverageScore = weeklyScores.length > 0 
+      ? Math.round(weeklyTotalScore / weeklyScores.length) 
+      : 0;
+    const weeklyTotalOrders = weeklyDeliveredOrders.length;
+
+    // Calculate pagination - paginate all orders together, then display by category
+    const startIndex = (burndownPage - 1) * burndownOrdersPerPage;
+    const endIndex = startIndex + burndownOrdersPerPage;
+    const paginatedBurndownOrders = burndownOrders.slice(startIndex, endIndex);
+    
+    // Group paginated orders by urgency using configurable thresholds
+    // Note: Delivered and ready orders are grouped separately
+    const paginatedCriticalOrders = paginatedBurndownOrders.filter(order => {
+      if (order.status === 'delivered' || order.status === 'ready_for_pickup') return false;
+      const now = new Date();
+      const created = new Date(order.createdAt);
+      const diffHours = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60));
+      return diffHours >= criticalThreshold;
+    });
+
+    const paginatedUrgentOrders = paginatedBurndownOrders.filter(order => {
+      if (order.status === 'delivered' || order.status === 'ready_for_pickup') return false;
+      const now = new Date();
+      const created = new Date(order.createdAt);
+      const diffHours = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60));
+      return diffHours >= urgentThreshold && diffHours < criticalThreshold;
+    });
+
+    const paginatedNormalOrders = paginatedBurndownOrders.filter(order => {
+      if (order.status === 'delivered' || order.status === 'ready_for_pickup') return false;
+      const now = new Date();
+      const created = new Date(order.createdAt);
+      const diffHours = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60));
+      return diffHours < urgentThreshold;
+    });
+
+    const paginatedReadyOrders = paginatedBurndownOrders.filter(order => order.status === 'ready_for_pickup');
+    const paginatedDeliveredOrders = paginatedBurndownOrders.filter(order => order.status === 'delivered');
+    
+    const totalBurndownPages = Math.ceil(burndownOrders.length / burndownOrdersPerPage);
+
+    // Calculate average times
+    const calculateAvgTime = (orders: Order[]) => {
+      if (orders.length === 0) return 0;
+      const now = new Date();
+      const totalHours = orders.reduce((sum, order) => {
+        const created = new Date(order.createdAt);
+        const diffHours = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60));
+        return sum + diffHours;
+      }, 0);
+      return Math.round(totalHours / orders.length);
+    };
+
+    const avgCriticalTime = calculateAvgTime(criticalOrders);
+    const avgUrgentTime = calculateAvgTime(urgentOrders);
+    const avgNormalTime = calculateAvgTime(normalOrders);
+    const avgAllTime = calculateAvgTime(burndownOrders);
+
+    // Prepare chart data with minimal color palette
+    const urgencyDistributionData = [
+      { name: 'Critical', value: criticalOrders.length, color: '#DC2626' },
+      { name: 'Urgent', value: urgentOrders.length, color: '#F97316' },
+      { name: 'On Track', value: normalOrders.length, color: '#74CADC' },
+    ].filter(item => item.value > 0);
+
+    // Time distribution buckets - aligned with urgency thresholds
+    const timeBuckets = [
+      { 
+        range: `0-${urgentThreshold}h`, 
+        min: 0, 
+        max: urgentThreshold, 
+        color: '#74CADC',
+        label: 'On Track'
+      },
+      { 
+        range: `${urgentThreshold}-${criticalThreshold}h`, 
+        min: urgentThreshold, 
+        max: criticalThreshold, 
+        color: '#F97316',
+        label: 'Urgent'
+      },
+      { 
+        range: `${criticalThreshold}h+`, 
+        min: criticalThreshold, 
+        max: Infinity, 
+        color: '#DC2626',
+        label: 'Critical'
+      },
+    ];
+
+    const timeDistributionData = timeBuckets.map(bucket => {
+      const count = burndownOrders.filter(order => {
+        const now = new Date();
+        const created = new Date(order.createdAt);
+        const diffHours = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60));
+        if (bucket.max === Infinity) {
+          return diffHours >= bucket.min;
+        }
+        return diffHours >= bucket.min && diffHours < bucket.max;
+      }).length;
+      return {
+        range: bucket.range,
+        count,
+        color: bucket.color,
+        label: bucket.label,
+      };
+    }).filter(item => item.count > 0); // Only show buckets with orders
+
+    return (
+      <div className="space-y-8">
+        {/* Weekly Score Tracker - Always visible at top */}
+        <div className="bg-[#74CADC] rounded-2xl p-6 text-white shadow-lg">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <Trophy className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white mb-1">Weekly Performance</h2>
+                <p className="text-sm text-white/90">This week&apos;s average score</p>
+              </div>
+            </div>
+            <div className="text-left sm:text-right flex-shrink-0">
+              <div className="text-4xl font-bold text-white mb-1">{weeklyAverageScore}</div>
+              <div className="text-sm text-white/90">
+                {weeklyTotalOrders} order{weeklyTotalOrders !== 1 ? 's' : ''} delivered
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Burndown</h1>
+            <p className="text-gray-600 mt-2">Track order production time and prioritize urgent orders</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowCharts(!showCharts)}
+              className="flex items-center gap-2"
+            >
+              {showCharts ? (
+                <>
+                  <Eye className="h-4 w-4" />
+                  Hide Charts
+                </>
+              ) : (
+                <>
+                  <BarChart3 className="h-4 w-4" />
+                  Show Charts
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                void refetchBurndown();
+                void refetchOrders();
+              }}
+              disabled={burndownLoading}
+              className="flex items-center gap-2"
+            >
+              <Activity className="h-4 w-4" />
+              {burndownLoading ? "Loading..." : "Refresh"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold text-gray-900">Critical</h3>
+              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                <Clock className="h-5 w-5 text-gray-700" />
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">{criticalOrders.length}</p>
+            <p className="text-sm text-gray-600">{criticalThreshold}+ hours overdue</p>
+            {criticalOrders.length > 0 && (
+              <p className="text-xs text-gray-500 mt-2">Avg: {avgCriticalTime}h</p>
+            )}
+          </div>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold text-gray-900">Urgent</h3>
+              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                <Clock className="h-5 w-5 text-gray-700" />
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">{urgentOrders.length}</p>
+            <p className="text-sm text-gray-600">{urgentThreshold}-{criticalThreshold} hours</p>
+            {urgentOrders.length > 0 && (
+              <p className="text-xs text-gray-500 mt-2">Avg: {avgUrgentTime}h</p>
+            )}
+          </div>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold text-gray-900">On Track</h3>
+              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                <Clock className="h-5 w-5 text-gray-700" />
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">{normalOrders.length}</p>
+            <p className="text-sm text-gray-600">&lt; {urgentThreshold} hours</p>
+            {normalOrders.length > 0 && (
+              <p className="text-xs text-gray-500 mt-2">Avg: {avgNormalTime}h</p>
+            )}
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        {showCharts && burndownOrders.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Urgency Distribution Pie Chart */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-gray-600" />
+                Order Distribution
+              </h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={urgencyDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={true}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {urgencyDistributionData.map((entry: { name: string; value: number; color: string }, index: number) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Time Distribution Bar Chart */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-gray-600" />
+                Orders by Urgency Level
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Distribution of orders across urgency categories based on time elapsed
+              </p>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={timeDistributionData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="label" 
+                    tick={{ fill: '#6B7280', fontSize: 12, fontWeight: 500 }}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                  />
+                  <YAxis 
+                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                    label={{ value: 'Number of Orders', angle: -90, position: 'insideLeft', style: { fill: '#6B7280', fontSize: 12 } }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#fff', 
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      padding: '8px 12px'
+                    }}
+                    formatter={(value: number) => [value, 'Orders']}
+                    labelFormatter={(label: string) => `Urgency: ${label}`}
+                  />
+                  <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                    {timeDistributionData.map((entry: { range: string; count: number; color: string; label: string }, index: number) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Overall Metrics */}
+        {burndownOrders.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-gray-600" />
+                Overall Metrics
+              </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">Average Time</p>
+                <p className="text-3xl font-bold text-gray-900">{Math.round(avgAllTime / 24)}d</p>
+                <p className="text-xs text-gray-500 mt-1">Across all orders</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">Total Active Orders</p>
+                <p className="text-3xl font-bold text-gray-900">{burndownOrders.length}</p>
+                <p className="text-xs text-gray-500 mt-1">Pending & Processing</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">Completion Rate</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {normalOrders.length > 0 ? Math.round((normalOrders.length / burndownOrders.length) * 100) : 0}%
+                </p>
+                <p className="text-xs text-gray-500 mt-1">On track orders</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Orders List */}
+        {burndownLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading orders...</p>
+          </div>
+        ) : burndownOrders.length === 0 ? (
+          <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl">
+            <Clock className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-500 text-lg">No active orders to track</p>
+            <p className="text-sm text-gray-400 mt-2">All orders are completed or ready for pickup</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Critical Orders */}
+            {criticalOrders.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Critical Priority ({criticalOrders.length})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedCriticalOrders.map((order) => (
+                    <BurndownOrderCard 
+                      key={order._id?.toString() ?? order.orderNumber} 
+                      order={order} 
+                      onStatusChange={handleStatusChange}
+                      onPickupReady={handlePickupReady}
+                      onViewOrder={openOrderModal}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Urgent Orders */}
+            {urgentOrders.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Urgent ({urgentOrders.length})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedUrgentOrders.map((order) => (
+                    <BurndownOrderCard 
+                      key={order._id?.toString() ?? order.orderNumber} 
+                      order={order} 
+                      onStatusChange={handleStatusChange}
+                      onPickupReady={handlePickupReady}
+                      onViewOrder={openOrderModal}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Normal Orders */}
+            {paginatedNormalOrders.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  On Track ({normalOrders.length})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedNormalOrders.map((order) => (
+                    <BurndownOrderCard 
+                      key={order._id?.toString() ?? order.orderNumber} 
+                      order={order} 
+                      onStatusChange={handleStatusChange}
+                      onPickupReady={handlePickupReady}
+                      onViewOrder={openOrderModal}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Ready for Pickup Orders */}
+            {paginatedReadyOrders.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Ready for Pickup ({readyOrders.length})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedReadyOrders.map((order) => (
+                    <BurndownOrderCard 
+                      key={order._id?.toString() ?? order.orderNumber} 
+                      order={order} 
+                      onStatusChange={handleStatusChange}
+                      onPickupReady={handlePickupReady}
+                      onViewOrder={openOrderModal}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Delivered Orders */}
+            {paginatedDeliveredOrders.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Delivered ({deliveredOrders.length})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedDeliveredOrders.map((order) => (
+                    <BurndownOrderCard 
+                      key={order._id?.toString() ?? order.orderNumber} 
+                      order={order} 
+                      onStatusChange={handleStatusChange}
+                      onPickupReady={handlePickupReady}
+                      onViewOrder={openOrderModal}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {burndownOrders.length > burndownOrdersPerPage && (
+              <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 mt-8">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-xs md:text-sm text-gray-500 text-center sm:text-left">
+                    Showing {((burndownPage - 1) * burndownOrdersPerPage) + 1} to {Math.min(burndownPage * burndownOrdersPerPage, burndownOrders.length)} of {burndownOrders.length} orders
+                  </div>
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <Button
+                      onClick={() => setBurndownPage(p => Math.max(1, p - 1))}
+                      disabled={burndownPage === 1}
+                      variant="ghost"
+                      className="px-2 md:px-3 py-2 text-sm"
+                    >
+                      Prev
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalBurndownPages) }, (_, i) => {
+                        const page = i + 1;
+                        const isActive = page === burndownPage;
+                        
+                        return (
+                          <Button
+                            key={page}
+                            onClick={() => setBurndownPage(page)}
+                            variant={isActive ? "default" : "ghost"}
+                            className={`px-2 md:px-3 py-2 text-sm ${
+                              isActive 
+                                ? 'bg-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/90' 
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    
+                    <Button
+                      onClick={() => setBurndownPage(p => Math.min(totalBurndownPages, p + 1))}
+                      disabled={burndownPage >= totalBurndownPages}
+                      variant="ghost"
+                      className="px-2 md:px-3 py-2 text-sm"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderArchive = () => {
+    return (
+      <div className="space-y-8">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Archive</h1>
+            <p className="text-gray-600 mt-2">View and manage archived orders</p>
+          </div>
           <Button
             variant="outline"
-            onClick={() => setViewMode(viewMode === "grid" ? "table" : "grid")}
-            className="flex items-center gap-2"
-          >
-            {viewMode === "grid" ? "Table View" : "Grid View"}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => refetchOrders()}
-            disabled={ordersLoading}
+            onClick={() => {
+              refetchArchived();
+              refetchOrders();
+            }}
+            disabled={archivedLoading}
             className="flex items-center gap-2"
           >
             <Activity className="h-4 w-4" />
-            {ordersLoading ? "Loading..." : "Refresh"}
+            {archivedLoading ? "Loading..." : "Refresh"}
           </Button>
         </div>
-      </div>
 
-      {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search orders by number, customer name, or email..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC]"
-          />
+        {/* Search */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search archived orders..."
+              value={archiveSearchQuery}
+              onChange={(e) => {
+                setArchiveSearchQuery(e.target.value);
+                setArchivePage(1);
+              }}
+              className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC]"
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            className="flex items-center gap-2 h-12 px-4"
-          >
-            <Filter className="h-4 w-4" />
-            Filter
-          </Button>
-          {searchQuery && (
-            <Button
-              onClick={() => handleSearch("")}
-              variant="ghost"
-              size="sm"
-              className="text-gray-500 hover:text-gray-700 py-3 px-4"
-            >
-              Clear
-            </Button>
-          )}
-        </div>
-      </div>
-      {searchQuery && (
-        <p className="text-sm text-gray-500 mt-3">
-          Showing results for &quot;{searchQuery}&quot; ({totalOrders} orders found)
-        </p>
-      )}
 
-      {ordersLoading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading orders...</p>
-        </div>
-      ) : orders.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No orders found</p>
-        </div>
-      ) : viewMode === "table" ? (
-        /* Table View */
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Order #</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Items</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Total</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {orders.map((order) => {
-                  const orderId = order._id?.toString() ?? order.orderNumber;
-                  
-                  return (
-                    <tr key={orderId} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">#{order.orderNumber}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {order.customer.firstName} {order.customer.lastName}
+        {/* Orders List */}
+        {archivedLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading archived orders...</p>
+          </div>
+        ) : archivedOrders.length === 0 ? (
+          <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl">
+            <Archive className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-500 text-lg">No archived orders</p>
+            <p className="text-sm text-gray-400 mt-2">Archived orders will appear here</p>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-3">
+              {archivedOrders.map((order) => (
+                <div
+                  key={order._id?.toString() ?? order.orderNumber}
+                  className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200 ease-in-out"
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-lg font-bold text-gray-900">#{order.orderNumber}</h3>
+                        <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${
+                          order.status === 'delivered' ? 'bg-green-50 text-green-800 border border-green-200' :
+                          order.status === 'cancelled' ? 'bg-red-50 text-red-800 border border-red-200' :
+                          'bg-gray-50 text-gray-800 border border-gray-200'
+                        }`}>
+                          {order.status}
+                        </span>
+                        {order.archivedAt && (
+                          <span className="text-xs text-gray-500">
+                            Archived {new Date(order.archivedAt).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-900 font-medium">
+                            {order.customer.firstName} {order.customer.lastName}
+                          </span>
+                          <span className="text-sm text-gray-400">•</span>
+                          <span className="text-sm text-gray-600">
+                            {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                          </span>
+                          <span className="text-sm text-gray-400">•</span>
+                          <span className="text-sm font-bold text-gray-900">
+                            ${(order.total ?? 0).toFixed(2)}
+                          </span>
                         </div>
-                        <div className="text-xs text-gray-500">{order.customer.email}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-gray-500">
                           {new Date(order.createdAt).toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric',
                             year: 'numeric'
                           })}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(order.createdAt).toLocaleTimeString('en-US', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {order.items.length} item{order.items.length !== 1 ? 's' : ''}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {order.items.map(item => item.productName).join(', ')}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-semibold text-gray-900">
-                          ${(order.total ?? 0).toFixed(2)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 h-8">
-                          <select
-                            value={order.status}
-                            onChange={(e) => handleStatusChange(order._id!.toString(), e.target.value)}
-                            className={`text-xs font-medium rounded-md border px-2 py-1.5 h-8 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 ${
-                              order.status === 'pending' ? 'bg-orange-50 text-orange-800 border-orange-300 hover:bg-orange-100 focus:ring-orange-200' :
-                              order.status === 'processing' ? 'bg-[#74CADC]/10 text-[#0A5565] border-[#74CADC]/30 hover:bg-[#74CADC]/20 focus:ring-[#74CADC]/20' :
-                              order.status === 'ready_for_pickup' ? 'bg-green-50 text-green-800 border-green-300 hover:bg-green-100 focus:ring-green-200' :
-                              order.status === 'delivered' ? 'bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 focus:ring-gray-200' :
-                              'bg-red-50 text-red-800 border-red-300 hover:bg-red-100 focus:ring-red-200'
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleArchiveOrder(order._id!.toString(), false)}
+                        className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg transition-all duration-200 flex items-center gap-2"
+                        title="Unarchive order"
+                      >
+                        <Archive className="h-4 w-4" />
+                        Unarchive
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openOrderModal(order)}
+                        className="h-10 w-10 p-0 text-gray-600 hover:text-gray-900"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {archivedTotalPages > 1 && (
+              <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-xs md:text-sm text-gray-500 text-center sm:text-left">
+                    Showing {((archivePage - 1) * archiveOrdersPerPage) + 1} to {Math.min(archivePage * archiveOrdersPerPage, archivedTotal)} of {archivedTotal} orders
+                  </div>
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <Button
+                      onClick={() => setArchivePage(p => Math.max(1, p - 1))}
+                      disabled={archivePage === 1 || archivedLoading}
+                      variant="ghost"
+                      className="px-2 md:px-3 py-2 text-sm"
+                    >
+                      Prev
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, archivedTotalPages) }, (_, i) => {
+                        const page = i + 1;
+                        const isActive = page === archivePage;
+                        
+                        return (
+                          <Button
+                            key={page}
+                            onClick={() => setArchivePage(page)}
+                            disabled={archivedLoading}
+                            variant={isActive ? "default" : "ghost"}
+                            className={`px-2 md:px-3 py-2 text-sm ${
+                              isActive 
+                                ? 'bg-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/90' 
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                             }`}
                           >
-                            <option value="pending">Pending</option>
-                            <option value="processing">Processing</option>
-                            <option value="ready_for_pickup">Ready for Pickup</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
-                          {order.status === 'processing' && (
-                            <Button
-                              onClick={() => handlePickupReady(order)}
-                              className="px-2 py-1.5 text-xs bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] rounded-md h-8"
-                            >
-                              Mark Ready
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-gray-600 hover:text-gray-900 h-8 w-8 p-0"
-                          onClick={() => openOrderModal(order)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        /* Grid View */
-        <div className="space-y-6">
-          {orders.map((order) => (
-            <div key={order._id?.toString() ?? order.orderNumber} className="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
-              {/* Header Section */}
-              <div className="flex flex-col lg:flex-row lg:items-start justify-between mb-6 gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-bold text-gray-900">
-                      Order #{order.orderNumber}
-                    </h3>
-                  </div>
-                  <p className="text-sm text-gray-500 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {new Date(order.createdAt).toLocaleDateString('en-US', { 
-                      weekday: 'short', 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })} at {new Date(order.createdAt).toLocaleTimeString('en-US', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </p>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <div className="relative">
-                    <select
-                      value={order.status}
-                      onChange={(e) => handleStatusChange(order._id!.toString(), e.target.value)}
-                      className={`w-full sm:w-auto pl-4 pr-10 text-sm font-semibold rounded-lg border-2 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 appearance-none h-10 ${
-                        order.status === 'pending' ? 'bg-orange-50 text-orange-800 border-orange-300 hover:bg-orange-100 focus:ring-orange-200' :
-                        order.status === 'processing' ? 'bg-[#74CADC]/10 text-[#0A5565] border-[#74CADC]/30 hover:bg-[#74CADC]/20 focus:ring-[#74CADC]/20' :
-                        order.status === 'ready_for_pickup' ? 'bg-green-50 text-green-800 border-green-300 hover:bg-green-100 focus:ring-green-200' :
-                        order.status === 'delivered' ? 'bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 focus:ring-gray-200' :
-                        'bg-red-50 text-red-800 border-red-300 hover:bg-red-100 focus:ring-red-200'
-                      }`}
-                      style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="processing">Processing</option>
-                      <option value="ready_for_pickup">Ready for Pickup</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                            {page}
+                          </Button>
+                        );
+                      })}
                     </div>
-                  </div>
-                  {order.status === 'processing' && (
+                    
                     <Button
-                      onClick={() => handlePickupReady(order)}
-                      className="w-full sm:w-auto px-4 py-2.5 text-sm font-semibold bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] rounded-lg transition-all duration-200 hover:scale-105"
+                      onClick={() => setArchivePage(p => Math.min(archivedTotalPages, p + 1))}
+                      disabled={archivePage === archivedTotalPages || archivedLoading}
+                      variant="ghost"
+                      className="px-2 md:px-3 py-2 text-sm"
                     >
-                      Mark Ready
+                      Next
                     </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Content Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                {/* Customer Information */}
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <h4 className="font-semibold text-gray-900">Customer</h4>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-900">
-                      {order.customer.firstName} {order.customer.lastName}
-                    </p>
-                    <p className="text-sm text-gray-600 flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      {order.customer.email}
-                    </p>
-                    <p className="text-sm text-gray-600 flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                      </svg>
-                      {order.customer.phone}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Pickup Information */}
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <h4 className="font-semibold text-gray-900">Pickup</h4>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-900">Pickup Only Service</p>
-                    <p className="text-sm text-gray-600">Customer will be contacted for pickup arrangement</p>
-                  </div>
-                </div>
-
-                {/* Payment Information */}
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                    <h4 className="font-semibold text-gray-900">Payment</h4>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-900 capitalize">{order.paymentMethod}</p>
-                    <p className="text-sm text-gray-600">Payment completed</p>
                   </div>
                 </div>
               </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
 
-              {/* Items Section */}
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                  <h4 className="font-semibold text-gray-900">Order Items</h4>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="space-y-3">
-                    {order.items.map((item, index: number) => (
-                      <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">
-                            {item.productName}
-                            {item.selectedSize && (
-                              <span className="ml-2 px-2 py-1 text-xs font-medium bg-[#74CADC] text-[#0A5565] rounded-md">
-                                {item.selectedSize}
-                              </span>
-                            )}
-                            {item.selectedColor && (
-                              <span className="ml-2 px-2 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-md">
-                                {item.selectedColor}
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-xs text-gray-500">Quantity: {item.quantity}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-gray-900">
-                            ${(item.quantity * (item.productPrice ?? 0)).toFixed(2)}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            ${(item.productPrice ?? 0).toFixed(2)} each
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+  // Burndown Order Card Component
+  const BurndownOrderCard = ({ 
+    order, 
+    onStatusChange, 
+    onPickupReady, 
+    onViewOrder
+  }: { 
+    order: Order; 
+    onStatusChange: (orderId: string, status: string) => void;
+    onPickupReady: (order: Order) => void;
+    onViewOrder: (order: Order) => void;
+  }) => {
+    const timeElapsed = formatTimeElapsed(order.createdAt);
+    const hours = timeElapsed.hours;
+    // Use configurable threshold for progress calculation
+    const criticalThreshold = settings.burndownCriticalThreshold;
+    
+    // Calculate progress based on order status stages:
+    // Pending: 0%
+    // Processing: 25%
+    // Ready for Pickup: 50%
+    // Delivered: 100%
+    let progress: number;
+    switch (order.status) {
+      case 'pending':
+        progress = 0;
+        break;
+      case 'processing':
+        progress = 25;
+        break;
+      case 'ready_for_pickup':
+        progress = 50;
+        break;
+      case 'delivered':
+        progress = 100;
+        break;
+      default:
+        progress = 0; // Default to pending stage
+    }
 
-              {/* Order Summary */}
-              <div className="rounded-xl py-4 px-2">
-                <h4 className="font-semibold text-gray-900 mb-3">Order Summary</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium text-gray-900">${(order.subtotal ?? 0).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax</span>
-                    <span className="font-medium text-gray-900">${(order.tax ?? 0).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Pickup</span>
-                    <span className="font-medium text-green-600">Free</span>
-                  </div>
-                  <div className="border-t border-gray-300 pt-2 mt-2">
-                    <div className="flex justify-between text-base font-bold">
-                      <span className="text-gray-900">Total</span>
-                      <span className="text-gray-900">${(order.total ?? 0).toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-                {order.notes && (
-                  <div className="mt-4 pt-4 border-t border-gray-300">
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Notes:</span> {order.notes}
-                    </p>
-                  </div>
-                )}
-              </div>
+    // Calculate score for delivered orders (consistent with weekly calculation)
+    const displayScore = order.status === 'delivered' ? calculateOrderScore(order) : 0;
+
+    return (
+      <div className="bg-white border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:shadow-sm transition-all duration-200 ease-in-out h-full flex flex-col">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1.5">
+              <h3 className="text-base font-bold text-gray-900 truncate">#{order.orderNumber}</h3>
+              <span className={`px-2 py-0.5 text-xs font-semibold rounded-md flex-shrink-0 ${
+                order.status === 'pending' ? 'bg-orange-50 text-orange-800 border border-orange-200' :
+                order.status === 'processing' ? 'bg-[#74CADC]/10 text-[#0A5565] border border-[#74CADC]/30' :
+                order.status === 'ready_for_pickup' ? 'bg-green-50 text-green-800 border border-green-200' :
+                order.status === 'delivered' ? 'bg-gray-50 text-gray-800 border border-gray-200' :
+                'bg-[#74CADC]/10 text-[#0A5565] border border-[#74CADC]/30'
+              }`}>
+                {order.status === 'pending' ? 'Pending' : 
+                 order.status === 'processing' ? 'Processing' :
+                 order.status === 'ready_for_pickup' ? 'Ready' :
+                 order.status === 'delivered' ? 'Delivered' : 'Processing'}
+              </span>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs md:text-sm text-gray-500 text-center sm:text-left">
-              Showing {((currentPage - 1) * ordersPerPage) + 1} to {Math.min(currentPage * ordersPerPage, totalOrders)} of {totalOrders} orders
-            </div>
-            <div className="flex items-center gap-1 md:gap-2">
-              <Button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1 || ordersLoading}
-                variant="ghost"
-                className="px-2 md:px-3 py-2 text-sm"
-              >
-                Prev
-              </Button>
-              
-              <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
-                  const page = i + 1;
-                  const isActive = page === currentPage;
-                  
-                  return (
-                    <Button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      disabled={ordersLoading}
-                      className={`px-2 md:px-3 py-2 text-sm ${
-                        isActive 
-                          ? 'bg-[#74CADC] text-[#0A5565]' 
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      {page}
-                    </Button>
-                  );
-                })}
-              </div>
-              
-              <Button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || ordersLoading}
-                variant="ghost"
-                className="px-2 md:px-3 py-2 text-sm"
-              >
-                Next
-              </Button>
+            <div className="flex items-center gap-1.5">
+              <Clock className={`h-3.5 w-3.5 ${timeElapsed.color} flex-shrink-0`} />
+              <span className={`text-xs font-medium ${timeElapsed.color}`}>
+                {timeElapsed.text}
+              </span>
             </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onViewOrder(order)}
+            className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600 flex-shrink-0"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
         </div>
-      )}
-    </div>
-  );
+
+        {/* Customer Info */}
+        <div className="mb-3 space-y-1">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            {order.customer.firstName} {order.customer.lastName}
+          </p>
+          <div className="flex items-center gap-2 text-xs text-gray-600">
+            <span>{order.items.length} item{order.items.length !== 1 ? 's' : ''}</span>
+            <span>•</span>
+            <span className="font-semibold text-gray-900">${(order.total ?? 0).toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mt-auto mb-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs text-gray-500">Progress</span>
+            <span className="text-xs font-semibold text-gray-700">
+              {Math.round(progress)}%
+            </span>
+          </div>
+          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-300 ${
+                // Priority 1: Critical orders (pending or processing) - RED
+                (order.status === 'pending' || order.status === 'processing') && hours >= criticalThreshold ? 'bg-red-500' :
+                // Priority 2: Status-based colors
+                order.status === 'delivered' ? 'bg-[#74CADC]' :
+                order.status === 'ready_for_pickup' ? 'bg-green-500' :
+                // Priority 3: Non-critical processing - brand color
+                order.status === 'processing' ? 'bg-[#74CADC]' :
+                // Priority 4: Pending orders by urgency
+                order.status === 'pending' && hours >= settings.burndownUrgentThreshold ? 'bg-orange-500' :
+                order.status === 'pending' && hours >= 12 ? 'bg-yellow-500' :
+                order.status === 'pending' ? 'bg-[#74CADC]' :
+                // Fallback
+                'bg-[#74CADC]'
+              }`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col gap-2">
+          {order.status === 'delivered' ? (
+            // Show score for delivered orders - each order is scored individually based on its completion time
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+              <div className="text-xs text-gray-600 mb-1">Score</div>
+              <div className="text-2xl font-bold text-gray-900">{displayScore}</div>
+              <div className="text-xs text-gray-500 mt-1">out of 100</div>
+              <div className="text-xs text-gray-400 mt-1">
+                {(() => {
+                  const createdAt = order.createdAt instanceof Date ? order.createdAt : new Date(order.createdAt as string);
+                  const completedAt = order.completedAt 
+                    ? (order.completedAt instanceof Date ? order.completedAt : new Date(order.completedAt as string))
+                    : (order.updatedAt instanceof Date ? order.updatedAt : new Date(order.updatedAt as string));
+                  const hours = Math.round((completedAt.getTime() - createdAt.getTime()) / (1000 * 60 * 60));
+                  return `${hours}h to complete`;
+                })()}
+              </div>
+            </div>
+          ) : (
+            <>
+              {order.status === 'pending' && (
+                <Button
+                  onClick={() => onStatusChange(order._id!.toString(), 'ready_for_pickup')}
+                  className="w-full px-3 py-1.5 text-xs font-semibold bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] rounded-lg transition-all duration-200"
+                >
+                  Mark Ready for Pickup
+                </Button>
+              )}
+              {order.status === 'ready_for_pickup' && (
+                <Button
+                  onClick={() => onStatusChange(order._id!.toString(), 'delivered')}
+                  className="w-full px-3 py-1.5 text-xs font-semibold bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] rounded-lg transition-all duration-200"
+                >
+                  Mark Delivered
+                </Button>
+              )}
+              {order.status === 'processing' && (
+                <Button
+                  onClick={() => onPickupReady(order)}
+                  className="w-full px-3 py-1.5 text-xs font-semibold bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] rounded-lg transition-all duration-200"
+                >
+                  Mark Ready
+                </Button>
+              )}
+              {/* Fallback dropdown for other statuses */}
+              {!['pending', 'ready_for_pickup', 'processing', 'delivered'].includes(order.status as string) && (
+                <select
+                  value={order.status}
+                  onChange={(e) => onStatusChange(order._id!.toString(), e.target.value)}
+                  className={`text-xs font-semibold rounded-lg border-2 px-2.5 py-1.5 transition-all cursor-pointer focus:outline-none focus:ring-1 w-full ${
+                    order.status === 'pending' ? 'bg-orange-50 text-orange-800 border-orange-300 hover:bg-orange-100 focus:ring-orange-200' :
+                    order.status === 'processing' ? 'bg-[#74CADC]/10 text-[#0A5565] border-[#74CADC]/30 hover:bg-[#74CADC]/20 focus:ring-[#74CADC]/20' :
+                    order.status === 'ready_for_pickup' ? 'bg-green-50 text-green-800 border-green-300 hover:bg-green-100 focus:ring-green-200' :
+                    (order.status === 'shipped' || order.status === 'cancelled') ? 'bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 focus:ring-gray-200' :
+                    'bg-[#74CADC]/10 text-[#0A5565] border-[#74CADC]/30 hover:bg-[#74CADC]/20 focus:ring-[#74CADC]/20'
+                  }`}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="ready_for_pickup">Ready for Pickup</option>
+                  <option value="delivered">Delivered</option>
+                </select>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const renderGallery = () => {
     console.log('Rendering gallery, images:', galleryImages.length, 'loading:', galleryLoading);
@@ -2133,25 +2541,25 @@ export default function AdminPage() {
   };
 
   const renderSettings = () => (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600 mt-2">Configure your store settings and preferences</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Settings</h1>
+        <p className="text-gray-600 mt-2 text-sm md:text-base">Configure your store settings and preferences</p>
       </div>
 
       {/* Tax Settings */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-            <Settings className="h-5 w-5 text-gray-600" />
+      <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
+        <div className="flex items-center gap-3 mb-4 md:mb-6">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Settings className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Tax Settings</h2>
-            <p className="text-sm text-gray-600">Configure tax rates for your store</p>
+          <div className="min-w-0">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900">Tax Settings</h2>
+            <p className="text-xs md:text-sm text-gray-600">Configure tax rates for your store</p>
           </div>
         </div>
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">
               Tax Rate (%)
@@ -2161,33 +2569,33 @@ export default function AdminPage() {
               step="0.1"
               value={settings.taxRate}
               onChange={(e) => setSettings({...settings, taxRate: parseFloat(e.target.value)})}
-              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
+              className="w-full px-3 py-2.5 text-base md:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
             />
           </div>
         </div>
       </div>
 
       {/* Shipping Settings */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-            <Package className="h-5 w-5 text-gray-600" />
+      <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
+        <div className="flex items-center gap-3 mb-4 md:mb-6">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Package className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Shipping Settings</h2>
-            <p className="text-sm text-gray-600">Configure shipping options and pickup instructions</p>
+          <div className="min-w-0">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900">Shipping Settings</h2>
+            <p className="text-xs md:text-sm text-gray-600">Configure shipping options and pickup instructions</p>
           </div>
         </div>
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8">
           {/* Pickup Only Toggle */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-            <div>
-              <h3 className="text-base font-semibold text-gray-900">Pickup Only Mode</h3>
-              <p className="text-sm text-gray-600 mt-1">Disable shipping, only allow pickup</p>
+          <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <div className="min-w-0 flex-1 pr-4">
+              <h3 className="text-sm md:text-base font-semibold text-gray-900">Pickup Only Mode</h3>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">Disable shipping, only allow pickup</p>
             </div>
             <button
               onClick={() => setSettings({...settings, pickupOnly: !settings.pickupOnly})}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 flex-shrink-0 ${
                 settings.pickupOnly ? 'bg-[#74CADC]' : 'bg-gray-300'
               }`}
             >
@@ -2211,7 +2619,7 @@ export default function AdminPage() {
                   step="0.01"
                   value={settings.shippingCost}
                   onChange={(e) => setSettings({...settings, shippingCost: parseFloat(e.target.value)})}
-                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
+                  className="w-full px-3 py-2.5 text-base md:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
                 />
               </div>
 
@@ -2225,7 +2633,7 @@ export default function AdminPage() {
                   step="0.01"
                   value={settings.freeShippingThreshold}
                   onChange={(e) => setSettings({...settings, freeShippingThreshold: parseFloat(e.target.value)})}
-                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
+                  className="w-full px-3 py-2.5 text-base md:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200"
                 />
               </div>
             </>
@@ -2240,9 +2648,93 @@ export default function AdminPage() {
               value={settings.pickupInstructions}
               onChange={(e) => setSettings({...settings, pickupInstructions: e.target.value})}
               rows={4}
-              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200 resize-none"
+              className="w-full px-3 py-2.5 text-base md:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200 resize-none"
               placeholder="Instructions for customers on how to pickup their orders..."
             />
+          </div>
+
+          {/* Burndown Settings */}
+          <div className="border-t border-gray-200 pt-4 md:pt-6 mt-4 md:mt-6">
+            <h3 className="text-base md:text-lg font-bold text-gray-900 mb-3 md:mb-4">Burndown Thresholds</h3>
+            <p className="text-xs md:text-sm text-gray-600 mb-4 break-words">
+              Configure the time thresholds for order urgency classification
+            </p>
+
+            {/* Urgent Threshold */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Urgent Threshold (days)
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={Math.round(settings.burndownUrgentThreshold / 24)}
+                onChange={(e) => {
+                  const days = parseInt(e.target.value) || 1;
+                  const hours = days * 24;
+                  const newSettings = { ...settings, burndownUrgentThreshold: hours };
+                  // Validate: urgent must be less than critical
+                  if (hours >= settings.burndownCriticalThreshold) {
+                    // Auto-adjust critical threshold if needed
+                    const criticalDays = Math.ceil(settings.burndownCriticalThreshold / 24);
+                    newSettings.burndownCriticalThreshold = (criticalDays + 1) * 24;
+                  }
+                  setSettings(newSettings);
+                }}
+                className={`w-full px-3 py-2.5 text-base md:text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200 ${
+                  settings.burndownUrgentThreshold >= settings.burndownCriticalThreshold
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-200'
+                }`}
+              />
+              {settings.burndownUrgentThreshold >= settings.burndownCriticalThreshold && (
+                <p className="text-xs text-red-600 mt-1 break-words">
+                  Urgent threshold must be less than critical threshold (auto-adjusted)
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-1 break-words">
+                Orders older than {Math.round(settings.burndownUrgentThreshold / 24)} day{Math.round(settings.burndownUrgentThreshold / 24) !== 1 ? 's' : ''} will be marked as urgent
+              </p>
+            </div>
+
+            {/* Critical Threshold */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Critical Threshold (days)
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={Math.round(settings.burndownCriticalThreshold / 24)}
+                onChange={(e) => {
+                  const days = parseInt(e.target.value) || 1;
+                  const hours = days * 24;
+                  const newSettings = { ...settings, burndownCriticalThreshold: hours };
+                  // Validate: critical must be greater than urgent
+                  if (hours <= settings.burndownUrgentThreshold) {
+                    // Auto-adjust urgent threshold if needed
+                    const urgentDays = Math.floor(settings.burndownUrgentThreshold / 24);
+                    newSettings.burndownUrgentThreshold = Math.max(1, urgentDays - 1) * 24;
+                  }
+                  setSettings(newSettings);
+                }}
+                className={`w-full px-3 py-2.5 text-base md:text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] transition-all duration-200 ${
+                  settings.burndownCriticalThreshold <= settings.burndownUrgentThreshold
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-200'
+                }`}
+              />
+              {settings.burndownCriticalThreshold <= settings.burndownUrgentThreshold && (
+                <p className="text-xs text-red-600 mt-1 break-words">
+                  Critical threshold must be greater than urgent threshold (auto-adjusted)
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-1 break-words">
+                Orders older than {Math.round(settings.burndownCriticalThreshold / 24)} day{Math.round(settings.burndownCriticalThreshold / 24) !== 1 ? 's' : ''} will be marked as critical
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -2265,6 +2757,8 @@ export default function AdminPage() {
             <p className="text-xs text-gray-500">
               {activeSection === 'dashboard' && 'Overview & Analytics'}
               {activeSection === 'orders' && 'Manage Orders'}
+              {activeSection === 'burndown' && 'Order Priority & Timing'}
+              {activeSection === 'archive' && 'Archived Orders'}
               {activeSection === 'products' && 'Inventory Management'}
               {activeSection === 'settings' && 'Store Configuration'}
             </p>
@@ -2316,6 +2810,32 @@ export default function AdminPage() {
                 </button>
               );
             })}
+          </div>
+          <div className="pt-4 mt-4">
+            <Button
+              onClick={() => {
+                setActiveSection('archive');
+                setShowMobileMenu(false);
+              }}
+              className={`w-full bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 px-6 py-3 transition-all duration-200 flex items-center justify-center gap-2 mb-4 ${
+                activeSection === 'archive' ? 'bg-gray-100 border-gray-300' : ''
+              }`}
+            >
+              <Archive className="h-4 w-4" />
+              <span className="font-medium">Archive</span>
+            </Button>
+            
+            <div className="border-t border-gray-200 pt-4">
+              <Button
+                onClick={() => {
+                  handleLogout();
+                  setShowMobileMenu(false);
+                }}
+                className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 px-6 py-3 transition-all duration-200"
+              >
+                <span className="font-medium">Logout</span>
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -2375,13 +2895,25 @@ export default function AdminPage() {
             })}
           </nav>
           
-          <div className="border-t border-gray-200 pt-4">
+          <div className="pt-4">
             <Button
-              onClick={handleLogout}
-              className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 px-6 py-3 transition-all duration-200"
+              onClick={() => setActiveSection('archive')}
+              className={`w-full bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 px-6 py-3 transition-all duration-200 flex items-center justify-center gap-2 mb-4 ${
+                activeSection === 'archive' ? 'bg-gray-100 border-gray-300' : ''
+              }`}
             >
-              <span className="font-medium">Logout</span>
+              <Archive className="h-4 w-4" />
+              <span className="font-medium">Archive</span>
             </Button>
+            
+            <div className="border-t border-gray-200 pt-4">
+              <Button
+                onClick={handleLogout}
+                className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 px-6 py-3 transition-all duration-200"
+              >
+                <span className="font-medium">Logout</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -2394,25 +2926,27 @@ export default function AdminPage() {
             {activeSection === "dashboard" && renderDashboard()}
             {activeSection === "products" && renderProducts()}
             {activeSection === "orders" && renderOrders()}
+            {activeSection === "burndown" && renderBurndown()}
+            {activeSection === "archive" && renderArchive()}
             {activeSection === "gallery" && renderGallery()}
             {activeSection === "settings" && (
               <div className="space-y-8">
                 {renderSettings()}
                 
                 {/* Save Button */}
-                <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
+                <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Save className="h-5 w-5 text-gray-600" />
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Save className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">Save Settings</h3>
-                      <p className="text-sm text-gray-600">Save your configuration changes</p>
+                    <div className="min-w-0">
+                      <h3 className="text-base md:text-lg font-bold text-gray-900">Save Settings</h3>
+                      <p className="text-xs md:text-sm text-gray-600">Save your configuration changes</p>
                     </div>
                   </div>
                   <Button
                     onClick={handleSaveSettings}
-                    className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 py-3 transition-all duration-200"
+                    className="w-full md:w-auto bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] px-6 py-3 transition-all duration-200"
                   >
                     <Save className="h-4 w-4 mr-2" />
                     Save Settings

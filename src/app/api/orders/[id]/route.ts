@@ -72,24 +72,80 @@ export async function PUT(
       );
     }
     
-    const body = await request.json() as { status?: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled'; notes?: string };
-    const { status, notes } = body;
+    const body = await request.json() as { status?: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled'; notes?: string; archived?: boolean };
+    const { status, notes, archived } = body;
 
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const ordersCollection = db.collection<Order>('orders');
 
-    const updateData: { updatedAt: Date; status?: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled'; notes?: string } = {
+    const { id } = await params;
+    
+    // Fetch the order to calculate score if marking as delivered
+    let order: Order | null = null;
+    if (status === 'delivered') {
+      order = await ordersCollection.findOne({ _id: new ObjectId(id) });
+    }
+
+    const updateData: { updatedAt: Date; status?: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled'; notes?: string; archived?: boolean; archivedAt?: Date; completedAt?: Date; score?: number } = {
       updatedAt: new Date()
     };
 
     if (status) updateData.status = status;
     if (notes !== undefined) updateData.notes = notes;
+    if (archived !== undefined) {
+      updateData.archived = archived;
+      if (archived) {
+        updateData.archivedAt = new Date();
+      }
+    }
 
-    const { id } = await params;
+    // Calculate score when marking as delivered
+    if (status === 'delivered' && order) {
+      const completedAt = new Date();
+      updateData.completedAt = completedAt;
+      
+      // Calculate hours to complete
+      const createdAt = order.createdAt instanceof Date ? order.createdAt : new Date(order.createdAt);
+      const hoursToComplete = (completedAt.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+      
+      // Scoring system:
+      // Target: 7 business days (168 hours)
+      // - Complete within 5 days (120 hours): 100 points
+      // - Complete within 7 days (168 hours): 80 points
+      // - Complete within 10 days (240 hours): 60 points
+      // - Complete within 14 days (336 hours): 40 points
+      // - Over 14 days: 20 points
+      let score: number;
+      if (hoursToComplete <= 120) {
+        score = 100;
+      } else if (hoursToComplete <= 168) {
+        score = 80;
+      } else if (hoursToComplete <= 240) {
+        score = 60;
+      } else if (hoursToComplete <= 336) {
+        score = 40;
+      } else {
+        score = 20;
+      }
+      
+      updateData.score = score;
+    }
+    
+    // Build update operator
+    const updateOperator: { $set: Record<string, unknown>; $unset?: { archivedAt: 1 } } = { 
+      $set: { ...updateData } 
+    };
+    
+    if (archived === false) {
+      // When unarchiving, remove archivedAt from $set and add $unset
+      delete updateOperator.$set.archivedAt;
+      updateOperator.$unset = { archivedAt: 1 };
+    }
+    
     const result = await ordersCollection.updateOne(
       { _id: new ObjectId(id) },
-      { $set: updateData }
+      updateOperator
     );
 
     if (result.matchedCount === 0) {

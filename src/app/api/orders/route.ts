@@ -118,6 +118,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const search = searchParams.get('search');
+    const archivedParam = searchParams.get('archived');
     const page = parseInt(searchParams.get('page') ?? '1');
     const limit = parseInt(searchParams.get('limit') ?? '50');
     const skip = (page - 1) * limit;
@@ -125,20 +126,39 @@ export async function GET(request: NextRequest) {
         // Build query
         const query: Record<string, unknown> = {};
         
+        // Archive filter - default to non-archived orders unless explicitly requested
+        if (archivedParam === 'true') {
+          query.archived = true;
+        } else {
+          // Exclude archived orders by default
+          query.$or = [
+            { archived: { $exists: false } },
+            { archived: false }
+          ];
+        }
+        
         // Status filter
-        if (status && ['pending', 'processing', 'shipped', 'delivered', 'cancelled'].includes(status)) {
-          query.status = status as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+        if (status && ['pending', 'processing', 'ready_for_pickup', 'shipped', 'delivered', 'cancelled'].includes(status)) {
+          query.status = status as 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled';
         }
 
         // Search filter
         if (search) {
-          query.$or = [
+          const searchConditions = [
             { orderNumber: { $regex: search, $options: 'i' } },
             { 'customer.firstName': { $regex: search, $options: 'i' } },
             { 'customer.lastName': { $regex: search, $options: 'i' } },
             { 'customer.email': { $regex: search, $options: 'i' } },
             { 'customer.phone': { $regex: search, $options: 'i' } }
           ];
+          
+          // Combine archive filter with search using $and
+          const archiveCondition = query.$or ? { $or: query.$or } : {};
+          query.$and = [
+            archiveCondition,
+            { $or: searchConditions }
+          ];
+          delete query.$or;
         }
 
     // Get total count for pagination
@@ -172,24 +192,30 @@ export async function GET(request: NextRequest) {
         customerName: `${order.customer.firstName} ${order.customer.lastName}`,
         customerEmail: order.customer.email,
         customerPhone: order.customer.phone,
-        items: transformedItems,
+        // iOS-compatible format (separate property)
+        transformedItems: transformedItems,
         totalAmount: order.total,
         status: order.status,
         orderDate: order.createdAt instanceof Date ? order.createdAt.toISOString() : order.createdAt,
         createdAt: order.createdAt instanceof Date ? order.createdAt.toISOString() : order.createdAt,
         updatedAt: order.updatedAt instanceof Date ? order.updatedAt.toISOString() : order.updatedAt,
-        // Keep original fields for backward compatibility
+        // Keep original fields for backward compatibility (web frontend uses these)
         _id: order._id.toString(),
         orderNumber: order.orderNumber,
         customer: order.customer,
         shipping: order.shipping,
+        items: order.items, // Original items with productPrice field - for web frontend
         subtotal: order.subtotal,
         tax: order.tax,
         shippingCost: order.shippingCost,
         total: order.total,
         paymentMethod: order.paymentMethod,
         notes: order.notes,
-        paidAt: order.paidAt ? (order.paidAt instanceof Date ? order.paidAt.toISOString() : order.paidAt) : undefined
+        paidAt: order.paidAt ? (order.paidAt instanceof Date ? order.paidAt.toISOString() : order.paidAt) : undefined,
+        archived: order.archived,
+        archivedAt: order.archivedAt ? (order.archivedAt instanceof Date ? order.archivedAt.toISOString() : order.archivedAt) : undefined,
+        completedAt: order.completedAt ? (order.completedAt instanceof Date ? order.completedAt.toISOString() : order.completedAt) : undefined,
+        score: order.score
       };
     });
 

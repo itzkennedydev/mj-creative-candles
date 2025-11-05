@@ -15,9 +15,9 @@ interface OrderUpdateResponse {
 }
 
 // Fetch orders with pagination and search
-export function useOrders(page = 1, searchQuery = '', isAuthenticated = false) {
+export function useOrders(page = 1, searchQuery = '', statusFilter = '', isAuthenticated = false) {
   return useQuery({
-    queryKey: ['orders', page, searchQuery],
+    queryKey: ['orders', page, searchQuery, statusFilter],
     queryFn: async (): Promise<OrdersResponse> => {
       const token = sessionStorage.getItem('admin_token');
       if (!token) {
@@ -28,6 +28,7 @@ export function useOrders(page = 1, searchQuery = '', isAuthenticated = false) {
         page: page.toString(),
         limit: '10',
         ...(searchQuery && { search: searchQuery }),
+        ...(statusFilter && { status: statusFilter }),
       });
 
       const response = await fetch(`/api/orders?${params}`, {
@@ -38,7 +39,14 @@ export function useOrders(page = 1, searchQuery = '', isAuthenticated = false) {
       if (!response.ok) {
         throw new Error('Failed to fetch orders');
       }
-      return response.json() as Promise<OrdersResponse>;
+      const data = await response.json() as { success: boolean; orders: Order[]; totalCount: number; totalPages: number; page: number };
+      return {
+        success: data.success,
+        orders: data.orders,
+        total: data.totalCount,
+        totalPages: data.totalPages,
+        currentPage: data.page
+      };
     },
     enabled: isAuthenticated, // Only run query if authenticated
     staleTime: 30 * 1000, // 30 seconds
@@ -106,6 +114,36 @@ export function useSendPickupNotification() {
     onSuccess: () => {
       // Invalidate and refetch orders
       void queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+}
+
+// Archive/unarchive order
+export function useArchiveOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ orderId, archived }: { orderId: string; archived: boolean }) => {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('admin_token')}`,
+        },
+        body: JSON.stringify({ archived }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to archive order');
+      }
+
+      return response.json() as Promise<OrderUpdateResponse>;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch orders
+      void queryClient.invalidateQueries({ queryKey: ['orders'] });
+      void queryClient.invalidateQueries({ queryKey: ['burndown-orders'] });
+      void queryClient.invalidateQueries({ queryKey: ['archived-orders'] });
     },
   });
 }

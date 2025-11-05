@@ -50,6 +50,10 @@ export interface Order {
   failureReason?: string;
   emailsSent?: boolean;
   emailsSentAt?: Date;
+  archived?: boolean; // Whether order is archived
+  archivedAt?: Date; // When order was archived
+  completedAt?: Date; // When order was delivered/completed
+  score?: number; // Score based on completion time (0-100)
 }
 
 export interface CreateOrderRequest {

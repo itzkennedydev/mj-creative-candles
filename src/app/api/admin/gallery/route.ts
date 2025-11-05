@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readdir, stat } from 'fs/promises';
+import { readdir, stat, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { authenticateRequest } from '~/lib/auth';
 
@@ -17,6 +17,17 @@ export async function GET(request: NextRequest) {
     const uploadsDir = join(process.cwd(), 'public', 'uploads');
     
     try {
+      // Create uploads directory if it doesn't exist
+      try {
+        await mkdir(uploadsDir, { recursive: true });
+      } catch (mkdirError) {
+        // Directory might already exist, that's fine
+        // Only throw if it's a different error
+        if ((mkdirError as NodeJS.ErrnoException).code !== 'EEXIST') {
+          throw mkdirError;
+        }
+      }
+      
       const files = await readdir(uploadsDir);
       const imageFiles = files.filter(file => 
         /\.(jpg|jpeg|png|gif|webp)$/i.test(file)

@@ -26,11 +26,12 @@ export async function POST(request: NextRequest) {
       }>;
       subtotal: number;
       tax: number;
+      shippingCost?: number;
       total: number;
       customerEmail: string;
     };
     
-    const { orderId, items, subtotal, tax, total, customerEmail } = body;
+    const { orderId, items, subtotal, tax, shippingCost = 0, total, customerEmail } = body;
 
     // Validate required fields
     if (!orderId || !items || items.length === 0 || !customerEmail) {
@@ -91,6 +92,20 @@ export async function POST(request: NextRequest) {
             name: 'Tax',
           },
           unit_amount: Math.round(tax * 100), // Convert to cents
+        },
+        quantity: 1,
+      });
+    }
+
+    // Add shipping as a separate line item if applicable
+    if (shippingCost > 0) {
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: 'Shipping',
+          },
+          unit_amount: Math.round(shippingCost * 100), // Convert to cents
         },
         quantity: 1,
       });
