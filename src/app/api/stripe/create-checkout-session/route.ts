@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { stripe } from '~/lib/stripe';
 import { validateApiKey, logSecurityEvent } from '~/lib/security';
+import clientPromise from '~/lib/mongodb';
 
 export async function POST(request: NextRequest) {
   try {
@@ -145,6 +146,37 @@ export async function POST(request: NextRequest) {
     });
 
     logSecurityEvent(request, 'CHECKOUT_SESSION_CREATED', { orderId, customerEmail, sessionId: session.id });
+
+    // Store incomplete checkout session for abandoned cart emails
+    if (session.url) {
+      try {
+        const client = await clientPromise;
+        const db = client.db('stitch_orders');
+        const incompleteSessionsCollection = db.collection('incomplete_checkout_sessions');
+        
+        await incompleteSessionsCollection.insertOne({
+          sessionId: session.id,
+          checkoutUrl: session.url,
+          customerEmail: customerEmail,
+          orderId: orderId,
+          items: items,
+          subtotal: subtotal,
+          tax: tax,
+          shippingCost: shippingCost,
+          total: total,
+          emailsSent: 0,
+          emailSentAt: [],
+          completed: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        
+        console.log(`✅ Stored incomplete checkout session ${session.id} for abandoned cart tracking`);
+      } catch (error) {
+        console.error('Error storing incomplete checkout session:', error);
+        // Don't fail the request if tracking fails
+      }
+    }
 
     return NextResponse.json({
       sessionId: session.id,

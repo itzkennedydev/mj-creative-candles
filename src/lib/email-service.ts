@@ -1385,3 +1385,173 @@ function generateBugReportEmailTemplate({
     </html>
   `;
 }
+
+export async function sendAbandonedCartEmail({
+  customerEmail,
+  customerName,
+  checkoutUrl,
+  items,
+  total,
+  emailNumber,
+}: {
+  customerEmail: string;
+  customerName?: string;
+  checkoutUrl: string;
+  items: Array<{
+    productName: string;
+    quantity: number;
+    productPrice: number;
+    selectedSize?: string;
+    selectedColor?: string;
+  }>;
+  total: number;
+  emailNumber: number; // 1, 2, or 3
+}) {
+  try {
+    // Skip email sending during build time or if no API key
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping abandoned cart email - no valid Mailgun API key');
+      return true;
+    }
+
+    const abandonedCartHtml = generateAbandonedCartEmailTemplate({
+      customerName: customerName || 'there',
+      checkoutUrl,
+      items,
+      total,
+      emailNumber,
+    });
+
+    const subjects = [
+      "Don't forget your items! Complete your checkout",
+      "Your items are still waiting - Complete your purchase",
+      "Last chance! Your items are ready to checkout",
+    ];
+
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please <orders@stitchpleaseqc.com>',
+      to: [customerEmail],
+      subject: subjects[emailNumber - 1] || subjects[0],
+      html: abandonedCartHtml,
+    });
+
+    console.log(`✅ Abandoned cart email #${emailNumber} sent to ${customerEmail}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send abandoned cart email:', error);
+    return false;
+  }
+}
+
+function generateAbandonedCartEmailTemplate({
+  customerName,
+  checkoutUrl,
+  items,
+  total,
+  emailNumber,
+}: {
+  customerName: string;
+  checkoutUrl: string;
+  items: Array<{
+    productName: string;
+    quantity: number;
+    productPrice: number;
+    selectedSize?: string;
+    selectedColor?: string;
+  }>;
+  total: number;
+  emailNumber: number;
+}): string {
+  const urgencyMessages = [
+    "We noticed you started checking out but didn't complete your purchase. Your items are still waiting for you!",
+    "Your items are still in your cart! Don't miss out on these custom pieces.",
+    "This is your last chance! Your items are ready to checkout. Complete your purchase now.",
+  ];
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Complete Your Purchase</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #74CADC; color: #0A5565; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+        .cta-button { display: inline-block; background: #74CADC; color: #0A5565; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; font-size: 16px; }
+        .urgency { background: ${emailNumber === 3 ? '#fff3cd' : '#e3f2fd'}; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .checkout-link { background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Don't Forget Your Items!</h1>
+          <p>Complete your checkout to secure your order</p>
+        </div>
+        
+        <div class="content">
+          <h2>Hello ${customerName}!</h2>
+          <p>${urgencyMessages[emailNumber - 1] || urgencyMessages[0]}</p>
+          
+          <div class="urgency">
+            <h3>${emailNumber === 3 ? '⚠️ Last Chance!' : '🛒 Your Items Are Waiting'}</h3>
+            <p>Your checkout link is still active. Click below to complete your purchase!</p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${checkoutUrl}" class="cta-button">Complete Your Purchase →</a>
+          </div>
+
+          <div class="checkout-link">
+            <p style="margin: 0; font-size: 12px; color: #666;">
+              <strong>Or copy this link:</strong><br>
+              <a href="${checkoutUrl}" style="color: #74CADC; word-break: break-all;">${checkoutUrl}</a>
+            </p>
+          </div>
+          
+          <div class="order-details">
+            <h3>Your Items</h3>
+            ${items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #74CADC;">
+              <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
+            </div>
+          </div>
+          
+          <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>💡 Why Complete Your Purchase?</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>Secure your custom items before they're gone</li>
+              <li>Your checkout link is valid for a limited time</li>
+              <li>Fast and secure checkout process</li>
+              <li>Questions? Call us at (309) 373-6017</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Thank you for considering Stitch Please!</p>
+          <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
+          <p style="font-size: 12px; color: #999; margin-top: 15px;">
+            This is email #${emailNumber} of 3. If you've already completed your purchase, you can safely ignore this email.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}

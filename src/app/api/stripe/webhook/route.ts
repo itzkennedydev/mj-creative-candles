@@ -218,6 +218,24 @@ export async function POST(request: NextRequest) {
 
         console.log(`✅ Successfully updated order ${orderId} to paid status via webhook`);
         
+        // Mark incomplete checkout session as completed
+        try {
+          await db.collection('incomplete_checkout_sessions').updateOne(
+            { sessionId: session.id },
+            { 
+              $set: { 
+                completed: true,
+                completedAt: new Date(),
+                updatedAt: new Date(),
+              }
+            }
+          );
+          console.log(`✅ Marked checkout session ${session.id} as completed`);
+        } catch (error) {
+          console.error('Error marking checkout session as completed:', error);
+          // Don't fail the webhook if this fails
+        }
+        
         // Send email notifications immediately when payment is confirmed via webhook
         // Use atomic update to prevent duplicate emails (race condition protection)
         try {
@@ -292,6 +310,24 @@ export async function POST(request: NextRequest) {
 
         if (updateResult.matchedCount === 0) {
           console.log(`Order ${orderId} not found or already processed, skipping expiration`);
+        }
+
+        // Mark incomplete checkout session as expired (stop sending emails)
+        try {
+          await db.collection('incomplete_checkout_sessions').updateOne(
+            { sessionId: session.id },
+            { 
+              $set: { 
+                expired: true,
+                expiredAt: new Date(),
+                updatedAt: new Date(),
+              }
+            }
+          );
+          console.log(`✅ Marked checkout session ${session.id} as expired`);
+        } catch (error) {
+          console.error('Error marking checkout session as expired:', error);
+          // Don't fail the webhook if this fails
         }
         break;
       }
