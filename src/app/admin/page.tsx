@@ -657,11 +657,11 @@ export default function AdminPage() {
         throw new Error(errorData.error ?? 'Failed to save settings');
       }
 
-      addToast({
-        title: "Settings Saved",
-        description: "Your settings have been saved successfully!",
-        type: "success"
-      });
+    addToast({
+      title: "Settings Saved",
+      description: "Your settings have been saved successfully!",
+      type: "success"
+    });
 
       // Refetch burndown orders to update with new thresholds
       if (activeSection === 'burndown') {
@@ -1667,7 +1667,7 @@ export default function AdminPage() {
     }).filter(item => item.count > 0); // Only show buckets with orders
 
     return (
-      <div className="space-y-8">
+    <div className="space-y-8">
         {/* Weekly Score Tracker - Always visible at top */}
         <div className="bg-[#74CADC] rounded-2xl p-6 text-white shadow-lg">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -1689,18 +1689,18 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
             <h1 className="text-3xl font-bold text-gray-900">Burndown</h1>
             <p className="text-gray-600 mt-2">Track order production time and prioritize urgent orders</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
               onClick={() => setShowCharts(!showCharts)}
-              className="flex items-center gap-2"
-            >
+            className="flex items-center gap-2"
+          >
               {showCharts ? (
                 <>
                   <Eye className="h-4 w-4" />
@@ -1712,21 +1712,21 @@ export default function AdminPage() {
                   Show Charts
                 </>
               )}
-            </Button>
-            <Button
-              variant="outline"
+          </Button>
+          <Button
+            variant="outline"
               onClick={() => {
                 void refetchBurndown();
                 void refetchOrders();
               }}
               disabled={burndownLoading}
-              className="flex items-center gap-2"
-            >
-              <Activity className="h-4 w-4" />
+            className="flex items-center gap-2"
+          >
+            <Activity className="h-4 w-4" />
               {burndownLoading ? "Loading..." : "Refresh"}
-            </Button>
-          </div>
+          </Button>
         </div>
+      </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1735,7 +1735,7 @@ export default function AdminPage() {
               <h3 className="text-lg font-bold text-gray-900">Critical</h3>
               <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                 <Clock className="h-5 w-5 text-gray-700" />
-              </div>
+        </div>
             </div>
             <p className="text-3xl font-bold text-gray-900 mb-1">{criticalOrders.length}</p>
             <p className="text-sm text-gray-600">{criticalThreshold}+ hours overdue</p>
@@ -1857,12 +1857,12 @@ export default function AdminPage() {
                 <p className="text-sm text-gray-600 mb-1">Average Time</p>
                 <p className="text-3xl font-bold text-gray-900">{Math.round(avgAllTime / 24)}d</p>
                 <p className="text-xs text-gray-500 mt-1">Across all orders</p>
-              </div>
+        </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-1">Total Active Orders</p>
                 <p className="text-3xl font-bold text-gray-900">{burndownOrders.length}</p>
                 <p className="text-xs text-gray-500 mt-1">Pending & Processing</p>
-              </div>
+      </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-1">Completion Rate</p>
                 <p className="text-3xl font-bold text-gray-900">
@@ -1872,20 +1872,20 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
-        )}
+      )}
 
         {/* Orders List */}
         {burndownLoading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading orders...</p>
-          </div>
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading orders...</p>
+        </div>
         ) : burndownOrders.length === 0 ? (
           <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl">
             <Clock className="h-16 w-16 mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg">No active orders to track</p>
             <p className="text-sm text-gray-400 mt-2">All orders are completed or ready for pickup</p>
-          </div>
+        </div>
         ) : (
           <div className="space-y-4">
             {/* Critical Orders */}
@@ -1924,8 +1924,8 @@ export default function AdminPage() {
                       onViewOrder={openOrderModal}
                     />
                   ))}
-                </div>
-              </div>
+                        </div>
+                        </div>
             )}
 
             {/* Normal Orders */}
@@ -1944,8 +1944,8 @@ export default function AdminPage() {
                       onViewOrder={openOrderModal}
                     />
                   ))}
-                </div>
-              </div>
+                        </div>
+                        </div>
             )}
 
             {/* Ready for Pickup Orders */}
@@ -1964,8 +1964,8 @@ export default function AdminPage() {
                       onViewOrder={openOrderModal}
                     />
                   ))}
-                </div>
-              </div>
+                        </div>
+                        </div>
             )}
 
             {/* Delivered Orders */}
@@ -1984,7 +1984,7 @@ export default function AdminPage() {
                       onViewOrder={openOrderModal}
                     />
                   ))}
-                </div>
+                        </div>
               </div>
             )}
 
@@ -1996,14 +1996,14 @@ export default function AdminPage() {
                     Showing {((burndownPage - 1) * burndownOrdersPerPage) + 1} to {Math.min(burndownPage * burndownOrdersPerPage, burndownOrders.length)} of {burndownOrders.length} orders
                   </div>
                   <div className="flex items-center gap-1 md:gap-2">
-                    <Button
+                        <Button
                       onClick={() => setBurndownPage(p => Math.max(1, p - 1))}
                       disabled={burndownPage === 1}
-                      variant="ghost"
+                          variant="ghost"
                       className="px-2 md:px-3 py-2 text-sm"
-                    >
+                        >
                       Prev
-                    </Button>
+                        </Button>
                     
                     <div className="flex items-center gap-1">
                       {Array.from({ length: Math.min(5, totalBurndownPages) }, (_, i) => {
@@ -2019,7 +2019,7 @@ export default function AdminPage() {
                               isActive 
                                 ? 'bg-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/90' 
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                            }`}
+                      }`}
                           >
                             {page}
                           </Button>
@@ -2035,13 +2035,13 @@ export default function AdminPage() {
                     >
                       Next
                     </Button>
-                  </div>
                 </div>
               </div>
+                  </div>
             )}
-          </div>
+                  </div>
         )}
-      </div>
+                </div>
     );
   };
 
@@ -2053,7 +2053,7 @@ export default function AdminPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Archive</h1>
             <p className="text-gray-600 mt-2">View and manage archived orders</p>
-          </div>
+                  </div>
           <Button
             variant="outline"
             onClick={() => {
@@ -2066,7 +2066,7 @@ export default function AdminPage() {
             <Activity className="h-4 w-4" />
             {archivedLoading ? "Loading..." : "Refresh"}
           </Button>
-        </div>
+                </div>
 
         {/* Search */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
@@ -2082,15 +2082,15 @@ export default function AdminPage() {
               }}
               className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC]"
             />
-          </div>
-        </div>
+                </div>
+              </div>
 
         {/* Orders List */}
         {archivedLoading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading archived orders...</p>
-          </div>
+                </div>
         ) : archivedOrders.length === 0 ? (
           <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl">
             <Archive className="h-16 w-16 mx-auto text-gray-400 mb-4" />
@@ -2099,14 +2099,14 @@ export default function AdminPage() {
           </div>
         ) : (
           <>
-            <div className="space-y-3">
+                  <div className="space-y-3">
               {archivedOrders.map((order) => (
                 <div
                   key={order._id?.toString() ?? order.orderNumber}
                   className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all duration-200 ease-in-out"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    <div className="flex-1">
+                        <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <h3 className="text-lg font-bold text-gray-900">#{order.orderNumber}</h3>
                         <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${
@@ -2115,7 +2115,7 @@ export default function AdminPage() {
                           'bg-gray-50 text-gray-800 border border-gray-200'
                         }`}>
                           {order.status}
-                        </span>
+                              </span>
                         {order.archivedAt && (() => {
                           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                           const archivedAtValue = order.archivedAt;
@@ -2125,10 +2125,10 @@ export default function AdminPage() {
                           return (
                             <span className="text-xs text-gray-500">
                               Archived {archivedDate.toLocaleDateString()}
-                            </span>
+                              </span>
                           );
                         })()}
-                      </div>
+                        </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-gray-900 font-medium">
@@ -2149,9 +2149,9 @@ export default function AdminPage() {
                             day: 'numeric',
                             year: 'numeric'
                           })}
-                        </div>
                       </div>
-                    </div>
+                  </div>
+                </div>
                     <div className="flex items-center gap-3">
                       <Button
                         variant="ghost"
@@ -2171,68 +2171,68 @@ export default function AdminPage() {
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              </div>
+              </div>
             </div>
+          ))}
+        </div>
 
-            {/* Pagination */}
+      {/* Pagination */}
             {archivedTotalPages > 1 && (
-              <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-xs md:text-sm text-gray-500 text-center sm:text-left">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs md:text-sm text-gray-500 text-center sm:text-left">
                     Showing {((archivePage - 1) * archiveOrdersPerPage) + 1} to {Math.min(archivePage * archiveOrdersPerPage, archivedTotal)} of {archivedTotal} orders
-                  </div>
-                  <div className="flex items-center gap-1 md:gap-2">
-                    <Button
+            </div>
+            <div className="flex items-center gap-1 md:gap-2">
+              <Button
                       onClick={() => setArchivePage(p => Math.max(1, p - 1))}
                       disabled={archivePage === 1 || archivedLoading}
-                      variant="ghost"
-                      className="px-2 md:px-3 py-2 text-sm"
-                    >
-                      Prev
-                    </Button>
-                    
-                    <div className="flex items-center gap-1">
+                variant="ghost"
+                className="px-2 md:px-3 py-2 text-sm"
+              >
+                Prev
+              </Button>
+              
+              <div className="flex items-center gap-1">
                       {Array.from({ length: Math.min(5, archivedTotalPages) }, (_, i) => {
-                        const page = i + 1;
+                  const page = i + 1;
                         const isActive = page === archivePage;
-                        
-                        return (
-                          <Button
-                            key={page}
+                  
+                  return (
+                    <Button
+                      key={page}
                             onClick={() => setArchivePage(page)}
                             disabled={archivedLoading}
                             variant={isActive ? "default" : "ghost"}
-                            className={`px-2 md:px-3 py-2 text-sm ${
-                              isActive 
+                      className={`px-2 md:px-3 py-2 text-sm ${
+                        isActive 
                                 ? 'bg-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/90' 
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                            }`}
-                          >
-                            {page}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                    
-                    <Button
+                      }`}
+                    >
+                      {page}
+                    </Button>
+                  );
+                })}
+              </div>
+              
+              <Button
                       onClick={() => setArchivePage(p => Math.min(archivedTotalPages, p + 1))}
                       disabled={archivePage === archivedTotalPages || archivedLoading}
-                      variant="ghost"
-                      className="px-2 md:px-3 py-2 text-sm"
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              </div>
+                variant="ghost"
+                className="px-2 md:px-3 py-2 text-sm"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </div>
             )}
           </>
-        )}
-      </div>
-    );
+      )}
+    </div>
+  );
   };
 
   // Burndown Order Card Component
@@ -2948,14 +2948,14 @@ export default function AdminPage() {
               <Archive className="h-4 w-4" />
               <span className="font-medium">Archive</span>
             </Button>
-            
-            <div className="border-t border-gray-200 pt-4">
-              <Button
-                onClick={handleLogout}
-                className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 px-6 py-3 transition-all duration-200"
-              >
-                <span className="font-medium">Logout</span>
-              </Button>
+          
+          <div className="border-t border-gray-200 pt-4">
+            <Button
+              onClick={handleLogout}
+              className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300 px-6 py-3 transition-all duration-200"
+            >
+              <span className="font-medium">Logout</span>
+            </Button>
             </div>
           </div>
         </div>
