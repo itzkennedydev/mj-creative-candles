@@ -199,8 +199,10 @@ export default function AdminPage() {
     burndownCriticalThreshold: 168, // 7 days (aligned with scoring)
   });
 
-  // Load settings on mount
+  // Load settings when authenticated
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const loadSettings = async () => {
       try {
         const token = sessionStorage.getItem('admin_token');
@@ -215,8 +217,11 @@ export default function AdminPage() {
         if (response.ok) {
           const data = await response.json() as { settings: AdminSettings };
           if (data.settings) {
+            console.log('Loaded settings from database:', data.settings);
             setSettings(data.settings);
           }
+        } else {
+          console.error('Failed to load settings:', response.status, response.statusText);
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -224,7 +229,7 @@ export default function AdminPage() {
     };
 
     void loadSettings();
-  }, []);
+  }, [isAuthenticated]);
 
   const sidebarItems = [
     { 
@@ -2637,7 +2642,78 @@ export default function AdminPage() {
               <p className="text-xs md:text-sm text-gray-600 mt-1">Disable shipping, only allow pickup</p>
             </div>
             <button
-              onClick={() => setSettings({...settings, pickupOnly: !settings.pickupOnly})}
+              onClick={async () => {
+                const newSettings = {...settings, pickupOnly: !settings.pickupOnly};
+                setSettings(newSettings);
+                // Auto-save when toggle is clicked
+                try {
+                  // Validate thresholds before saving
+                  if (newSettings.burndownUrgentThreshold >= newSettings.burndownCriticalThreshold) {
+                    addToast({
+                      title: "Validation Error",
+                      description: "Urgent threshold must be less than critical threshold",
+                      type: "error"
+                    });
+                    // Revert the change
+                    setSettings(settings);
+                    return;
+                  }
+
+                  const token = sessionStorage.getItem('admin_token');
+                  if (!token) {
+                    addToast({
+                      title: "Authentication Error",
+                      description: "Please log in to save settings",
+                      type: "error"
+                    });
+                    // Revert the change
+                    setSettings(settings);
+                    return;
+                  }
+
+                  const response = await fetch('/api/admin/settings', {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(newSettings),
+                  });
+
+                  if (!response.ok) {
+                    const errorData = await response.json() as { error?: string };
+                    throw new Error(errorData.error ?? 'Failed to save settings');
+                  }
+
+                  addToast({
+                    title: "Settings Saved",
+                    description: `Pickup Only Mode ${newSettings.pickupOnly ? 'enabled' : 'disabled'}`,
+                    type: "success"
+                  });
+
+                  // Reload settings to ensure UI is in sync with database
+                  const reloadResponse = await fetch('/api/admin/settings', {
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                    },
+                  });
+                  if (reloadResponse.ok) {
+                    const reloadData = await reloadResponse.json() as { settings: AdminSettings };
+                    if (reloadData.settings) {
+                      setSettings(reloadData.settings);
+                    }
+                  }
+                } catch (error) {
+                  console.error('Error saving settings:', error);
+                  addToast({
+                    title: "Error",
+                    description: error instanceof Error ? error.message : 'Failed to save settings. Please try again.',
+                    type: "error"
+                  });
+                  // Revert the change on error
+                  setSettings(settings);
+                }
+              }}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 flex-shrink-0 ${
                 settings.pickupOnly ? 'bg-[#74CADC]' : 'bg-gray-300'
               }`}

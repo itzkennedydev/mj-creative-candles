@@ -384,18 +384,38 @@ export function Orders({
                   </div>
                 </div>
 
-                {/* Pickup Information */}
+                {/* Pickup/Shipping Information */}
                 <div className="bg-gray-50 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <h4 className="font-semibold text-gray-900">Pickup</h4>
+                    <h4 className="font-semibold text-gray-900">
+                      {order.shipping?.street === "Pickup Only" || order.shipping?.street === "Pickup Only Service" ? "Pickup" : "Shipping"}
+                    </h4>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-900">Pickup Only Service</p>
-                    <p className="text-sm text-gray-600">Customer will be contacted for pickup arrangement</p>
+                    {order.shipping?.street === "Pickup Only" || order.shipping?.street === "Pickup Only Service" ? (
+                      <>
+                        <p className="text-sm font-medium text-gray-900">Pickup Only Service</p>
+                        <p className="text-sm text-gray-600">Customer will be contacted for pickup arrangement</p>
+                      </>
+                    ) : order.shipping ? (
+                      <>
+                        <p className="text-sm font-medium text-gray-900">Shipping Address</p>
+                        <div className="text-sm text-gray-600 space-y-1">
+                          <p>{order.shipping.street}</p>
+                          <p>{order.shipping.city}, {order.shipping.state} {order.shipping.zipCode}</p>
+                          {order.shipping.country && <p>{order.shipping.country}</p>}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium text-gray-900">Pickup Only Service</p>
+                        <p className="text-sm text-gray-600">Customer will be contacted for pickup arrangement</p>
+                      </>
+                    )}
                   </div>
                 </div>
 
