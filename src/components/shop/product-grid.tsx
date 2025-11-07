@@ -7,13 +7,29 @@ import { useState } from "react";
 interface ProductGridProps {
   shopType?: "spirit-wear" | "regular-shop";
   searchQuery?: string;
+  selectedCategory?: string;
+  selectedSizes?: Set<string>;
 }
 
-export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: ProductGridProps) {
+export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selectedCategory = "All", selectedSizes = new Set() }: ProductGridProps) {
   const { data: products = [], isLoading, error } = useProductsQuery();
-  const [activeSchoolTab, setActiveSchoolTab] = useState<'moline' | 'united-township' | 'all'>('all');
+  const [activeSchoolTab, setActiveSchoolTab] = useState<'moline' | 'united-township' | 'rock-island' | 'all'>('all');
   
-  // Filter products by shop type and search query
+  // Helper function to map category names to product categories
+  const mapCategoryToProductCategory = (category: string): string | null => {
+    const categoryMap: Record<string, string> = {
+      'T-Shirts': 'Apparel',
+      'Hoodies': 'Apparel',
+      'Accessories': 'Accessories',
+      'Limited Edition': 'Apparel',
+      'Embroidery': 'Apparel',
+      'Custom Apparel': 'Apparel',
+      'Baby Items': 'Apparel',
+    };
+    return categoryMap[category] || null;
+  };
+  
+  // Filter products by shop type, search query, category, and size
   const filteredProducts = products.filter(product => {
     const matchesShopType = shopType 
       ? (product.shopType === shopType || (!product.shopType && shopType === "regular-shop"))
@@ -23,7 +39,22 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
     
-    return matchesShopType && matchesSearch;
+    // Filter by category
+    const matchesCategory = selectedCategory === "All" || 
+      (selectedCategory === 'T-Shirts' && product.category === 'Apparel' && (product.name.toLowerCase().includes('shirt') || product.name.toLowerCase().includes('tee'))) ||
+      (selectedCategory === 'Hoodies' && product.category === 'Apparel' && product.name.toLowerCase().includes('hoodie')) ||
+      (selectedCategory === 'Accessories' && product.category === 'Accessories') ||
+      (selectedCategory === 'Limited Edition' && product.category === 'Apparel') ||
+      (selectedCategory === 'Embroidery' && product.category === 'Apparel') ||
+      (selectedCategory === 'Custom Apparel' && product.category === 'Apparel') ||
+      (selectedCategory === 'Baby Items' && product.category === 'Apparel' && (product.name.toLowerCase().includes('baby') || product.name.toLowerCase().includes('mama'))) ||
+      (mapCategoryToProductCategory(selectedCategory) === product.category);
+    
+    // Filter by size - if sizes are selected, product must have at least one of the selected sizes
+    const matchesSize = selectedSizes.size === 0 || 
+      (product.sizes && product.sizes.some(size => selectedSizes.has(size)));
+    
+    return matchesShopType && matchesSearch && matchesCategory && matchesSize;
   });
   
   // For spirit-wear, group by school
@@ -31,10 +62,12 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
     const grouped: {
       moline: Product[];
       'united-township': Product[];
+      'rock-island': Product[];
       other: Product[];
     } = {
       moline: [],
       'united-township': [],
+      'rock-island': [],
       other: []
     };
     
@@ -43,6 +76,8 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
         grouped.moline.push(product);
       } else if (product.school === 'united-township') {
         grouped['united-township'].push(product);
+      } else if (product.school === 'rock-island') {
+        grouped['rock-island'].push(product);
       } else {
         grouped.other.push(product);
       }
@@ -96,7 +131,8 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
     const grouped = groupProductsBySchool(filteredProducts);
     const hasMoline = grouped.moline.length > 0;
     const hasUnitedTownship = grouped['united-township'].length > 0;
-    const hasBoth = hasMoline && hasUnitedTownship;
+    const hasRockIsland = grouped['rock-island'].length > 0;
+    const hasMultiple = [hasMoline, hasUnitedTownship, hasRockIsland].filter(Boolean).length > 1;
     
     // Determine which products to show based on active tab
     const getProductsToShow = () => {
@@ -104,9 +140,11 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
         return grouped.moline;
       } else if (activeSchoolTab === 'united-township') {
         return grouped['united-township'];
+      } else if (activeSchoolTab === 'rock-island') {
+        return grouped['rock-island'];
       } else {
         // Show all products
-        return [...grouped.moline, ...grouped['united-township'], ...grouped.other];
+        return [...grouped.moline, ...grouped['united-township'], ...grouped['rock-island'], ...grouped.other];
       }
     };
     
@@ -115,14 +153,14 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
     return (
       <div className="space-y-6">
         {/* School Tabs */}
-        {(hasMoline || hasUnitedTownship) && (
+        {(hasMoline || hasUnitedTownship || hasRockIsland) && (
           <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 sm:gap-3 border-b border-black/[0.06] pb-3 sm:pb-4">
-            {hasBoth && (
+            {hasMultiple && (
               <button
                 onClick={() => setActiveSchoolTab('all')}
                 className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 whitespace-nowrap justify-center touch-manipulation ${
                   activeSchoolTab === 'all'
-                    ? 'bg-gray-600 text-white shadow-sm'
+                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >
@@ -134,7 +172,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
                 onClick={() => setActiveSchoolTab('moline')}
                 className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
                   activeSchoolTab === 'moline'
-                    ? 'bg-gray-600 text-white shadow-sm'
+                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >
@@ -157,7 +195,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
                 onClick={() => setActiveSchoolTab('united-township')}
                 className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
                   activeSchoolTab === 'united-township'
-                    ? 'bg-gray-600 text-white shadow-sm'
+                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >
@@ -173,6 +211,29 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "" }: Pro
                   />
                 </div>
                 <span className="whitespace-nowrap">United Township High School</span>
+              </button>
+            )}
+            {hasRockIsland && (
+              <button
+                onClick={() => setActiveSchoolTab('rock-island')}
+                className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
+                  activeSchoolTab === 'rock-island'
+                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
+                    : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
+                }`}
+              >
+                <div className="relative w-5 h-5 sm:w-5 sm:h-5 flex-shrink-0">
+                  <Image
+                    src="/schools/rock-island-logo.png"
+                    alt="Rock Island"
+                    fill
+                    className="object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+                <span className="whitespace-nowrap">Rock Island High School</span>
               </button>
             )}
           </div>

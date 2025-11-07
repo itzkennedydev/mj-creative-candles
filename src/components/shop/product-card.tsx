@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "~/lib/types";
@@ -9,7 +9,6 @@ import { Button } from "~/components/ui/button";
 import { ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
 import { useToast } from "~/lib/toast-context";
-import { trackAddToCart, trackViewItem } from "~/lib/analytics";
 import { generateProductStructuredData } from "~/lib/seo";
 
 interface ProductCardProps {
@@ -25,7 +24,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
   const { addItem } = useCart();
   const { addToast } = useToast();
 
@@ -41,9 +39,9 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   const allImages = product.image ? [
-    { src: getImageUrl(product.imageId || '', product.image), isPrimary: true },
-    ...(product.images || []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }))
-  ] : (product.images || []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }));
+    { src: getImageUrl(product.imageId ?? '', product.image), isPrimary: true },
+    ...(product.images ?? []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }))
+  ] : (product.images ?? []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }));
 
   // Calculate price with XXL and 3XL surcharge
   const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : selectedSize === '3XL' ? 5 : 0);
@@ -167,7 +165,7 @@ export function ProductCard({ product }: ProductCardProps) {
             name: product.name,
             description: product.description,
             price: displayPrice,
-            image: allImages[0]?.src || '/placeholder.jpg',
+            image: allImages[0]?.src ?? '/placeholder.jpg',
             inStock: product.inStock,
             brand: 'Stitch Please',
           })),
@@ -348,7 +346,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <div className="mt-3 p-3 bg-pink-50 border border-pink-200 rounded-md">
                 <p className="text-sm font-medium text-pink-900 mb-1">Don&apos;t forget to bring your baby clothes!</p>
                 <p className="text-xs text-pink-800">
-                  Please bring your baby clothes within {product.babyClothesDeadlineDays || 5} days of placing your order.
+                    Please bring your baby clothes within {product.babyClothesDeadlineDays ?? 5} days of placing your order.
                   {product.colors && product.colors.length > 0 && (
                     <span className="block mt-1">Looking for a different color? Just let us know in the order notes during checkout!</span>
                   )}

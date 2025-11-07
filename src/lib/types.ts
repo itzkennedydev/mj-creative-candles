@@ -16,7 +16,7 @@ export interface Product {
   images?: ProductImage[]; // Array of additional images
   category: string;
   shopType?: 'spirit-wear' | 'regular-shop'; // Type of shop: spirit-wear (UTHS) or regular-shop (Stitch Please)
-  school?: 'moline' | 'united-township'; // For spirit-wear: Moline High School (Maroons) or United Township High School (Panthers)
+  school?: 'moline' | 'united-township' | 'rock-island'; // For spirit-wear: Moline High School (Maroons), United Township High School (Panthers), or Rock Island High School (Rocks)
   inStock: boolean;
   sizes?: string[];
   colors?: string[];

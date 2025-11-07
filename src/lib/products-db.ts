@@ -12,7 +12,7 @@ interface ProductDocument {
   image: string;
   category: string;
   shopType?: 'spirit-wear' | 'regular-shop';
-  school?: 'moline' | 'united-township';
+  school?: 'moline' | 'united-township' | 'rock-island';
   inStock: boolean;
   sizes?: string[];
   colors?: string[];

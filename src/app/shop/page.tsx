@@ -12,6 +12,8 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeShop, setActiveShop] = useState<"spirit-wear" | "regular-shop">("regular-shop");
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
   const prefetchProducts = usePrefetchProducts();
 
   // Prefetch products as soon as component mounts
@@ -47,7 +49,7 @@ export default function ShopPage() {
                   onClick={() => setActiveShop("regular-shop")}
                   className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-[0.25s] whitespace-nowrap ${
                     activeShop === 'regular-shop' 
-                      ? 'bg-gray-600 text-white font-medium shadow-sm' 
+                      ? 'bg-[#74CADC] text-[#0A5565] font-medium shadow-sm' 
                       : 'text-black/[0.72] hover:text-black'
                   }`}
                 >
@@ -57,7 +59,7 @@ export default function ShopPage() {
                   onClick={() => setActiveShop("spirit-wear")}
                   className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-[0.25s] whitespace-nowrap ${
                     activeShop === 'spirit-wear' 
-                      ? 'bg-gray-600 text-white font-medium shadow-sm' 
+                      ? 'bg-[#74CADC] text-[#0A5565] font-medium shadow-sm' 
                       : 'text-black/[0.72] hover:text-black'
                   }`}
                 >
@@ -100,7 +102,13 @@ export default function ShopPage() {
             {/* Sidebar - Desktop */}
             <aside className="hidden lg:block">
               <div className="sticky top-[100px]">
-                <ShopSidebarNeo shopType={activeShop} />
+                <ShopSidebarNeo 
+                  shopType={activeShop} 
+                  onCategoryChange={setSelectedCategory}
+                  onSizeChange={setSelectedSizes}
+                  selectedCategory={selectedCategory}
+                  selectedSizes={selectedSizes}
+                />
               </div>
             </aside>
 
@@ -125,7 +133,13 @@ export default function ShopPage() {
                     </div>
                   </div>
                   <div className="p-[20px] sm:p-[24px] overflow-y-auto h-[calc(100%-72px)] sm:h-[calc(100%-80px)]">
-                    <ShopSidebarNeo shopType={activeShop} />
+                    <ShopSidebarNeo 
+                      shopType={activeShop} 
+                      onCategoryChange={setSelectedCategory}
+                      onSizeChange={setSelectedSizes}
+                      selectedCategory={selectedCategory}
+                      selectedSizes={selectedSizes}
+                    />
                   </div>
                 </div>
               </div>
@@ -140,7 +154,12 @@ export default function ShopPage() {
               </div>
               
               {/* Product Grid Component */}
-              <ProductGrid shopType={activeShop} searchQuery={searchQuery} />
+              <ProductGrid 
+                shopType={activeShop} 
+                searchQuery={searchQuery}
+                selectedCategory={selectedCategory}
+                selectedSizes={selectedSizes}
+              />
             </div>
           </div>
         </div>
@@ -153,12 +172,29 @@ export default function ShopPage() {
 }
 
 // NEO-styled Sidebar Component
-function ShopSidebarNeo({ shopType }: { shopType: string }) {
+interface ShopSidebarNeoProps {
+  shopType: string;
+  selectedCategory: string;
+  selectedSizes: Set<string>;
+  onCategoryChange: (category: string) => void;
+  onSizeChange: (sizes: Set<string>) => void;
+}
+
+function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, onCategoryChange, onSizeChange }: ShopSidebarNeoProps) {
   const categories = shopType === 'spirit-wear' 
     ? ['All', 'T-Shirts', 'Hoodies', 'Accessories', 'Limited Edition']
     : ['All', 'Embroidery', 'Custom Apparel', 'Baby Items', 'Accessories'];
 
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  // Toggle size selection
+  const toggleSize = (size: string) => {
+    const newSet = new Set(selectedSizes);
+    if (newSet.has(size)) {
+      newSet.delete(size);
+    } else {
+      newSet.add(size);
+    }
+    onSizeChange(newSet);
+  };
 
   return (
     <div className="space-y-[24px] sm:space-y-[28px] lg:space-y-[32px]">
@@ -169,11 +205,11 @@ function ShopSidebarNeo({ shopType }: { shopType: string }) {
           {categories.map((category) => (
             <Button
               key={category}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => onCategoryChange(category)}
               variant={selectedCategory === category ? 'default' : 'ghost'}
               className={`w-full justify-start px-[14px] sm:px-[16px] py-[10px] sm:py-[12px] rounded-[12px] text-[13px] sm:text-[14px] leading-[130%] transition-all duration-[0.25s] ${
                 selectedCategory === category
-                  ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                  ? 'bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]'
                   : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
               }`}
             >
@@ -205,15 +241,23 @@ function ShopSidebarNeo({ shopType }: { shopType: string }) {
       <div>
         <h3 className="text-[13px] sm:text-[14px] leading-[130%] font-bold text-black/[0.72] mb-[12px] sm:mb-[16px]">Size</h3>
         <div className="grid grid-cols-3 gap-[6px] sm:gap-[8px]">
-          {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
-            <Button
-              key={size}
-              variant="outline"
-              className="px-[10px] sm:px-[12px] py-[6px] sm:py-[8px] bg-black/[0.03] hover:bg-black/[0.06] text-black/[0.72] rounded-[8px] text-[12px] sm:text-[14px] leading-[130%] transition-all duration-[0.25s] hover:border-black/[0.12] border-[2px]"
-            >
-              {size}
-            </Button>
-          ))}
+          {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => {
+            const isSelected = selectedSizes.has(size);
+            return (
+              <Button
+                key={size}
+                onClick={() => toggleSize(size)}
+                variant="outline"
+                className={`px-[10px] sm:px-[12px] py-[6px] sm:py-[8px] rounded-[8px] text-[12px] sm:text-[14px] leading-[130%] transition-all duration-[0.25s] border-[2px] ${
+                  isSelected
+                    ? 'bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] border-[#74CADC]'
+                    : 'bg-black/[0.03] hover:bg-black/[0.06] text-black/[0.72] hover:border-black/[0.12] border-black/[0.12]'
+                }`}
+              >
+                {size}
+              </Button>
+            );
+          })}
         </div>
       </div>
     </div>

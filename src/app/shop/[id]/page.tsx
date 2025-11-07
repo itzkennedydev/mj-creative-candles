@@ -263,7 +263,7 @@ export default function ProductDetailPage() {
           {/* Left Panel - Product Images */}
           <section 
             ref={imageContainerRef}
-            className="h-[320px] xs:h-[380px] sm:h-[480px] md:h-[600px] lg:h-[calc(90svh-84px)] overflow-hidden rounded-[20px] sm:rounded-[24px] md:rounded-[32px] lg:rounded-[40px] relative lg:overflow-hidden lg:sticky lg:top-[59px] touch-pan-y"
+            className="h-[480px] xs:h-[520px] sm:h-[560px] md:h-[600px] lg:h-[calc(90svh-84px)] overflow-hidden rounded-[20px] sm:rounded-[24px] md:rounded-[32px] lg:rounded-[40px] relative lg:overflow-hidden lg:sticky lg:top-[59px] touch-pan-y"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -452,7 +452,7 @@ export default function ProductDetailPage() {
           )}
 
         {/* Right Panel - Product Details */}
-        <div className="md:h-[600px] lg:h-[calc(90svh-84px)] md:flex md:flex-col md:items-center md:justify-center lg:w-full relative lg:sticky lg:top-[59px]">
+        <div className="min-h-[600px] md:h-[600px] lg:h-[calc(90svh-84px)] md:flex md:flex-col md:items-center md:justify-center lg:w-full relative lg:sticky lg:top-[59px]">
           <div className="w-full">
             <div className="max-w-[438px] mx-auto md:max-w-[unset] md:mx-[unset] md:w-full">
               <section className="pt-[24px] sm:pt-[28px] md:pt-0 text-black/[0.72] md:w-full">
