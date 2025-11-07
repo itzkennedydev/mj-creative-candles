@@ -72,26 +72,72 @@ export async function PUT(
       );
     }
     
-    const body = await request.json() as { status?: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled'; notes?: string; archived?: boolean };
+    const { id } = await params;
+    
+    // Validate order ID format to prevent invalid ObjectId errors
+    if (!id || !ObjectId.isValid(id)) {
+      console.error(`[PUT /api/orders/${id}] Invalid order ID format: ${id}`);
+      return NextResponse.json(
+        { error: 'Invalid order ID format' },
+        { status: 400 }
+      );
+    }
+
+    // Parse request body - handle both mobile and desktop formats
+    let body: { status?: string; notes?: string; archived?: boolean };
+    try {
+      body = await request.json() as { status?: string; notes?: string; archived?: boolean };
+    } catch (parseError) {
+      console.error(`[PUT /api/orders/${id}] Failed to parse request body:`, parseError);
+      return NextResponse.json(
+        { error: 'Invalid request body format' },
+        { status: 400 }
+      );
+    }
+
     const { status, notes, archived } = body;
+
+    // Validate status if provided
+    const validStatuses = ['pending', 'processing', 'ready_for_pickup', 'shipped', 'delivered', 'cancelled', 'paid', 'payment_failed'];
+    if (status && !validStatuses.includes(status)) {
+      console.error(`[PUT /api/orders/${id}] Invalid status: ${status}`);
+      return NextResponse.json(
+        { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      );
+    }
 
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const ordersCollection = db.collection<Order>('orders');
 
-    const { id } = await params;
+    // CRITICAL: Verify order exists BEFORE attempting update
+    // This prevents any accidental order creation
+    const existingOrder = await ordersCollection.findOne({ _id: new ObjectId(id) });
     
-    // Fetch the order to calculate score if marking as delivered
-    let order: Order | null = null;
-    if (status === 'delivered') {
-      order = await ordersCollection.findOne({ _id: new ObjectId(id) });
+    if (!existingOrder) {
+      console.error(`[PUT /api/orders/${id}] Order not found - cannot update non-existent order`);
+      return NextResponse.json(
+        { error: 'Order not found' },
+        { status: 404 }
+      );
     }
 
-    const updateData: { updatedAt: Date; status?: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled'; notes?: string; archived?: boolean; archivedAt?: Date; completedAt?: Date; score?: number } = {
+    console.log(`[PUT /api/orders/${id}] Updating order ${existingOrder.orderNumber || id} - Status: ${status || 'unchanged'}, Notes: ${notes ? 'provided' : 'none'}, Archived: ${archived !== undefined ? archived : 'unchanged'}`);
+
+    // Fetch the order to calculate score if marking as delivered
+    let order: Order | null = existingOrder;
+    if (status === 'delivered') {
+      order = existingOrder;
+    }
+
+    const updateData: { updatedAt: Date; status?: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed'; notes?: string; archived?: boolean; archivedAt?: Date; completedAt?: Date; score?: number } = {
       updatedAt: new Date()
     };
 
-    if (status) updateData.status = status;
+    if (status) {
+      updateData.status = status as 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed';
+    }
     if (notes !== undefined) updateData.notes = notes;
     if (archived !== undefined) {
       updateData.archived = archived;
@@ -132,7 +178,7 @@ export async function PUT(
       updateData.score = score;
     }
     
-    // Build update operator
+    // Build update operator - use updateOne with explicit filter to ensure we only update existing orders
     const updateOperator: { $set: Record<string, unknown>; $unset?: { archivedAt: 1 } } = { 
       $set: { ...updateData } 
     };
@@ -143,17 +189,23 @@ export async function PUT(
       updateOperator.$unset = { archivedAt: 1 };
     }
     
+    // Use updateOne with explicit _id filter - this will NEVER create a new document
     const result = await ordersCollection.updateOne(
       { _id: new ObjectId(id) },
       updateOperator
     );
 
     if (result.matchedCount === 0) {
+      // This should never happen since we verified the order exists above
+      // But handle it just in case of race conditions
+      console.error(`[PUT /api/orders/${id}] Order was not found during update (race condition?)`);
       return NextResponse.json(
-        { error: 'Order not found' },
+        { error: 'Order not found during update' },
         { status: 404 }
       );
     }
+
+    console.log(`[PUT /api/orders/${id}] Successfully updated order - Modified: ${result.modifiedCount > 0}`);
 
     return NextResponse.json({
       success: true,
@@ -161,7 +213,16 @@ export async function PUT(
     });
 
   } catch (error) {
-    console.error('Error updating order:', error);
+    console.error(`[PUT /api/orders/${await params.then(p => p.id)}] Error updating order:`, error);
+    
+    // If it's an ObjectId error, return a more helpful message
+    if (error instanceof Error && error.message.includes('ObjectId')) {
+      return NextResponse.json(
+        { error: 'Invalid order ID format' },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to update order' },
       { status: 500 }
