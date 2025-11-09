@@ -4,6 +4,7 @@ import clientPromise from '~/lib/mongodb';
 import type { Order } from '~/lib/order-types';
 import { ObjectId } from 'mongodb';
 import { authenticateRequest } from '~/lib/auth';
+import { sendOrderConfirmationEmail } from '~/lib/email-service';
 
 export async function GET(
   request: NextRequest,
@@ -131,12 +132,16 @@ export async function PUT(
       order = existingOrder;
     }
 
-    const updateData: { updatedAt: Date; status?: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed'; notes?: string; archived?: boolean; archivedAt?: Date; completedAt?: Date; score?: number } = {
+    const updateData: { updatedAt: Date; status?: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed'; notes?: string; archived?: boolean; archivedAt?: Date; completedAt?: Date; score?: number; paidAt?: Date } = {
       updatedAt: new Date()
     };
 
     if (status) {
       updateData.status = status as 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed';
+      // Set paidAt timestamp when status is changed to 'paid'
+      if (status === 'paid' && existingOrder.status !== 'paid') {
+        updateData.paidAt = new Date();
+      }
     }
     if (notes !== undefined) updateData.notes = notes;
     if (archived !== undefined) {
@@ -206,6 +211,36 @@ export async function PUT(
     }
 
     console.log(`[PUT /api/orders/${id}] Successfully updated order - Modified: ${result.modifiedCount > 0}`);
+
+    // If status was changed to 'paid', send confirmation emails (same as Stripe webhook)
+    if (status === 'paid' && existingOrder.status !== 'paid') {
+      // Fetch the updated order to send emails
+      const updatedOrder = await ordersCollection.findOne({ _id: new ObjectId(id) });
+      
+      if (updatedOrder && !updatedOrder.emailsSent) {
+        console.log(`[PUT /api/orders/${id}] Order status changed to 'paid' - sending confirmation emails`);
+        
+        try {
+          const emailSent = await sendOrderConfirmationEmail(updatedOrder);
+          
+          if (emailSent) {
+            // Mark emails as sent to prevent duplicates
+            await ordersCollection.updateOne(
+              { _id: new ObjectId(id) },
+              { $set: { emailsSent: true, emailsSentAt: new Date() } }
+            );
+            console.log(`[PUT /api/orders/${id}] ✅ Confirmation emails sent successfully`);
+          } else {
+            console.warn(`[PUT /api/orders/${id}] ⚠️  Failed to send confirmation emails - email function returned false`);
+          }
+        } catch (emailError) {
+          console.error(`[PUT /api/orders/${id}] ✗ Error sending confirmation emails:`, emailError);
+          // Don't fail the order update if email fails - order was successfully updated
+        }
+      } else if (updatedOrder?.emailsSent) {
+        console.log(`[PUT /api/orders/${id}] Order already had emails sent, skipping duplicate`);
+      }
+    }
 
     return NextResponse.json({
       success: true,

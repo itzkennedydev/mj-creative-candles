@@ -10,6 +10,7 @@ import QueryProvider from "~/lib/query-client";
 import Script from "next/script";
 import { ConditionalLayout } from "../components/layout/conditional-layout";
 import { generateSEOTags } from "~/lib/seo";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = generateSEOTags({
   title: "Stitch, Please! | Custom Embroidery & Design Services",
@@ -68,6 +69,7 @@ export default function RootLayout({
           src="https://www.instagram.com/embed.js"
           strategy="lazyOnload"
         />
+        <Analytics />
       </body>
     </html>
   );
