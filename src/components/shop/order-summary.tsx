@@ -53,7 +53,7 @@ export function OrderSummary() {
   }, []);
 
   return (
-    <div className="bg-gray-50 rounded-lg p-6 md:p-8">
+    <div className="bg-gray-50 rounded-xl md:rounded-2xl p-6 md:p-8">
       <h2 className="text-xl md:text-2xl font-light text-gray-900 mb-6 md:mb-8">Order Summary</h2>
       
       {/* Cart Items */}

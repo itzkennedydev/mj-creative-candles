@@ -354,9 +354,14 @@ export function CheckoutForm() {
                 suppressHydrationWarning
               />
               {cartItems.some(item => item.product.requiresBabyClothes) && (
-                <p className="mt-2 text-xs text-gray-500">
-                  💡 <strong>Mama Keepsake Sweatshirt:</strong> Looking for a different sweatshirt color? Just let us know here! Please bring your baby clothes within {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days of placing your order.
-                </p>
+                <div className="mt-4 p-3 sm:p-4 bg-[#FFF4E6] border border-[#FF8C00] rounded-md">
+                  <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold text-[#CC6600] mb-1">
+                    Don&apos;t forget to bring your baby clothes!
+                  </p>
+                  <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-[#B35900]">
+                    Please bring your baby clothes within {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days of placing your order.
+                  </p>
+                </div>
               )}
             </div>
           </div>

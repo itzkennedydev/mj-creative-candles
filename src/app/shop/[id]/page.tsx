@@ -626,11 +626,11 @@ export default function ProductDetailPage() {
 
                     {/* Special Instructions */}
                     {product.requiresBabyClothes && (
-                      <div className="mt-5 sm:mt-6 bg-black/[0.03] rounded-[20px] sm:rounded-[24px] p-3 sm:p-4">
-                        <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold text-black/[0.72] mb-1">
+                      <div className="mt-5 sm:mt-6 bg-[#FFF4E6] border border-[#FF8C00] rounded-[20px] sm:rounded-[24px] p-3 sm:p-4">
+                        <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold text-[#CC6600] mb-1">
                           Don&apos;t forget to bring your baby clothes!
                         </p>
-                        <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-black/[0.44]">
+                        <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-[#B35900]">
                           Please bring your baby clothes within {product.babyClothesDeadlineDays ?? 5} days of placing your order.
                         </p>
                       </div>

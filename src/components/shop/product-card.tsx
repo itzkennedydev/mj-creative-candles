@@ -343,13 +343,10 @@ export function ProductCard({ product }: ProductCardProps) {
             
             {/* Special Instructions for Mama Keepsake Sweatshirt */}
             {product.requiresBabyClothes && (
-              <div className="mt-3 p-3 bg-pink-50 border border-pink-200 rounded-md">
-                <p className="text-sm font-medium text-pink-900 mb-1">Don&apos;t forget to bring your baby clothes!</p>
-                <p className="text-xs text-pink-800">
+              <div className="mt-3 p-3 bg-[#FFF4E6] border border-[#FF8C00] rounded-md">
+                <p className="text-sm font-medium text-[#CC6600] mb-1">Don&apos;t forget to bring your baby clothes!</p>
+                <p className="text-xs text-[#B35900]">
                     Please bring your baby clothes within {product.babyClothesDeadlineDays ?? 5} days of placing your order.
-                  {product.colors && product.colors.length > 0 && (
-                    <span className="block mt-1">Looking for a different color? Just let us know in the order notes during checkout!</span>
-                  )}
                 </p>
               </div>
             )}
