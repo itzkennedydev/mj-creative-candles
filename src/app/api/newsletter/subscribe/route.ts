@@ -14,6 +14,13 @@ export interface NewsletterSubscription {
 }
 
 export async function POST(request: NextRequest) {
+  // Newsletter subscription is currently disabled to prevent bot submissions
+  return NextResponse.json(
+    { error: 'Newsletter subscription is currently unavailable' },
+    { status: 503 }
+  );
+  
+  /* DISABLED - Newsletter subscription temporarily removed to prevent bot emails
   try {
     const { email } = await request.json();
     
@@ -104,5 +111,6 @@ export async function POST(request: NextRequest) {
   } finally {
     await client.close();
   }
+  */
 }
 
