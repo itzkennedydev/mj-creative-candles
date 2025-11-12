@@ -12,6 +12,7 @@ import { useToast } from "~/lib/toast-context";
 import { useQuery } from "@tanstack/react-query";
 import type { Product } from "~/lib/types";
 import { getOptimizedImageUrl } from "~/lib/types";
+import { trackViewItem } from "~/lib/analytics";
 
 async function fetchProduct(id: string): Promise<Product> {
   const response = await fetch(`/api/products/${id}`);
@@ -85,6 +86,13 @@ export default function ProductDetailPage() {
     enabled: !!productId,
     retry: 1,
   });
+
+  // Track product view analytics
+  useEffect(() => {
+    if (product) {
+      trackViewItem(product.id ?? '', product.name, product.price);
+    }
+  }, [product]);
 
   // Get all images
   const getImageUrl = (imageId: string, dataUri: string) => {

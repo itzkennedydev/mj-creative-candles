@@ -244,18 +244,18 @@ function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, onCategoryC
           {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => {
             const isSelected = selectedSizes.has(size);
             return (
-              <Button
-                key={size}
+            <Button
+              key={size}
                 onClick={() => toggleSize(size)}
-                variant="outline"
+              variant="outline"
                 className={`px-[10px] sm:px-[12px] py-[6px] sm:py-[8px] rounded-[8px] text-[12px] sm:text-[14px] leading-[130%] transition-all duration-[0.25s] border-[2px] ${
                   isSelected
                     ? 'bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] border-[#74CADC]'
                     : 'bg-black/[0.03] hover:bg-black/[0.06] text-black/[0.72] hover:border-black/[0.12] border-black/[0.12]'
                 }`}
-              >
-                {size}
-              </Button>
+            >
+              {size}
+            </Button>
             );
           })}
         </div>

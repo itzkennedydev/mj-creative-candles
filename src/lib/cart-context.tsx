@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { CartItem, Product } from "./types";
+import { trackAddToCart } from "./analytics";
 
 interface CartContextType {
   items: CartItem[];
@@ -32,6 +33,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addItem = (product: Product, quantity: number, selectedSize?: string, selectedColor?: string, customColorValue?: string) => {
+    // Calculate price with size surcharge
+    const sizeSurcharge = selectedSize === 'XXL' ? 3 : selectedSize === '3XL' ? 5 : 0;
+    const itemPrice = product.price + sizeSurcharge;
+    
+    // Track analytics
+    trackAddToCart(product.id ?? '', product.name, itemPrice);
+    
     setItems(prev => {
       const existingItem = prev.find(item => 
         item.product.id === product.id && 

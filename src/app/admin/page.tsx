@@ -20,7 +20,9 @@ import {
   Activity,
   Archive,
   TrendingUp,
-  Trophy
+  Trophy,
+  DollarSign,
+  Calendar
 } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useProducts } from "~/lib/products-context";
@@ -81,6 +83,11 @@ export default function AdminPage() {
   const [archiveSearchQuery, setArchiveSearchQuery] = useState("");
   const archiveOrdersPerPage = 20;
   
+  // Revenue chart month selection
+  const [selectedRevenuePeriod, setSelectedRevenuePeriod] = useState<string>(`${new Date().getFullYear()}-${new Date().getMonth()}`);
+  // Analytics tabs
+  const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<'days' | 'products' | 'customers'>('days');
+  
   // Extract data from query result
   const orders = ordersData?.orders ?? [];
   const totalPages = ordersData?.totalPages ?? 1;
@@ -118,6 +125,134 @@ export default function AdminPage() {
   });
 
   const allOrdersForBurndown = burndownOrdersData?.orders ?? [];
+  
+  // Fetch all orders for revenue calculations
+  const { data: revenueOrdersData, isLoading: revenueLoading } = useQuery({
+    queryKey: ['revenue-orders'],
+    queryFn: async () => {
+      const token = sessionStorage.getItem('admin_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Fetch all orders by paginating through all pages
+      let allOrders: Order[] = [];
+      let currentPage = 1;
+      let totalPages = 1;
+      const limit = 1000; // Fetch 1000 at a time
+
+      do {
+        const params = new URLSearchParams({
+          page: currentPage.toString(),
+          limit: limit.toString(),
+        });
+
+        const response = await fetch(`/api/orders?${params}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders');
+        }
+        
+        const data = await response.json() as { success: boolean; orders: Order[]; total: number; totalPages: number; currentPage: number };
+        allOrders = [...allOrders, ...(data.orders ?? [])];
+        totalPages = data.totalPages ?? 1;
+        currentPage++;
+      } while (currentPage <= totalPages);
+
+      return {
+        success: true,
+        orders: allOrders,
+        total: allOrders.length,
+        totalPages: 1,
+        currentPage: 1
+      };
+    },
+    enabled: isAuthenticated && activeSection === 'revenue',
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const allOrdersForRevenue = revenueOrdersData?.orders ?? [];
+  
+  // Fetch analytics data
+  const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
+    queryKey: ['analytics', selectedRevenuePeriod],
+    queryFn: async () => {
+      const token = sessionStorage.getItem('admin_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Determine period for analytics API
+      let period = 'all';
+      if (selectedRevenuePeriod !== 'all-time') {
+        const parts = selectedRevenuePeriod.split('-').map(Number);
+        const year = parts[0] ?? new Date().getFullYear();
+        const month = parts[1] ?? new Date().getMonth();
+        const selectedDate = new Date(year, month, 1);
+        const today = new Date();
+        const daysDiff = Math.floor((today.getTime() - selectedDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysDiff <= 7) {
+          period = 'week';
+        } else if (daysDiff <= 30) {
+          period = 'month';
+        } else if (daysDiff <= 365) {
+          period = 'year';
+        }
+      }
+
+      const response = await fetch(`/api/orders/analytics?period=${period}&groupBy=day`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics');
+      }
+      
+      return response.json() as Promise<{
+        period: string;
+        dateRange: { from: string; to: string };
+        summary: {
+          totalRevenue: number;
+          totalOrders: number;
+          avgOrderValue: number;
+          maxOrderValue: number;
+          minOrderValue: number;
+        };
+        revenueOverTime: Array<{ _id: Record<string, number> | number; revenue: number; orderCount: number; avgOrderValue: number }>;
+        topProducts: Array<{
+          name: string;
+          revenue: number;
+          unitsSold: number;
+          orderCount: number;
+          avgPrice: number;
+          popularSizes: Array<{ size: string; quantity: number }>;
+          popularColors: Array<{ color: string; quantity: number }>;
+        }>;
+        hourlyPattern: Array<{ hour: number; time: string; revenue: number; orderCount: number }>;
+        dayOfWeekPattern: Array<{ day: string; revenue: number; orderCount: number; avgOrderValue: number }>;
+        topCustomers: Array<{
+          email: string;
+          totalSpent: number;
+          orderCount: number;
+          avgOrderValue: number;
+          customerLifetimeValue: number;
+          daysSinceFirstOrder: number;
+          daysSinceLastOrder: number;
+        }>;
+      }>;
+    },
+    enabled: isAuthenticated && activeSection === 'revenue',
+    staleTime: 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes
+  });
   
   // Fetch archived orders for archive tab
   const { data: archivedOrdersData, isLoading: archivedLoading, refetch: refetchArchived } = useQuery({
@@ -240,6 +375,13 @@ export default function AdminPage() {
       badge: null
     },
     { 
+      id: "revenue", 
+      label: "Revenue", 
+      icon: DollarSign,
+      description: "Profit & Analytics",
+      badge: null
+    },
+    { 
       id: "orders", 
       label: "Orders", 
       icon: Package,
@@ -268,13 +410,6 @@ export default function AdminPage() {
       label: "Products", 
       icon: Plus,
       description: "Inventory Management",
-      badge: null
-    },
-    { 
-      id: "gallery", 
-      label: "Gallery", 
-      icon: ImageIcon,
-      description: "Asset Library",
       badge: null
     },
     { 
@@ -2567,6 +2702,517 @@ export default function AdminPage() {
     );
   };
 
+  const renderRevenue = () => {
+    // Use all orders fetched specifically for revenue calculations
+    // Include delivered, paid, and ready_for_pickup orders (all orders that have been paid)
+    const allDeliveredOrders = allOrdersForRevenue.filter(order => 
+      order.status === 'delivered' || 
+      order.status === 'paid' || 
+      order.status === 'ready_for_pickup'
+    );
+    
+    if (revenueLoading) {
+      return (
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#74CADC] mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading revenue data...</p>
+          </div>
+        </div>
+      );
+    }
+    
+    // Calculate total revenue
+    const totalRevenue = allDeliveredOrders.reduce((sum, order) => sum + (order.total ?? 0), 0);
+    
+    // Helper function to get order date (use paidAt if available, otherwise createdAt)
+    const getOrderDate = (order: Order): Date => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const paidAtValue = order.paidAt;
+      if (paidAtValue) {
+        return paidAtValue instanceof Date ? paidAtValue : new Date(String(paidAtValue));
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const createdAtValue = order.createdAt;
+      return createdAtValue instanceof Date ? createdAtValue : new Date(String(createdAtValue));
+    };
+    
+    // Calculate revenue by date and track products
+    const revenueByDate: Record<string, number> = {};
+    const productsByDate: Record<string, Record<string, number>> = {}; // date -> productName -> quantity
+    allDeliveredOrders.forEach(order => {
+      const orderDate = getOrderDate(order);
+      const date = orderDate.toISOString().split('T')[0] ?? '';
+      revenueByDate[date] = (revenueByDate[date] ?? 0) + (order.total ?? 0);
+      
+      // Track products for this date
+      if (!productsByDate[date]) {
+        productsByDate[date] = {};
+      }
+      const dateProducts = productsByDate[date];
+      if (dateProducts) {
+        order.items?.forEach(item => {
+          const productName = item.productName ?? 'Unknown Product';
+          dateProducts[productName] = (dateProducts[productName] ?? 0) + (item.quantity ?? 1);
+        });
+      }
+    });
+    
+    // Get current date range
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // This Week: Last 7 days
+    const thisWeek = new Date(today);
+    thisWeek.setDate(today.getDate() - 7);
+    
+    // This Month: Last 30 days
+    const thisMonth = new Date(today);
+    thisMonth.setDate(today.getDate() - 30);
+    thisMonth.setHours(0, 0, 0, 0);
+    
+    // This Year: Last 12 months
+    const thisYear = new Date(today);
+    thisYear.setMonth(today.getMonth() - 12);
+    thisYear.setHours(0, 0, 0, 0);
+    
+    // Calculate revenue for different periods
+    const revenueThisWeek = allDeliveredOrders
+      .filter(order => {
+        const orderDate = getOrderDate(order);
+        orderDate.setHours(0, 0, 0, 0);
+        return orderDate >= thisWeek;
+      })
+      .reduce((sum, order) => sum + (order.total ?? 0), 0);
+    
+    const revenueThisMonth = allDeliveredOrders
+      .filter(order => {
+        const orderDate = getOrderDate(order);
+        orderDate.setHours(0, 0, 0, 0);
+        return orderDate >= thisMonth;
+      })
+      .reduce((sum, order) => sum + (order.total ?? 0), 0);
+    
+    const revenueThisYear = allDeliveredOrders
+      .filter(order => {
+        const orderDate = getOrderDate(order);
+        orderDate.setHours(0, 0, 0, 0);
+        return orderDate >= thisYear;
+      })
+      .reduce((sum, order) => sum + (order.total ?? 0), 0);
+    
+    // Calculate selected period revenue and update cards dynamically
+    let displayTotalRevenue = totalRevenue;
+    let displayTotalOrders = allDeliveredOrders.length;
+    const displayThisWeek = revenueThisWeek;
+    const displayThisMonth = revenueThisMonth;
+    const displayThisYear = revenueThisYear;
+    const chartData: Array<{ date: string; revenue: number }> = [];
+    let chartTitle = '';
+    
+    if (selectedRevenuePeriod === 'all-time') {
+      // All time: show last 30 days in chart, cards show all time data
+      chartTitle = 'Daily revenue for the last 30 days';
+      
+      // Show last 30 days
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0] ?? '';
+        chartData.push({
+          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          revenue: revenueByDate[dateStr] ?? 0
+        });
+      }
+    } else {
+      // Specific month selected: update cards to show that month's data
+      const parts = selectedRevenuePeriod.split('-').map(Number);
+      const year = parts[0] ?? new Date().getFullYear();
+      const month = parts[1] ?? new Date().getMonth();
+      const selectedDate = new Date(year, month, 1);
+      const lastDayOfMonth = new Date(year, month + 1, 0);
+      const daysInMonth = lastDayOfMonth.getDate();
+      
+      chartTitle = `Daily revenue for ${selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+      
+      // Calculate revenue for selected month
+      const monthStart = new Date(year, month, 1);
+      monthStart.setHours(0, 0, 0, 0);
+      const monthEnd = new Date(year, month + 1, 0);
+      monthEnd.setHours(23, 59, 59, 999);
+      
+      const monthOrders = allDeliveredOrders.filter(order => {
+        const orderDate = getOrderDate(order);
+        return orderDate >= monthStart && orderDate <= monthEnd;
+      });
+      
+      const monthRevenue = monthOrders.reduce((sum, order) => sum + (order.total ?? 0), 0);
+      
+      // Update cards to show selected month's data
+      displayTotalRevenue = monthRevenue;
+      displayTotalOrders = monthOrders.length;
+      
+      // "This Week" always shows current week (last 7 days from today), regardless of selected month
+      // "This Year" always shows current period, not the selected month
+      // "This Month" will be hidden when viewing a specific month
+      
+      // Chart data for selected month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dateStr = date.toISOString().split('T')[0] ?? '';
+        chartData.push({
+          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          revenue: revenueByDate[dateStr] ?? 0
+        });
+      }
+    }
+    
+    // Generate available months/years from order data
+    const availableMonths: Array<{ value: string; label: string }> = [
+      { value: 'all-time', label: 'All Time' }
+    ];
+    const monthSet = new Set<string>();
+    
+    allDeliveredOrders.forEach(order => {
+      const orderDate = getOrderDate(order);
+      const month = orderDate.getMonth();
+      const year = orderDate.getFullYear();
+      const key = `${year}-${month}`;
+      
+      if (!monthSet.has(key)) {
+        monthSet.add(key);
+        availableMonths.push({
+          value: key,
+          label: orderDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        });
+      }
+    });
+    
+    // Sort by year and month (newest first), but keep "All Time" first
+    availableMonths.sort((a, b) => {
+      if (a.value === 'all-time') return -1;
+      if (b.value === 'all-time') return 1;
+      const partsA = a.value.split('-').map(Number);
+      const partsB = b.value.split('-').map(Number);
+      const yearA = partsA[0] ?? 0;
+      const monthA = partsA[1] ?? 0;
+      const yearB = partsB[0] ?? 0;
+      const monthB = partsB[1] ?? 0;
+      if (yearA !== yearB) return yearB - yearA;
+      return monthB - monthA;
+    });
+    
+    // Add current month if not in list
+    const currentMonthKey = `${today.getFullYear()}-${today.getMonth()}`;
+    if (!monthSet.has(currentMonthKey)) {
+      availableMonths.splice(1, 0, {
+        value: currentMonthKey,
+        label: today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      });
+    }
+    
+    // Get top selling days with top products
+    const topDays = Object.entries(revenueByDate)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5)
+      .map(([date, revenue]) => {
+        // Find top product for this date
+        const dayProducts = productsByDate[date] ?? {};
+        const topProduct = Object.entries(dayProducts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 1) // Get top product only
+          .map(([name, quantity]) => ({ name, quantity }))[0];
+        
+        return {
+          date: new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+          revenue,
+          topProduct
+        };
+      });
+    
+    return (
+      <div className="space-y-6 md:space-y-8">
+        {/* Page Header */}
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Revenue & Profit</h1>
+          <p className="text-gray-600 mt-2 text-sm md:text-base">Track your revenue, profit, and sales analytics</p>
+        </div>
+
+        {/* Revenue Overview Cards */}
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${selectedRevenuePeriod === 'all-time' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 md:gap-6`}>
+          {/* Total Revenue */}
+          <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-5 md:p-6 hover:border-[#74CADC]/30 hover:shadow-sm transition-all duration-200 ease-in-out">
+            <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              ${displayTotalRevenue.toFixed(2)}
+            </div>
+            <p className="text-sm md:text-base font-medium text-gray-900 mb-1">
+              {selectedRevenuePeriod === 'all-time' 
+                ? 'Total Revenue (All Time)' 
+                : `Total Revenue (${(() => {
+                    const parts = selectedRevenuePeriod.split('-').map(Number);
+                    const year = parts[0] ?? new Date().getFullYear();
+                    const month = parts[1] ?? new Date().getMonth();
+                    return new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                  })()})`}
+            </p>
+            <p className="text-xs md:text-sm text-gray-500">{displayTotalOrders} orders</p>
+          </div>
+
+          {/* This Week */}
+          <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-5 md:p-6 hover:border-[#74CADC]/30 hover:shadow-sm transition-all duration-200 ease-in-out">
+            <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              ${displayThisWeek.toFixed(2)}
+            </div>
+            <p className="text-sm md:text-base font-medium text-gray-900 mb-1">This Week</p>
+            <p className="text-xs md:text-sm text-gray-500">Last 7 days</p>
+          </div>
+
+          {/* This Month - Only show when "All Time" is selected */}
+          {selectedRevenuePeriod === 'all-time' && (
+            <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-5 md:p-6 hover:border-[#74CADC]/30 hover:shadow-sm transition-all duration-200 ease-in-out">
+              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                ${displayThisMonth.toFixed(2)}
+              </div>
+              <p className="text-sm md:text-base font-medium text-gray-900 mb-1">This Month</p>
+              <p className="text-xs md:text-sm text-gray-500">Last 30 days</p>
+            </div>
+          )}
+
+          {/* This Year */}
+          <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-5 md:p-6 hover:border-[#74CADC]/30 hover:shadow-sm transition-all duration-200 ease-in-out">
+            <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              ${displayThisYear.toFixed(2)}
+            </div>
+            <p className="text-sm md:text-base font-medium text-gray-900 mb-1">This Year</p>
+            <p className="text-xs md:text-sm text-gray-500">Last 12 months</p>
+          </div>
+        </div>
+
+        {/* Revenue Chart */}
+        <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 md:mb-6">
+            <div className="flex items-center gap-3">
+              <div className="min-w-0">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900">Revenue Trend</h2>
+                <p className="text-xs md:text-sm text-gray-600">
+                  {chartTitle}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedRevenuePeriod}
+                onChange={(e) => {
+                  setSelectedRevenuePeriod(e.target.value);
+                }}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#74CADC] focus:border-[#74CADC] bg-white"
+              >
+                {availableMonths.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="h-64 md:h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis 
+                  dataKey="date" 
+                  stroke="#6b7280"
+                  fontSize={12}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis 
+                  stroke="#6b7280"
+                  fontSize={12}
+                  tickFormatter={(value: number) => `$${value.toFixed(0)}`}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [`$${value.toFixed(2)}`, 'Revenue']}
+                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                />
+                <Bar dataKey="revenue" fill="#74CADC" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Analytics Insights with Tabs */}
+        <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
+          {/* Tab Navigation */}
+          <div className="flex items-center gap-2 mb-6 border-b border-gray-200">
+            <button
+              onClick={() => setActiveAnalyticsTab('days')}
+              className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
+                activeAnalyticsTab === 'days'
+                  ? 'border-[#74CADC] text-[#0A5565]'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Top Selling Days
+            </button>
+            {analyticsData && !analyticsLoading && analyticsData.topProducts && analyticsData.topProducts.length > 0 && (
+              <button
+                onClick={() => setActiveAnalyticsTab('products')}
+                className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
+                  activeAnalyticsTab === 'products'
+                    ? 'border-[#74CADC] text-[#0A5565]'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Top Products
+              </button>
+            )}
+            {analyticsData && !analyticsLoading && analyticsData.topCustomers && analyticsData.topCustomers.length > 0 && (
+              <button
+                onClick={() => setActiveAnalyticsTab('customers')}
+                className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
+                  activeAnalyticsTab === 'customers'
+                    ? 'border-[#74CADC] text-[#0A5565]'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Top Customers
+              </button>
+            )}
+          </div>
+
+          {/* Tab Content */}
+          <div>
+            {/* Top Selling Days Tab */}
+            {activeAnalyticsTab === 'days' && (
+              <div className="space-y-3">
+                {topDays.length > 0 ? (
+                  topDays.map((day, index) => (
+                    <div key={index} className="p-3 md:p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-200 hover:border-[#74CADC]/30 hover:shadow-sm transition-all duration-200">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-9 h-9 md:w-10 md:h-10 bg-[#74CADC] rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base flex-shrink-0">
+                            {index + 1}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm md:text-base font-semibold text-gray-900 truncate">{day.date}</p>
+                            {day.topProduct && (
+                              <p className="text-xs text-gray-500 mt-0.5 truncate">
+                                <span className="font-medium">Top product:</span>{' '}
+                                {day.topProduct.name} ({day.topProduct.quantity} {day.topProduct.quantity === 1 ? 'unit' : 'units'})
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right ml-4 flex-shrink-0">
+                          <p className="text-lg md:text-xl font-bold text-gray-900">${day.revenue.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-8">No revenue data available yet</p>
+                )}
+              </div>
+            )}
+
+            {/* Top Products Tab */}
+            {activeAnalyticsTab === 'products' && analyticsData && !analyticsLoading && analyticsData.topProducts && analyticsData.topProducts.length > 0 && (
+              <div className="space-y-3">
+                {analyticsData.topProducts.map((product, index) => (
+                  <div key={index} className="p-3 md:p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-200 hover:border-[#74CADC]/30 hover:shadow-sm transition-all duration-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-9 h-9 md:w-10 md:h-10 bg-[#74CADC] rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base flex-shrink-0">
+                          {index + 1}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm md:text-base font-semibold text-gray-900 truncate">{product.name}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{product.unitsSold} units • {product.orderCount} orders</p>
+                        </div>
+                      </div>
+                      <div className="text-right ml-4 flex-shrink-0">
+                        <p className="text-lg md:text-xl font-bold text-gray-900">${product.revenue.toFixed(2)}</p>
+                        <p className="text-xs text-gray-500">${product.avgPrice.toFixed(2)} avg</p>
+                      </div>
+                    </div>
+                    {(product.popularSizes.length > 0 || product.popularColors.length > 0) && (
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <div className="flex flex-wrap gap-2">
+                          {product.popularSizes.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-xs font-medium text-gray-500">Sizes:</span>
+                              {product.popularSizes.map((s, i) => (
+                                <span key={i} className="px-2 py-0.5 bg-[#74CADC]/10 text-[#0A5565] rounded-md text-xs font-medium">
+                                  {s.size} ({s.quantity})
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {product.popularColors.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-xs font-medium text-gray-500">Colors:</span>
+                              {product.popularColors.map((c, i) => (
+                                <span key={i} className="px-2 py-0.5 bg-[#74CADC]/10 text-[#0A5565] rounded-md text-xs font-medium">
+                                  {c.color} ({c.quantity})
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Top Customers Tab */}
+            {activeAnalyticsTab === 'customers' && analyticsData && !analyticsLoading && analyticsData.topCustomers && analyticsData.topCustomers.length > 0 && (
+              <div className="space-y-3">
+                {analyticsData.topCustomers.map((customer, index) => (
+                  <div key={index} className="p-3 md:p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-200 hover:border-[#74CADC]/30 hover:shadow-sm transition-all duration-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-9 h-9 md:w-10 md:h-10 bg-[#74CADC] rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base flex-shrink-0">
+                          {index + 1}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm md:text-base font-semibold text-gray-900 truncate">{customer.email}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{customer.orderCount} orders</p>
+                        </div>
+                      </div>
+                      <div className="text-right ml-4 flex-shrink-0">
+                        <p className="text-lg md:text-xl font-bold text-gray-900">${customer.totalSpent.toFixed(2)}</p>
+                        <p className="text-xs text-gray-500">${customer.avgOrderValue.toFixed(2)} avg</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="flex flex-wrap items-center gap-3 text-xs">
+                        <span className="px-2 py-0.5 bg-[#74CADC]/10 text-[#0A5565] rounded-md font-medium">
+                          Lifetime Value: ${customer.customerLifetimeValue.toFixed(2)}
+                        </span>
+                        <span className="text-gray-300">•</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-gray-500">Last order:</span>
+                          <span className="font-medium text-gray-900">
+                            {customer.daysSinceLastOrder === 0 ? 'Today' : `${customer.daysSinceLastOrder} day${customer.daysSinceLastOrder !== 1 ? 's' : ''} ago`}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
+    );
+  };
+
   const renderSettings = () => (
     <div className="space-y-6 md:space-y-8">
       {/* Page Header */}
@@ -2750,13 +3396,21 @@ export default function AdminPage() {
               placeholder="Instructions for customers on how to pickup their orders..."
             />
           </div>
+        </div>
+          </div>
 
-          {/* Burndown Settings */}
-          <div className="border-t border-gray-200 pt-4 md:pt-6 mt-4 md:mt-6">
-            <h3 className="text-base md:text-lg font-bold text-gray-900 mb-3 md:mb-4">Burndown Thresholds</h3>
-            <p className="text-xs md:text-sm text-gray-600 mb-4 break-words">
-              Configure the time thresholds for order urgency classification
-            </p>
+      {/* Burndown Thresholds Settings */}
+      <div className="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 hover:border-gray-300 transition-all duration-200 ease-in-out">
+        <div className="flex items-center gap-3 mb-4 md:mb-6">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Clock className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900">Burndown Thresholds</h2>
+            <p className="text-xs md:text-sm text-gray-600">Configure the time thresholds for order urgency classification</p>
+          </div>
+        </div>
+        <div className="space-y-4 md:space-y-6">
 
             {/* Urgent Threshold */}
             <div className="mb-4">
@@ -2832,7 +3486,6 @@ export default function AdminPage() {
               <p className="text-xs text-gray-500 mt-1 break-words">
                 Orders older than {Math.round(settings.burndownCriticalThreshold / 24)} day{Math.round(settings.burndownCriticalThreshold / 24) !== 1 ? 's' : ''} will be marked as critical
               </p>
-            </div>
           </div>
         </div>
       </div>
@@ -3026,7 +3679,7 @@ export default function AdminPage() {
             {activeSection === "orders" && renderOrders()}
             {activeSection === "burndown" && renderBurndown()}
             {activeSection === "archive" && renderArchive()}
-            {activeSection === "gallery" && renderGallery()}
+            {activeSection === "revenue" && renderRevenue()}
             {activeSection === "settings" && (
               <div className="space-y-8">
                 {renderSettings()}
@@ -3833,3 +4486,4 @@ export default function AdminPage() {
     </div>
   );
 }
+

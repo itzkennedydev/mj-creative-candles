@@ -125,7 +125,7 @@ export async function PUT(
     }
 
     console.log(`[PUT /api/orders/${id}] Updating order ${existingOrder.orderNumber || id} - Status: ${status || 'unchanged'}, Notes: ${notes ? 'provided' : 'none'}, Archived: ${archived !== undefined ? archived : 'unchanged'}`);
-
+    
     // Fetch the order to calculate score if marking as delivered
     let order: Order | null = existingOrder;
     if (status === 'delivered') {
