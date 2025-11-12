@@ -1673,27 +1673,6 @@ export default function AdminPage() {
 
     return (
     <div className="space-y-8">
-        {/* Weekly Score Tracker - Always visible at top */}
-        <div className="bg-[#74CADC] rounded-2xl p-6 text-white shadow-lg">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <Trophy className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-white mb-1">Weekly Performance</h2>
-                <p className="text-sm text-white/90">This week&apos;s average score</p>
-              </div>
-            </div>
-            <div className="text-left sm:text-right flex-shrink-0">
-              <div className="text-4xl font-bold text-white mb-1">{weeklyAverageScore}</div>
-              <div className="text-sm text-white/90">
-                {weeklyTotalOrders} order{weeklyTotalOrders !== 1 ? 's' : ''} delivered
-              </div>
-            </div>
-          </div>
-        </div>
-
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
