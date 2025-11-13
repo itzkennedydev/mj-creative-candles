@@ -16,7 +16,7 @@ export interface Product {
   images?: ProductImage[]; // Array of additional images
   category: string;
   shopType?: 'spirit-wear' | 'regular-shop'; // Type of shop: spirit-wear (UTHS) or regular-shop (Stitch Please)
-  school?: 'moline' | 'united-township' | 'rock-island'; // For spirit-wear: Moline High School (Maroons), United Township High School (Panthers), or Rock Island High School (Rocks)
+  school?: 'moline' | 'united-township' | 'rock-island' | 'north'; // For spirit-wear: Moline High School (Maroons), United Township High School (Panthers), Rock Island High School (Rocks), or Davenport North High School (Wildcats)
   inStock: boolean;
   sizes?: string[];
   colors?: string[];

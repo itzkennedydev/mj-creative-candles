@@ -13,7 +13,7 @@ interface ProductGridProps {
 
 export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selectedCategory = "All", selectedSizes = new Set() }: ProductGridProps) {
   const { data: products = [], isLoading, error } = useProductsQuery();
-  const [activeSchoolTab, setActiveSchoolTab] = useState<'moline' | 'united-township' | 'rock-island' | 'all'>('all');
+  const [activeSchoolTab, setActiveSchoolTab] = useState<'moline' | 'united-township' | 'rock-island' | 'north' | 'all'>('all');
   
   // Helper function to map category names to product categories
   const mapCategoryToProductCategory = (category: string): string | null => {
@@ -63,11 +63,13 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
       moline: Product[];
       'united-township': Product[];
       'rock-island': Product[];
+      north: Product[];
       other: Product[];
     } = {
       moline: [],
       'united-township': [],
       'rock-island': [],
+      north: [],
       other: []
     };
     
@@ -78,6 +80,8 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
         grouped['united-township'].push(product);
       } else if (product.school === 'rock-island') {
         grouped['rock-island'].push(product);
+      } else if (product.school === 'north') {
+        grouped.north.push(product);
       } else {
         grouped.other.push(product);
       }
@@ -132,7 +136,8 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
     const hasMoline = grouped.moline.length > 0;
     const hasUnitedTownship = grouped['united-township'].length > 0;
     const hasRockIsland = grouped['rock-island'].length > 0;
-    const hasMultiple = [hasMoline, hasUnitedTownship, hasRockIsland].filter(Boolean).length > 1;
+    const hasNorth = grouped.north.length > 0;
+    const hasMultiple = [hasMoline, hasUnitedTownship, hasRockIsland, hasNorth].filter(Boolean).length > 1;
     
     // Determine which products to show based on active tab
     const getProductsToShow = () => {
@@ -142,9 +147,11 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
         return grouped['united-township'];
       } else if (activeSchoolTab === 'rock-island') {
         return grouped['rock-island'];
+      } else if (activeSchoolTab === 'north') {
+        return grouped.north;
       } else {
         // Show all products
-        return [...grouped.moline, ...grouped['united-township'], ...grouped['rock-island'], ...grouped.other];
+        return [...grouped.moline, ...grouped['united-township'], ...grouped['rock-island'], ...grouped.north, ...grouped.other];
       }
     };
     
@@ -153,7 +160,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
     return (
       <div className="space-y-6">
         {/* School Tabs */}
-        {(hasMoline || hasUnitedTownship || hasRockIsland) && (
+        {(hasMoline || hasUnitedTownship || hasRockIsland || hasNorth) && (
           <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 sm:gap-3 border-b border-black/[0.06] pb-3 sm:pb-4">
             {hasMultiple && (
               <button
@@ -234,6 +241,29 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
                   />
                 </div>
                 <span className="whitespace-nowrap">Rock Island High School</span>
+              </button>
+            )}
+            {hasNorth && (
+              <button
+                onClick={() => setActiveSchoolTab('north')}
+                className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
+                  activeSchoolTab === 'north'
+                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
+                    : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
+                }`}
+              >
+                <div className="relative w-5 h-5 sm:w-5 sm:h-5 flex-shrink-0">
+                  <Image
+                    src="/schools/North.png"
+                    alt="Wildcats"
+                    fill
+                    className="object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+                <span className="whitespace-nowrap">Wildcats</span>
               </button>
             )}
           </div>
