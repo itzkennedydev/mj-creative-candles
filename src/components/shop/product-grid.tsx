@@ -9,17 +9,20 @@ interface ProductGridProps {
   searchQuery?: string;
   selectedCategory?: string;
   selectedSizes?: Set<string>;
+  selectedPriceRanges?: Set<string>;
 }
 
-export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selectedCategory = "All", selectedSizes = new Set() }: ProductGridProps) {
+export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selectedCategory = "All", selectedSizes = new Set(), selectedPriceRanges = new Set() }: ProductGridProps) {
   const { data: products = [], isLoading, error } = useProductsQuery();
   const [activeSchoolTab, setActiveSchoolTab] = useState<'moline' | 'united-township' | 'rock-island' | 'north' | 'all'>('all');
   
   // Helper function to map category names to product categories
   const mapCategoryToProductCategory = (category: string): string | null => {
     const categoryMap: Record<string, string> = {
-      'T-Shirts': 'Apparel',
-      'Hoodies': 'Apparel',
+      'Tops': 'Apparel',
+      'Bottoms': 'Apparel',
+      'T-Shirts': 'Apparel', // Legacy support
+      'Hoodies': 'Apparel', // Legacy support
       'Accessories': 'Accessories',
       'Limited Edition': 'Apparel',
       'Embroidery': 'Apparel',
@@ -39,22 +42,54 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // Filter by category
+    // Filter by category - be specific, no fallback
     const matchesCategory = selectedCategory === "All" || 
-      (selectedCategory === 'T-Shirts' && product.category === 'Apparel' && (product.name.toLowerCase().includes('shirt') || product.name.toLowerCase().includes('tee'))) ||
-      (selectedCategory === 'Hoodies' && product.category === 'Apparel' && product.name.toLowerCase().includes('hoodie')) ||
-      (selectedCategory === 'Accessories' && product.category === 'Accessories') ||
-      (selectedCategory === 'Limited Edition' && product.category === 'Apparel') ||
-      (selectedCategory === 'Embroidery' && product.category === 'Apparel') ||
-      (selectedCategory === 'Custom Apparel' && product.category === 'Apparel') ||
-      (selectedCategory === 'Baby Items' && product.category === 'Apparel' && (product.name.toLowerCase().includes('baby') || product.name.toLowerCase().includes('mama'))) ||
-      (mapCategoryToProductCategory(selectedCategory) === product.category);
+      // Tops: includes t-shirts, hoodies, crewnecks, sweatshirts, jackets, etc.
+      (selectedCategory === 'Tops' && product.category === 'Apparel' && (product.name.toLowerCase().includes('shirt') || product.name.toLowerCase().includes('tee') || product.name.toLowerCase().includes('t-shirt') || product.name.toLowerCase().includes('hoodie') || product.name.toLowerCase().includes('crewneck') || product.name.toLowerCase().includes('sweatshirt') || product.name.toLowerCase().includes('jacket') || product.name.toLowerCase().includes('sweater')) && !product.name.toLowerCase().includes('beanie') && !product.name.toLowerCase().includes('hat') && !product.name.toLowerCase().includes('pant') && !product.name.toLowerCase().includes('short') && !product.name.toLowerCase().includes('bottom')) ||
+      // Legacy support for T-Shirts
+      (selectedCategory === 'T-Shirts' && product.category === 'Apparel' && (product.name.toLowerCase().includes('shirt') || product.name.toLowerCase().includes('tee') || product.name.toLowerCase().includes('t-shirt')) && !product.name.toLowerCase().includes('hoodie') && !product.name.toLowerCase().includes('crewneck') && !product.name.toLowerCase().includes('sweatshirt') && !product.name.toLowerCase().includes('beanie') && !product.name.toLowerCase().includes('hat')) ||
+      // Bottoms: includes pants, shorts, leggings, etc.
+      (selectedCategory === 'Bottoms' && product.category === 'Apparel' && (product.name.toLowerCase().includes('pant') || product.name.toLowerCase().includes('short') || product.name.toLowerCase().includes('legging') || product.name.toLowerCase().includes('bottom') || product.name.toLowerCase().includes('sweatpant'))) ||
+      // Legacy support for Hoodies
+      (selectedCategory === 'Hoodies' && product.category === 'Apparel' && (product.name.toLowerCase().includes('hoodie') || product.name.toLowerCase().includes('crewneck') || product.name.toLowerCase().includes('sweatshirt')) && !product.name.toLowerCase().includes('beanie') && !product.name.toLowerCase().includes('hat') && !product.name.toLowerCase().includes('t-shirt') && !product.name.toLowerCase().includes('tee')) ||
+      (selectedCategory === 'Accessories' && (product.category === 'Accessories' || product.name.toLowerCase().includes('beanie') || product.name.toLowerCase().includes('hat') || product.name.toLowerCase().includes('bag') || product.name.toLowerCase().includes('accessory'))) ||
+      (selectedCategory === 'Limited Edition' && product.category === 'Apparel' && (product.name.toLowerCase().includes('limited') || product.name.toLowerCase().includes('edition'))) ||
+      (selectedCategory === 'Embroidery' && product.category === 'Apparel' && product.name.toLowerCase().includes('embroider')) ||
+      (selectedCategory === 'Custom Apparel' && product.category === 'Apparel' && !product.name.toLowerCase().includes('spirit') && !product.name.toLowerCase().includes('limited') && !product.name.toLowerCase().includes('edition') && !product.name.toLowerCase().includes('hoodie') && !product.name.toLowerCase().includes('crewneck') && !product.name.toLowerCase().includes('sweatshirt') && !product.name.toLowerCase().includes('shirt') && !product.name.toLowerCase().includes('tee')) ||
+      (selectedCategory === 'Baby Items' && product.category === 'Apparel' && (product.name.toLowerCase().includes('baby') || product.name.toLowerCase().includes('mama')));
     
     // Filter by size - if sizes are selected, product must have at least one of the selected sizes
     const matchesSize = selectedSizes.size === 0 || 
       (product.sizes && product.sizes.some(size => selectedSizes.has(size)));
     
-    return matchesShopType && matchesSearch && matchesCategory && matchesSize;
+    // Filter by price range - check base price and all possible sizes (with surcharges)
+    const matchesPriceRange = selectedPriceRanges.size === 0 || (() => {
+      const basePrice = product.price;
+      const prices = new Set<number>();
+      
+      // Add base price for all sizes
+      if (product.sizes && product.sizes.length > 0) {
+        product.sizes.forEach(size => {
+          const sizeSurcharge = size === 'XXL' ? 3 : size === '3XL' ? 5 : 0;
+          prices.add(basePrice + sizeSurcharge);
+        });
+      } else {
+        prices.add(basePrice);
+      }
+      
+      // Check if any price matches any selected range
+      return Array.from(prices).some(price => {
+        return Array.from(selectedPriceRanges).some(range => {
+          if (range === 'Under $25') return price < 25;
+          if (range === '$25 - $50') return price >= 25 && price <= 50;
+          if (range === '$50 - $100') return price > 50 && price <= 100;
+          if (range === 'Over $100') return price > 100;
+          return false;
+        });
+      });
+    })();
+    
+    return matchesShopType && matchesSearch && matchesCategory && matchesSize && matchesPriceRange;
   });
   
   // For spirit-wear, group by school

@@ -14,6 +14,7 @@ export default function ShopPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
+  const [selectedPriceRanges, setSelectedPriceRanges] = useState<Set<string>>(new Set());
   const prefetchProducts = usePrefetchProducts();
 
   // Prefetch products as soon as component mounts
@@ -106,8 +107,10 @@ export default function ShopPage() {
                   shopType={activeShop} 
                   onCategoryChange={setSelectedCategory}
                   onSizeChange={setSelectedSizes}
+                  onPriceRangeChange={setSelectedPriceRanges}
                   selectedCategory={selectedCategory}
                   selectedSizes={selectedSizes}
+                  selectedPriceRanges={selectedPriceRanges}
                 />
               </div>
             </aside>
@@ -137,8 +140,10 @@ export default function ShopPage() {
                       shopType={activeShop} 
                       onCategoryChange={setSelectedCategory}
                       onSizeChange={setSelectedSizes}
+                      onPriceRangeChange={setSelectedPriceRanges}
                       selectedCategory={selectedCategory}
                       selectedSizes={selectedSizes}
+                      selectedPriceRanges={selectedPriceRanges}
                     />
                   </div>
                 </div>
@@ -159,6 +164,7 @@ export default function ShopPage() {
                 searchQuery={searchQuery}
                 selectedCategory={selectedCategory}
                 selectedSizes={selectedSizes}
+                selectedPriceRanges={selectedPriceRanges}
               />
             </div>
           </div>
@@ -176,13 +182,15 @@ interface ShopSidebarNeoProps {
   shopType: string;
   selectedCategory: string;
   selectedSizes: Set<string>;
+  selectedPriceRanges: Set<string>;
   onCategoryChange: (category: string) => void;
   onSizeChange: (sizes: Set<string>) => void;
+  onPriceRangeChange: (ranges: Set<string>) => void;
 }
 
-function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, onCategoryChange, onSizeChange }: ShopSidebarNeoProps) {
+function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, selectedPriceRanges, onCategoryChange, onSizeChange, onPriceRangeChange }: ShopSidebarNeoProps) {
   const categories = shopType === 'spirit-wear' 
-    ? ['All', 'T-Shirts', 'Hoodies', 'Accessories', 'Limited Edition']
+    ? ['All', 'Tops', 'Bottoms', 'Accessories', 'Limited Edition']
     : ['All', 'Embroidery', 'Custom Apparel', 'Baby Items', 'Accessories'];
 
   // Toggle size selection
@@ -194,6 +202,17 @@ function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, onCategoryC
       newSet.add(size);
     }
     onSizeChange(newSet);
+  };
+
+  // Toggle price range selection
+  const togglePriceRange = (range: string) => {
+    const newSet = new Set(selectedPriceRanges);
+    if (newSet.has(range)) {
+      newSet.delete(range);
+    } else {
+      newSet.add(range);
+    }
+    onPriceRangeChange(newSet);
   };
 
   return (
@@ -223,17 +242,24 @@ function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, onCategoryC
       <div>
         <h3 className="text-[13px] sm:text-[14px] leading-[130%] font-bold text-black/[0.72] mb-[12px] sm:mb-[16px]">Price Range</h3>
         <div className="space-y-[6px] sm:space-y-[8px]">
-          {['Under $25', '$25 - $50', '$50 - $100', 'Over $100'].map((range) => (
-            <label key={range} className="flex items-center gap-[10px] sm:gap-[12px] cursor-pointer group">
-              <input
-                type="checkbox"
-                className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] rounded-[4px] border-[2px] border-black/[0.12] checked:bg-[#74CADC] checked:border-[#74CADC]"
-              />
-              <span className="text-[13px] sm:text-[14px] leading-[130%] text-black/[0.72] group-hover:text-black transition-colors">
-                {range}
-              </span>
-            </label>
-          ))}
+          {['Under $25', '$25 - $50', '$50 - $100', 'Over $100'].map((range) => {
+            const isSelected = selectedPriceRanges.has(range);
+            return (
+              <label key={range} className="flex items-center gap-[10px] sm:gap-[12px] cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => togglePriceRange(range)}
+                  className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] rounded-[4px] border-[2px] border-black/[0.12] checked:bg-[#74CADC] checked:border-[#74CADC] cursor-pointer"
+                />
+                <span className={`text-[13px] sm:text-[14px] leading-[130%] transition-colors ${
+                  isSelected ? 'text-black font-medium' : 'text-black/[0.72] group-hover:text-black'
+                }`}>
+                  {range}
+                </span>
+              </label>
+            );
+          })}
         </div>
       </div>
 
