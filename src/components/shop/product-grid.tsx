@@ -14,7 +14,7 @@ interface ProductGridProps {
 
 export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selectedCategory = "All", selectedSizes = new Set(), selectedPriceRanges = new Set() }: ProductGridProps) {
   const { data: products = [], isLoading, error } = useProductsQuery();
-  const [activeSchoolTab, setActiveSchoolTab] = useState<'moline' | 'united-township' | 'rock-island' | 'north' | 'all'>('all');
+  const [activeSchoolTab, setActiveSchoolTab] = useState<'moline' | 'united-township' | 'rock-island' | 'north' | 'elite-volleyball' | 'all'>('all');
   
   // Helper function to map category names to product categories
   const mapCategoryToProductCategory = (category: string): string | null => {
@@ -56,7 +56,8 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
       (selectedCategory === 'Limited Edition' && product.category === 'Apparel' && (product.name.toLowerCase().includes('limited') || product.name.toLowerCase().includes('edition'))) ||
       (selectedCategory === 'Embroidery' && product.category === 'Apparel' && product.name.toLowerCase().includes('embroider')) ||
       (selectedCategory === 'Custom Apparel' && product.category === 'Apparel' && !product.name.toLowerCase().includes('spirit') && !product.name.toLowerCase().includes('limited') && !product.name.toLowerCase().includes('edition') && !product.name.toLowerCase().includes('hoodie') && !product.name.toLowerCase().includes('crewneck') && !product.name.toLowerCase().includes('sweatshirt') && !product.name.toLowerCase().includes('shirt') && !product.name.toLowerCase().includes('tee')) ||
-      (selectedCategory === 'Baby Items' && product.category === 'Apparel' && (product.name.toLowerCase().includes('baby') || product.name.toLowerCase().includes('mama')));
+      (selectedCategory === 'Baby Items' && product.category === 'Apparel' && (product.name.toLowerCase().includes('baby') || product.name.toLowerCase().includes('mama'))) ||
+      (selectedCategory === 'Elite Volleyball' && product.category === 'Elite Volleyball');
     
     // Filter by size - if sizes are selected, product must have at least one of the selected sizes
     const matchesSize = selectedSizes.size === 0 || 
@@ -99,17 +100,21 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
       'united-township': Product[];
       'rock-island': Product[];
       north: Product[];
+      'elite-volleyball': Product[];
       other: Product[];
     } = {
       moline: [],
       'united-township': [],
       'rock-island': [],
       north: [],
+      'elite-volleyball': [],
       other: []
     };
     
     products.forEach(product => {
-      if (product.school === 'moline') {
+      if (product.category === 'Elite Volleyball') {
+        grouped['elite-volleyball'].push(product);
+      } else if (product.school === 'moline') {
         grouped.moline.push(product);
       } else if (product.school === 'united-township') {
         grouped['united-township'].push(product);
@@ -172,7 +177,8 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
     const hasUnitedTownship = grouped['united-township'].length > 0;
     const hasRockIsland = grouped['rock-island'].length > 0;
     const hasNorth = grouped.north.length > 0;
-    const hasMultiple = [hasMoline, hasUnitedTownship, hasRockIsland, hasNorth].filter(Boolean).length > 1;
+    const hasEliteVolleyball = grouped['elite-volleyball'].length > 0;
+    const hasMultiple = [hasMoline, hasUnitedTownship, hasRockIsland, hasNorth, hasEliteVolleyball].filter(Boolean).length > 1;
     
     // Determine which products to show based on active tab
     const getProductsToShow = () => {
@@ -184,9 +190,11 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
         return grouped['rock-island'];
       } else if (activeSchoolTab === 'north') {
         return grouped.north;
+      } else if (activeSchoolTab === 'elite-volleyball') {
+        return grouped['elite-volleyball'];
       } else {
         // Show all products
-        return [...grouped.moline, ...grouped['united-township'], ...grouped['rock-island'], ...grouped.north, ...grouped.other];
+        return [...grouped.moline, ...grouped['united-township'], ...grouped['rock-island'], ...grouped.north, ...grouped['elite-volleyball'], ...grouped.other];
       }
     };
     
@@ -195,7 +203,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
     return (
       <div className="space-y-6">
         {/* School Tabs */}
-        {(hasMoline || hasUnitedTownship || hasRockIsland || hasNorth) && (
+        {(hasMoline || hasUnitedTownship || hasRockIsland || hasNorth || hasEliteVolleyball) && (
           <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 sm:gap-3 border-b border-black/[0.06] pb-3 sm:pb-4">
             {hasMultiple && (
               <button
@@ -299,6 +307,29 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
                   />
                 </div>
                 <span className="whitespace-nowrap">Wildcats</span>
+              </button>
+            )}
+            {hasEliteVolleyball && (
+              <button
+                onClick={() => setActiveSchoolTab('elite-volleyball')}
+                className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
+                  activeSchoolTab === 'elite-volleyball'
+                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
+                    : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
+                }`}
+              >
+                <div className="relative w-5 h-5 sm:w-5 sm:h-5 flex-shrink-0">
+                  <Image
+                    src="/schools/EliteLogo.png"
+                    alt="Elite Volleyball"
+                    fill
+                    className="object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+                <span className="whitespace-nowrap">Elite Volleyball</span>
               </button>
             )}
           </div>
