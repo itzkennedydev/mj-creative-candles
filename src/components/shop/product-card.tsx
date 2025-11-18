@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "~/lib/types";
@@ -38,10 +38,45 @@ export function ProductCard({ product }: ProductCardProps) {
     return dataUri;
   };
 
-  const allImages = product.image ? [
-    { src: getImageUrl(product.imageId ?? '', product.image), isPrimary: true },
-    ...(product.images ?? []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }))
-  ] : (product.images ?? []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }));
+  const allImages = useMemo(() => {
+    return product.image ? [
+      { src: getImageUrl(product.imageId ?? '', product.image), isPrimary: true },
+      ...(product.images ?? []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }))
+    ] : (product.images ?? []).map(img => ({ src: getImageUrl(img.imageId, img.dataUri), isPrimary: false }));
+  }, [product.image, product.imageId, product.images]);
+
+  // Map colors to image indices based on image filenames
+  const getImageIndexForColor = useCallback((color: string): number | null => {
+    if (!product.colors || product.colors.length <= 1) return null;
+    
+    const colorLower = color.toLowerCase();
+    
+    // Try to match color names to image filenames
+    for (let i = 0; i < allImages.length; i++) {
+      const imageSrc = allImages[i]?.src ?? '';
+      const imageSrcLower = imageSrc.toLowerCase();
+      
+      // Check if image filename contains the color name
+      if (colorLower.includes('black') && imageSrcLower.includes('black')) {
+        return i;
+      }
+      if (colorLower.includes('blue') && imageSrcLower.includes('blue')) {
+        return i;
+      }
+      if (colorLower.includes('royal blue') && imageSrcLower.includes('blue')) {
+        return i;
+      }
+      // Add more color mappings as needed
+      if (colorLower.includes('white') && imageSrcLower.includes('white')) {
+        return i;
+      }
+      if (colorLower.includes('red') && imageSrcLower.includes('red')) {
+        return i;
+      }
+    }
+    
+    return null;
+  }, [allImages, product.colors]);
 
   // Calculate price with XXL and 3XL surcharge
   const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : selectedSize === '3XL' ? 5 : 0);
@@ -61,6 +96,16 @@ export function ProductCard({ product }: ProductCardProps) {
       }
     }
   }, [product.sizes, product.colors, selectedSize, selectedColor]);
+
+  // Update image when color selection changes
+  useEffect(() => {
+    if (selectedColor && product.colors && product.colors.length > 1) {
+      const imageIndex = getImageIndexForColor(selectedColor);
+      if (imageIndex !== null && imageIndex >= 0 && imageIndex < allImages.length) {
+        setCurrentImageIndex(imageIndex);
+      }
+    }
+  }, [selectedColor, getImageIndexForColor, allImages.length]);
 
   // Handle Escape key to close expanded view
   useEffect(() => {

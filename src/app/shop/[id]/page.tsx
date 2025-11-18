@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -102,8 +102,9 @@ export default function ProductDetailPage() {
     return dataUri;
   };
 
-  const allImages = product ? (
-    product.image ? [
+  const allImages = useMemo(() => {
+    if (!product) return [];
+    return product.image ? [
       { src: getImageUrl(product.imageId ?? '', product.image), isPrimary: true },
       ...(product.images ?? []).map(img => ({ 
         src: getImageUrl(img.imageId, img.dataUri), 
@@ -112,8 +113,43 @@ export default function ProductDetailPage() {
     ] : (product.images ?? []).map(img => ({ 
       src: getImageUrl(img.imageId, img.dataUri), 
       isPrimary: false 
-    }))
-  ) : [];
+    }));
+  }, [product]);
+
+  // Map colors to image indices based on image filenames
+  const getImageIndexForColor = useCallback((color: string): number | null => {
+    if (!product?.colors || product.colors.length <= 1 || !allImages.length) return null;
+    
+    const colorLower = color.toLowerCase();
+    
+    // Try to match color names to image filenames
+    // Check more specific matches first (e.g., "royal blue" before "blue")
+    for (let i = 0; i < allImages.length; i++) {
+      const imageSrc = allImages[i]?.src ?? '';
+      const imageSrcLower = imageSrc.toLowerCase();
+      
+      // Check if image filename contains the color name
+      // More specific matches first
+      if (colorLower.includes('royal blue') && imageSrcLower.includes('blue')) {
+        return i;
+      }
+      if (colorLower.includes('black') && imageSrcLower.includes('black')) {
+        return i;
+      }
+      if (colorLower.includes('blue') && imageSrcLower.includes('blue')) {
+        return i;
+      }
+      // Add more color mappings as needed
+      if (colorLower.includes('white') && imageSrcLower.includes('white')) {
+        return i;
+      }
+      if (colorLower.includes('red') && imageSrcLower.includes('red')) {
+        return i;
+      }
+    }
+    
+    return null;
+  }, [allImages, product?.colors]);
 
   // Set default selections
   useEffect(() => {
@@ -126,6 +162,16 @@ export default function ProductDetailPage() {
       }
     }
   }, [product, selectedSize, selectedColor]);
+
+  // Update image when color selection changes
+  useEffect(() => {
+    if (selectedColor && product?.colors && product.colors.length > 1 && allImages.length > 0) {
+      const imageIndex = getImageIndexForColor(selectedColor);
+      if (imageIndex !== null && imageIndex >= 0 && imageIndex < allImages.length) {
+        setCurrentImageIndex(imageIndex);
+      }
+    }
+  }, [selectedColor, getImageIndexForColor]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -515,6 +561,7 @@ export default function ProductDetailPage() {
                             'Purple': '#9F7AEA',
                             'Maroon': '#800000',
                             'Blue': '#74CADC',
+                            'Royal Blue': '#4169E1',
                             'Green': '#68D391',
                             'Red': '#F56565',
                           };
