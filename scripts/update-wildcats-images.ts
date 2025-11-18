@@ -50,7 +50,7 @@ async function updateWildcatsImages() {
         );
 
         if (result.modifiedCount > 0) {
-          console.log(`✅ Updated ${product.name} - Set image to /WildcatsBlue.jpeg`);
+          console.log(`✅ Updated ${product.name} - Set image to /WildcatsBlue.jpg`);
           updatedCount++;
         }
       }
@@ -60,13 +60,13 @@ async function updateWildcatsImages() {
           { _id: product._id },
           {
             $set: {
-              image: "/WildcatsBlack.jpeg"
+              image: "/WildcatsBlack.jpg"
             }
           }
         );
 
         if (result.modifiedCount > 0) {
-          console.log(`✅ Updated ${product.name} - Set image to /WildcatsBlack.jpeg`);
+          console.log(`✅ Updated ${product.name} - Set image to /WildcatsBlack.jpg`);
           updatedCount++;
         }
       }
@@ -83,7 +83,7 @@ async function updateWildcatsImages() {
         );
 
         if (result.modifiedCount > 0) {
-          console.log(`✅ Updated ${product.name} - Set image to /WildcatsBlue.jpeg (default)`);
+          console.log(`✅ Updated ${product.name} - Set image to /WildcatsBlue.jpg (default)`);
           updatedCount++;
         }
       }
@@ -109,7 +109,7 @@ async function updateWildcatsImages() {
         name: blueProduct.name.replace(/blue/gi, 'Black').replace(/crewneck/gi, 'T-Shirt').replace(/sweatshirt/gi, 'T-Shirt'),
         description: blueProduct.description.replace(/blue/gi, 'black').replace(/crewneck/gi, 't-shirt').replace(/sweatshirt/gi, 't-shirt'),
         price: blueProduct.price,
-        image: "/WildcatsBlack.jpeg",
+        image: "/WildcatsBlack.jpg",
         category: blueProduct.category || "Apparel",
         shopType: blueProduct.shopType || "spirit-wear",
         school: "north",
@@ -121,7 +121,7 @@ async function updateWildcatsImages() {
       const insertResult = await productsCollection.insertOne(blackVariant);
       if (insertResult.insertedId) {
         console.log(`✅ Created black variant: ${blackVariant.name} (ID: ${insertResult.insertedId.toString()})`);
-        console.log(`   - Image: /WildcatsBlack.jpeg`);
+        console.log(`   - Image: /WildcatsBlack.jpg`);
         updatedCount++;
       }
     }

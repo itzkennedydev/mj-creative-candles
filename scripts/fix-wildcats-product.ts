@@ -38,12 +38,12 @@ async function fixWildcatsProduct() {
     // Update the crewneck product to include both colors and both images
     const updateData: any = {
       colors: ["Royal Blue", "Black"],
-      image: "/WildcatsBlue.jpeg", // Keep blue as primary
+      image: "/WildcatsBlue.jpg", // Keep blue as primary
       images: [
         {
-          dataUri: "/WildcatsBlack.jpeg",
+          dataUri: "/WildcatsBlack.jpg",
           mimeType: "image/jpeg",
-          filename: "WildcatsBlack.jpeg"
+          filename: "WildcatsBlack.jpg"
         }
       ]
     };
@@ -58,8 +58,8 @@ async function fixWildcatsProduct() {
     if (result.modifiedCount > 0) {
       console.log('✅ Successfully updated Wildcats Crewneck Sweatshirt!');
       console.log('   - Added "Black" to colors array');
-      console.log('   - Added WildcatsBlack.jpeg as additional image');
-      console.log('   - Primary image: /WildcatsBlue.jpeg');
+      console.log('   - Added WildcatsBlack.jpg as additional image');
+      console.log('   - Primary image: /WildcatsBlue.jpg');
     } else {
       console.log('⚠️  No changes made to crewneck product');
     }
