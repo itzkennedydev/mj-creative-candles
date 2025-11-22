@@ -51,19 +51,26 @@ export function ProductCard({ product }: ProductCardProps) {
     
     const colorLower = color.toLowerCase();
     
-    // Try to match color names to image filenames
+    // Try to match color names to image filenames (check more specific matches first)
     for (let i = 0; i < allImages.length; i++) {
       const imageSrc = allImages[i]?.src ?? '';
       const imageSrcLower = imageSrc.toLowerCase();
       
-      // Check if image filename contains the color name
-      if (colorLower.includes('black') && imageSrcLower.includes('black')) {
+      // More specific matches first
+      if (colorLower.includes('black on black') && (imageSrcLower.includes('blackonblack') || imageSrcLower.includes('black-on-black'))) {
         return i;
       }
-      if (colorLower.includes('blue') && imageSrcLower.includes('blue')) {
+      if (colorLower.includes('moline black') && (imageSrcLower.includes('molineblack') || imageSrcLower.includes('moline-black'))) {
         return i;
       }
       if (colorLower.includes('royal blue') && imageSrcLower.includes('blue')) {
+        return i;
+      }
+      // General matches
+      if (colorLower.includes('black') && imageSrcLower.includes('black') && !imageSrcLower.includes('molineblack') && !imageSrcLower.includes('blackonblack')) {
+        return i;
+      }
+      if (colorLower.includes('blue') && imageSrcLower.includes('blue')) {
         return i;
       }
       // Add more color mappings as needed
@@ -71,6 +78,10 @@ export function ProductCard({ product }: ProductCardProps) {
         return i;
       }
       if (colorLower.includes('red') && imageSrcLower.includes('red')) {
+        return i;
+      }
+      // Match "Moline" to Beanie.png (default/primary image)
+      if (colorLower === 'moline' && (imageSrcLower.includes('beanie') && !imageSrcLower.includes('black'))) {
         return i;
       }
     }
