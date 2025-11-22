@@ -126,10 +126,10 @@ export default function ServicesPage() {
                 ?.items.map((item, i) => (
                   <div
                     key={i}
-                    className="group p-[24px] bg-white hover:bg-black/[0.06] rounded-[24px] transition-all duration-[0.25s] cursor-pointer"
+                    className="group p-[24px] bg-white hover:bg-black/[0.06] rounded-[24px] transition-all duration-300 cursor-pointer"
                   >
                     <div className="flex items-start gap-[16px]">
-                      <div className="w-[32px] h-[32px] rounded-full bg-[#74CADC]/20 group-hover:bg-[#74CADC] flex items-center justify-center flex-shrink-0 transition-all duration-[0.25s]">
+                      <div className="w-[32px] h-[32px] rounded-full bg-[#74CADC]/20 group-hover:bg-[#74CADC] flex items-center justify-center flex-shrink-0 transition-all duration-300">
                         <span className="text-[14px] font-bold text-black/[0.72] group-hover:text-white">
                           {i + 1}
                         </span>
@@ -183,19 +183,19 @@ export default function ServicesPage() {
                 onMouseLeave={() => setHoveredPartner(null)}
                 className="relative group"
               >
-                <div className="aspect-square p-[24px] lg:p-[32px] bg-white rounded-[24px] flex items-center justify-center transition-all duration-[0.25s] hover:shadow-lg hover:scale-105">
+                <div className="aspect-square p-[24px] lg:p-[32px] bg-white rounded-[24px] flex items-center justify-center transition-all duration-300 hover:shadow-lg hover:scale-105">
                   <div className="relative w-full h-full">
                     <Image
                       src={partner.image}
                       alt={partner.name}
                       fill
-                      className="object-contain transition-all duration-[0.25s] group-hover:scale-110"
+                      className="object-contain transition-all duration-300 group-hover:scale-110"
                       sizes="(max-width: 768px) 50vw, 25vw"
                     />
                   </div>
                 </div>
                 {/* Partner name on hover */}
-                <div className={`absolute -bottom-[32px] left-0 right-0 text-center transition-all duration-[0.25s] ${
+                <div className={`absolute -bottom-[32px] left-0 right-0 text-center transition-all duration-300 ${
                   hoveredPartner === index ? 'opacity-100' : 'opacity-0'
                 }`}>
                   <span className="text-[12px] leading-[130%] text-black/[0.44] font-medium">

@@ -7,6 +7,7 @@ interface PublicSettings {
   freeShippingThreshold: number;
   shippingCost: number;
   pickupInstructions: string;
+  pickupLocation: string;
 }
 
 // GET /api/settings - Get public settings (for checkout)
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
         freeShippingThreshold: 50,
         shippingCost: 9.99,
         pickupInstructions: "Please call (309) 373-6017 to schedule pickup. Available Monday-Friday 9AM-5PM.",
+        pickupLocation: "415 13th St, Moline, IL 61265",
       };
       return NextResponse.json({ settings: defaultSettings });
     }
@@ -38,9 +40,17 @@ export async function GET(request: NextRequest) {
       freeShippingThreshold: settings.freeShippingThreshold,
       shippingCost: settings.shippingCost,
       pickupInstructions: settings.pickupInstructions,
+      pickupLocation: settings.pickupLocation || "415 13th St, Moline, IL 61265",
     };
 
-    return NextResponse.json({ settings: publicSettings });
+    return NextResponse.json(
+      { settings: publicSettings },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        },
+      }
+    );
 
   } catch (error) {
     console.error('Error fetching public settings:', error);
@@ -51,8 +61,16 @@ export async function GET(request: NextRequest) {
       freeShippingThreshold: 50,
       shippingCost: 9.99,
       pickupInstructions: "Please call (309) 373-6017 to schedule pickup. Available Monday-Friday 9AM-5PM.",
+      pickupLocation: "415 13th St, Moline, IL 61265",
     };
-    return NextResponse.json({ settings: defaultSettings });
+    return NextResponse.json(
+      { settings: defaultSettings },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        },
+      }
+    );
   }
 }
 

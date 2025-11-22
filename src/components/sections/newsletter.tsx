@@ -16,7 +16,7 @@ export function NewsletterSection({ variant = "default", showPhone = false }: Ne
     : "px-[24px] lg:px-[40px] py-[80px]";
 
   const socialButtonClassName = variant === "gradient"
-    ? "w-[48px] h-[48px] rounded-full bg-white/80 backdrop-blur-sm hover:bg-[#74CADC] flex items-center justify-center transition-all duration-[0.25s] group border border-black/[0.06]"
+    ? "w-[48px] h-[48px] rounded-full bg-white/80 backdrop-blur-sm hover:bg-[#74CADC] flex items-center justify-center transition-all duration-300 group border border-black/[0.06]"
     : "w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#74CADC] flex items-center justify-center group";
 
   return (

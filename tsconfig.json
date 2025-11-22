@@ -26,7 +26,12 @@
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "@sca/ui": ["./src/app/sca-dashboard/components/ui"],
+      "@sca/ui/*": ["./src/app/sca-dashboard/components/ui/*"],
+      "@sca/utils": ["./src/app/sca-dashboard/utils"],
+      "@sca/layout": ["./src/app/sca-dashboard/components/layout"],
+      "@sca/layout/*": ["./src/app/sca-dashboard/components/layout/*"]
     }
   },
   "include": [

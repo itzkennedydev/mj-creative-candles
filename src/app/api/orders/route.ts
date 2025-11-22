@@ -99,6 +99,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// Cache configuration - orders change frequently, shorter cache
+export const revalidate = 10; // Revalidate every 10 seconds
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     // Authenticate request
@@ -218,6 +222,13 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Generate ETag based on query params and data
+    const etag = `"${total}-${page}-${status || 'all'}-${search || 'none'}"`;
+    const ifNoneMatch = request.headers.get('if-none-match');
+    if (ifNoneMatch === etag) {
+      return new NextResponse(null, { status: 304 });
+    }
+
     return NextResponse.json({
       success: true,
       orders: serializedOrders,
@@ -227,6 +238,12 @@ export async function GET(request: NextRequest) {
       totalPages: totalPages,
       hasNextPage: page < totalPages,
       hasPrevPage: page > 1
+    }, {
+      headers: {
+        'Cache-Control': 'private, s-maxage=10, stale-while-revalidate=30',
+        'ETag': etag,
+        'X-Content-Type-Options': 'nosniff',
+      }
     });
 
   } catch (error) {

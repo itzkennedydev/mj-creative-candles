@@ -114,7 +114,7 @@ export default function StitchSniffHolidayEvent() {
                 
                 <Button
                   onClick={() => window.open("https://maps.google.com/?q=415+13th+St,+Moline+IL+61265", "_blank")}
-                  className="mt-[24px] w-full lg:w-auto px-[24px] py-[14px] bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-[14px] leading-[130%] transition-all duration-[0.25s] flex items-center justify-center gap-[8px] group"
+                  className="mt-[24px] w-full lg:w-auto px-[24px] py-[14px] bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-[14px] leading-[130%] transition-all duration-300 flex items-center justify-center gap-[8px] group"
                 >
                   <span className="font-medium">Get Directions</span>
                   <ArrowRight className="h-[16px] w-[16px] group-hover:translate-x-[4px] transition-transform" />
@@ -132,10 +132,10 @@ export default function StitchSniffHolidayEvent() {
                     return (
                       <div
                         key={index}
-                        className="group p-[24px] bg-black/[0.03] hover:bg-black/[0.06] rounded-[20px] transition-all duration-[0.25s] cursor-pointer"
+                        className="group p-[24px] bg-black/[0.03] hover:bg-black/[0.06] rounded-[20px] transition-all duration-300 cursor-pointer"
                       >
                         <div className="flex flex-col items-center text-center">
-                          <div className="w-[48px] h-[48px] rounded-full bg-white flex items-center justify-center mb-[12px] group-hover:bg-[#74CADC] transition-all duration-[0.25s]">
+                          <div className="w-[48px] h-[48px] rounded-full bg-white flex items-center justify-center mb-[12px] group-hover:bg-[#74CADC] transition-all duration-300">
                             <Icon className="h-[24px] w-[24px] text-black/[0.72] group-hover:text-white transition-colors" />
                           </div>
                           <h4 className="text-[14px] leading-[130%] font-bold mb-[8px] text-black/[0.72]">
@@ -174,7 +174,7 @@ export default function StitchSniffHolidayEvent() {
                 <div className="flex justify-center gap-[16px]">
                   <Button
                     onClick={() => window.open("https://facebook.com/stitchpleaseqc", "_blank")}
-                    className="w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#74CADC] flex items-center justify-center transition-all duration-[0.25s] group"
+                    className="w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#74CADC] flex items-center justify-center transition-all duration-300 group"
                     variant="ghost"
                     aria-label="Facebook"
                   >
@@ -182,7 +182,7 @@ export default function StitchSniffHolidayEvent() {
                   </Button>
                   <Button
                     onClick={() => window.open("https://instagram.com/stitchpleaseqc", "_blank")}
-                    className="w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#74CADC] flex items-center justify-center transition-all duration-[0.25s] group"
+                    className="w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#74CADC] flex items-center justify-center transition-all duration-300 group"
                     variant="ghost"
                     aria-label="Instagram"
                   >

@@ -33,8 +33,10 @@ export function useProductsQuery() {
     queryFn: fetchProducts,
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
     gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
-    retry: 2,
+    retry: 1, // Reduced retries for faster failure
     refetchOnWindowFocus: false,
+    refetchOnMount: false, // Don't refetch if data exists in cache
+    refetchOnReconnect: false,
   });
 }
 

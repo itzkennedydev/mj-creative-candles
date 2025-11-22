@@ -2,7 +2,7 @@ import { ProductCard } from "./product-card";
 import { useProductsQuery } from "~/lib/hooks/use-products";
 import Image from "next/image";
 import type { Product } from "~/lib/types";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface ProductGridProps {
   shopType?: "spirit-wear" | "regular-shop";
@@ -32,8 +32,9 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
     return categoryMap[category] || null;
   };
   
-  // Filter products by shop type, search query, category, and size
-  const filteredProducts = products.filter(product => {
+  // Filter products by shop type, search query, category, and size - memoized for performance
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
     const matchesShopType = shopType 
       ? (product.shopType === shopType || (!product.shopType && shopType === "regular-shop"))
       : true;
@@ -90,8 +91,9 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
       });
     })();
     
-    return matchesShopType && matchesSearch && matchesCategory && matchesSize && matchesPriceRange;
-  });
+      return matchesShopType && matchesSearch && matchesCategory && matchesSize && matchesPriceRange;
+    });
+  }, [products, shopType, searchQuery, selectedCategory, selectedSizes, selectedPriceRanges]);
   
   // For spirit-wear, group by school
   const groupProductsBySchool = (products: Product[]) => {

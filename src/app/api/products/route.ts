@@ -4,8 +4,12 @@ import clientPromise from '~/lib/mongodb';
 import type { Product } from '~/lib/types';
 import { authenticateRequest } from '~/lib/auth';
 
+// Cache configuration
+export const revalidate = 60; // Revalidate every 60 seconds
+export const dynamic = 'force-dynamic'; // Allow dynamic rendering but with caching
+
 // GET /api/products - Fetch all products (PUBLIC - for customer store)
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const client = await clientPromise;
     const db = client.db('stitch_orders');
@@ -32,9 +36,22 @@ export async function GET() {
       babyClothesDeadlineDays: product.babyClothesDeadlineDays
     }));
     
+    // Check for ETag/If-None-Match for client-side caching
+    const etag = `"${products.length}-${Date.now()}"`;
+    const ifNoneMatch = request.headers.get('if-none-match');
+    if (ifNoneMatch === etag) {
+      return new NextResponse(null, { status: 304 });
+    }
+    
     return NextResponse.json({
       success: true,
       products: mappedProducts
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        'ETag': etag,
+        'X-Content-Type-Options': 'nosniff',
+      }
     });
   } catch (error) {
     console.error('Error fetching products:', error);

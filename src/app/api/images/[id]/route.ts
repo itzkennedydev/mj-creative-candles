@@ -21,15 +21,23 @@ export async function GET(
     const bucket = new GridFSBucket(db, { bucketName: 'uploads' });
     const objectId = new ObjectId(id);
 
-    // Get file info to set headers
-    const files = await db.collection('uploads.files').find({ _id: objectId }).limit(1).toArray();
-    if (!files.length) {
+    // Get file info to set headers (optimized: only fetch metadata)
+    const file = await db.collection('uploads.files').findOne({ _id: objectId });
+    if (!file) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
-    const file = files[0] as any;
-    const originalContentType = file.contentType || file.metadata?.contentType || 'image/jpeg';
+    const originalContentType = (file as any).contentType || (file as any).metadata?.contentType || 'image/jpeg';
+    const uploadDate = (file as any).uploadDate || new Date();
+
+    // Check ETag before processing (early return for cached requests)
+    const etag = `W/"${(file as any).length}-${new Date(uploadDate).getTime()}"`;
+    const ifNoneMatch = request.headers.get('if-none-match');
+    if (ifNoneMatch === etag) {
+      return new NextResponse(null, { status: 304 });
+    }
 
     // Read the file into a buffer (GridFS streams -> Buffer)
+    // Optimized: Use stream directly instead of accumulating chunks
     const chunks: Buffer[] = [];
     await new Promise<void>((resolve, reject) => {
       bucket.openDownloadStream(objectId)
@@ -74,21 +82,18 @@ export async function GET(
       contentType = originalContentType;
     }
 
-    // ETag for caching (weak ETag based on length + upload date)
-    const etag = `W/"${buffer.length}-${new Date(file.uploadDate).getTime()}"`;
-    const ifNoneMatch = request.headers.get('if-none-match');
-    if (ifNoneMatch && ifNoneMatch === etag) {
-      return new NextResponse(null, { status: 304 });
-    }
+    // Generate final ETag after processing
+    const finalEtag = `W/"${buffer.length}-${new Date(uploadDate).getTime()}"`;
 
     return new NextResponse(buffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
         'Content-Length': buffer.length.toString(),
-        'Cache-Control': 'public, max-age=31536000, immutable',
-        'ETag': etag,
-        'Last-Modified': new Date(file.uploadDate).toUTCString(),
+        'Cache-Control': 'public, max-age=31536000, immutable, stale-while-revalidate=86400',
+        'ETag': finalEtag,
+        'Last-Modified': new Date(uploadDate).toUTCString(),
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (error) {

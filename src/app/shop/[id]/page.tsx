@@ -85,6 +85,10 @@ export default function ProductDetailPage() {
     },
     enabled: !!productId,
     retry: 1,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false, // Don't refetch if data exists in cache
   });
 
   // Track product view analytics
@@ -532,7 +536,7 @@ export default function ProductDetailPage() {
                     {/* Tabs */}
                     <div className="flex gap-x-[8px] justify-start sm:justify-start md:justify-center mt-[8px] sm:mt-[10px] md:mt-[12px] overflow-x-auto pb-1 scrollbar-hide">
                       <button
-                        className={`px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] rounded-full text-[13px] sm:text-[14px] border-[2px] leading-[130%] transition-colors duration-[0.25s] whitespace-nowrap flex-shrink-0 ${
+                        className={`px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] rounded-full text-[13px] sm:text-[14px] border-[2px] leading-[130%] transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
                           activeTab === 'product' 
                             ? 'border-black/[0.12]' 
                             : 'border-black/[0.06] hover:border-black/[0.12] active:border-black/[0.12]'
@@ -542,7 +546,7 @@ export default function ProductDetailPage() {
                         Product
                       </button>
                       <button
-                        className={`px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] rounded-full text-[13px] sm:text-[14px] border-[2px] leading-[130%] transition-colors duration-[0.25s] whitespace-nowrap flex-shrink-0 ${
+                        className={`px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] rounded-full text-[13px] sm:text-[14px] border-[2px] leading-[130%] transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
                           activeTab === 'faq' 
                             ? 'border-black/[0.12]' 
                             : 'border-black/[0.06] hover:border-black/[0.12] active:border-black/[0.12]'

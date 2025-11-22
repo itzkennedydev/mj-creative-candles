@@ -48,7 +48,7 @@ export default function ShopPage() {
               <div className="relative inline-flex p-[4px] bg-black/[0.03] rounded-md border border-black/[0.06] w-full sm:w-auto">
                 <button
                   onClick={() => setActiveShop("regular-shop")}
-                  className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-[0.25s] whitespace-nowrap ${
+                  className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-300 whitespace-nowrap ${
                     activeShop === 'regular-shop' 
                       ? 'bg-[#74CADC] text-[#0A5565] font-medium shadow-sm' 
                       : 'text-black/[0.72] hover:text-black'
@@ -58,7 +58,7 @@ export default function ShopPage() {
                 </button>
                 <button
                   onClick={() => setActiveShop("spirit-wear")}
-                  className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-[0.25s] whitespace-nowrap ${
+                  className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-300 whitespace-nowrap ${
                     activeShop === 'spirit-wear' 
                       ? 'bg-[#74CADC] text-[#0A5565] font-medium shadow-sm' 
                       : 'text-black/[0.72] hover:text-black'
@@ -78,7 +78,7 @@ export default function ShopPage() {
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-[40px] sm:pl-[48px] pr-[16px] sm:pr-[24px] py-[12px] sm:py-[14px] bg-black/[0.03] rounded-md text-[13px] sm:text-[14px] leading-[130%] placeholder:text-black/[0.44] focus:outline-none focus:bg-black/[0.06] transition-all duration-[0.25s]"
+                  className="w-full pl-[40px] sm:pl-[48px] pr-[16px] sm:pr-[24px] py-[12px] sm:py-[14px] bg-black/[0.03] rounded-md text-[13px] sm:text-[14px] leading-[130%] placeholder:text-black/[0.44] focus:outline-none focus:bg-black/[0.06] transition-all duration-300"
                 />
               </div>
               
@@ -226,7 +226,7 @@ function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, selectedPri
               key={category}
               onClick={() => onCategoryChange(category)}
               variant={selectedCategory === category ? 'default' : 'ghost'}
-              className={`w-full justify-start px-[14px] sm:px-[16px] py-[10px] sm:py-[12px] rounded-[12px] text-[13px] sm:text-[14px] leading-[130%] transition-all duration-[0.25s] ${
+              className={`w-full justify-start px-[14px] sm:px-[16px] py-[10px] sm:py-[12px] rounded-[12px] text-[13px] sm:text-[14px] leading-[130%] transition-all duration-300 ${
                 selectedCategory === category
                   ? 'bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]'
                   : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
@@ -274,7 +274,7 @@ function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, selectedPri
               key={size}
                 onClick={() => toggleSize(size)}
               variant="outline"
-                className={`px-[10px] sm:px-[12px] py-[6px] sm:py-[8px] rounded-[8px] text-[12px] sm:text-[14px] leading-[130%] transition-all duration-[0.25s] border-[2px] ${
+                className={`px-[10px] sm:px-[12px] py-[6px] sm:py-[8px] rounded-[8px] text-[12px] sm:text-[14px] leading-[130%] transition-all duration-300 border-[2px] ${
                   isSelected
                     ? 'bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] border-[#74CADC]'
                     : 'bg-black/[0.03] hover:bg-black/[0.06] text-black/[0.72] hover:border-black/[0.12] border-black/[0.12]'

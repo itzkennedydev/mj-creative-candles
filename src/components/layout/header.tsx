@@ -81,7 +81,7 @@ export function Header() {
               {/* Cart Button - NEO Style */}
               <button
                 onClick={handleCartClick}
-                className="relative p-[8px] hover:bg-black/[0.03] rounded-full transition-all duration-[0.25s]"
+                className="relative p-[8px] hover:bg-black/[0.03] rounded-full transition-all duration-300"
                 aria-label="Shopping cart"
               >
                 <ShoppingCart className="h-[20px] w-[20px] text-black/[0.72]" />
@@ -95,7 +95,7 @@ export function Header() {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-[8px] hover:bg-black/[0.03] rounded-full transition-all duration-[0.25s]"
+                className="lg:hidden p-[8px] hover:bg-black/[0.03] rounded-full transition-all duration-300"
                 aria-label="Menu"
               >
                 {mobileMenuOpen ? (
@@ -186,12 +186,12 @@ function NavLink({
   return (
     <Link 
       href={href}
-      className="relative text-[14px] leading-[130%] text-black/[0.72] hover:text-black transition-colors duration-[0.25s] font-medium group inline-flex items-center gap-[8px]"
+      className="relative text-[14px] leading-[130%] text-black/[0.72] hover:text-black transition-colors duration-300 font-medium group inline-flex items-center gap-[8px]"
     >
       <span className="relative">
         {children}
         {/* Hover underline effect */}
-        <span className="absolute bottom-[-4px] left-0 right-0 h-[2px] bg-black/[0.72] scale-x-0 group-hover:scale-x-100 transition-transform duration-[0.25s] origin-center" />
+        <span className="absolute bottom-[-4px] left-0 right-0 h-[2px] bg-black/[0.72] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
       </span>
       {badge && (
         <span className="bg-[#74CADC] text-[#0A5565] text-[10px] font-bold px-[8px] py-[4px] rounded-full whitespace-nowrap flex-shrink-0 shadow-sm border border-[#74CADC]/20">
@@ -218,7 +218,7 @@ function MobileNavLink({
     <Link 
       href={href}
       onClick={onClick}
-      className="px-[24px] py-[16px] bg-black/[0.03] hover:bg-black/[0.06] rounded-[20px] text-[16px] leading-[130%] text-black/[0.72] hover:text-black transition-all duration-[0.25s] font-medium flex items-center justify-between group"
+      className="px-[24px] py-[16px] bg-black/[0.03] hover:bg-black/[0.06] rounded-[20px] text-[16px] leading-[130%] text-black/[0.72] hover:text-black transition-all duration-300 font-medium flex items-center justify-between group"
     >
       <span className="flex items-center gap-[12px]">
         {children}

@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
     }
     
     // Verify the code
-    if (!verifyVerificationCode(email, code)) {
+    const isValid = await verifyVerificationCode(email, code);
+    if (!isValid) {
       return NextResponse.json(
         { error: 'Invalid or expired verification code' },
         { status: 401 }

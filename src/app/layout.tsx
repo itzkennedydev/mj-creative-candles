@@ -11,6 +11,7 @@ import Script from "next/script";
 import { ConditionalLayout } from "../components/layout/conditional-layout";
 import { generateSEOTags } from "~/lib/seo";
 import { Analytics } from "@vercel/analytics/next";
+import { TooltipProvider } from "./sca-dashboard/components/ui/tooltip";
 
 export const metadata: Metadata = generateSEOTags({
   title: "Stitch, Please! | Custom Embroidery & Design Services",
@@ -57,10 +58,12 @@ export default function RootLayout({
           <ProductsProvider>
             <CartProvider>
               <ToastProvider>
+                <TooltipProvider>
                 <ConditionalLayout>
                   {children}
                 </ConditionalLayout>
                 <ToastContainer />
+                </TooltipProvider>
               </ToastProvider>
             </CartProvider>
           </ProductsProvider>

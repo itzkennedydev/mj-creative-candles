@@ -5,6 +5,10 @@ import { ObjectId } from 'mongodb';
 import type { Product } from '~/lib/types';
 import { authenticateRequest } from '~/lib/auth';
 
+// Cache configuration
+export const revalidate = 60; // Revalidate every 60 seconds
+export const dynamic = 'force-dynamic';
+
 // GET /api/products/[id] - Get a single product (PUBLIC)
 export async function GET(
   request: NextRequest,
@@ -53,7 +57,20 @@ export async function GET(
       babyClothesDeadlineDays: product.babyClothesDeadlineDays
     };
 
-    return NextResponse.json(mappedProduct);
+    // Generate ETag for caching
+    const etag = `"${productId}-${product._id.toString()}"`;
+    const ifNoneMatch = request.headers.get('if-none-match');
+    if (ifNoneMatch === etag) {
+      return new NextResponse(null, { status: 304 });
+    }
+
+    return NextResponse.json(mappedProduct, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        'ETag': etag,
+        'X-Content-Type-Options': 'nosniff',
+      }
+    });
   } catch (error) {
     console.error('Error fetching product:', error);
     return NextResponse.json(

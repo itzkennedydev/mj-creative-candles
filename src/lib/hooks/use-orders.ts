@@ -19,7 +19,7 @@ export function useOrders(page = 1, searchQuery = '', statusFilter = '', isAuthe
   return useQuery({
     queryKey: ['orders', page, searchQuery, statusFilter],
     queryFn: async (): Promise<OrdersResponse> => {
-      const token = sessionStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('adminToken');
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -49,8 +49,12 @@ export function useOrders(page = 1, searchQuery = '', statusFilter = '', isAuthe
       };
     },
     enabled: isAuthenticated, // Only run query if authenticated
-    staleTime: 30 * 1000, // 30 seconds
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds - data is fresh for 30s
+    gcTime: 5 * 60 * 1000, // 5 minutes - keep in cache
+    retry: 2, // Retry failed requests twice
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    refetchOnWindowFocus: false, // Don't refetch on window focus for better performance
+    refetchOnReconnect: true, // Refetch when connection is restored
   });
 }
 
@@ -59,14 +63,24 @@ export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+    mutationFn: async ({ orderId, status, notes }: { orderId: string; status: string; notes?: string }) => {
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const body: { status: string; notes?: string } = { status };
+      if (notes !== undefined) {
+        body.notes = notes;
+      }
+
       const response = await fetch(`/api/orders/${orderId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('admin_token')}`,
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -152,11 +166,16 @@ export function useArchiveOrder() {
 export function useSendStatusEmail() {
   return useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const response = await fetch('/api/orders/send-status-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('admin_token')}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ orderId, status }),
       });

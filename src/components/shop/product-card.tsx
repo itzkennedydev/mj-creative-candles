@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "~/lib/types";
@@ -15,7 +15,7 @@ interface ProductCardProps {
   product: Product;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+function ProductCardComponent({ product }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
@@ -532,3 +532,16 @@ export function ProductCard({ product }: ProductCardProps) {
     </article>
   );
 }
+
+// Memoize ProductCard to prevent unnecessary re-renders
+export const ProductCard = memo(ProductCardComponent, (prevProps, nextProps) => {
+  // Only re-render if product ID or key properties change
+  return (
+    prevProps.product.id === nextProps.product.id &&
+    prevProps.product.price === nextProps.product.price &&
+    prevProps.product.inStock === nextProps.product.inStock &&
+    prevProps.product.image === nextProps.product.image &&
+    JSON.stringify(prevProps.product.sizes) === JSON.stringify(nextProps.product.sizes) &&
+    JSON.stringify(prevProps.product.colors) === JSON.stringify(nextProps.product.colors)
+  );
+});

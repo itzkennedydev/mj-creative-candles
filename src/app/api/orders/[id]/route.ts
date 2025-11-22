@@ -44,10 +44,17 @@ export async function GET(
       ...(order.paidAt && { paidAt: order.paidAt instanceof Date ? order.paidAt.toISOString() : order.paidAt })
     };
 
-    return NextResponse.json({
+    return NextResponse.json(
+      {
       success: true,
       order: serializedOrder
-    });
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=60',
+        },
+      }
+    );
 
   } catch (error) {
     console.error('Error fetching order:', error);

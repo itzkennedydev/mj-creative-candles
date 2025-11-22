@@ -83,10 +83,10 @@ export default function AboutPage() {
                   return (
                     <div
                       key={index}
-                      className="p-[20px] bg-black/[0.03] rounded-[20px] hover:bg-black/[0.06] transition-all duration-[0.25s] cursor-pointer group"
+                      className="p-[20px] bg-black/[0.03] rounded-[20px] hover:bg-black/[0.06] transition-all duration-300 cursor-pointer group"
                     >
                       <div className="flex items-center gap-[12px]">
-                        <div className="w-[40px] h-[40px] rounded-full bg-white flex items-center justify-center group-hover:bg-[#74CADC] transition-all duration-[0.25s]">
+                        <div className="w-[40px] h-[40px] rounded-full bg-white flex items-center justify-center group-hover:bg-[#74CADC] transition-all duration-300">
                           <Icon className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-white transition-colors" />
                         </div>
                         <div>
@@ -106,7 +106,7 @@ export default function AboutPage() {
               {/* CTA Button - NEO Style */}
               <Button
                 onClick={() => router.push('/shop')}
-                className="w-full lg:w-auto px-[32px] py-[16px] bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] transition-all duration-[0.25s] flex items-center justify-center gap-[8px] group"
+                className="w-full lg:w-auto px-[32px] py-[16px] bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] transition-all duration-300 flex items-center justify-center gap-[8px] group"
               >
                 <span className="text-[16px] leading-[130%] font-medium">Start Your Project</span>
                 <ArrowRight className="h-[20px] w-[20px] group-hover:translate-x-[4px] transition-transform" />
@@ -126,7 +126,7 @@ export default function AboutPage() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-[24px]">
-            <div className="p-[32px] bg-white rounded-[24px] hover:shadow-lg transition-all duration-[0.25s]">
+            <div className="p-[32px] bg-white rounded-[24px] hover:shadow-lg transition-all duration-300">
               <h3 className="text-[20px] leading-[130%] font-bold text-black/[0.72] mb-[16px]">
                 Experience & Expertise
               </h3>
@@ -135,7 +135,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="p-[32px] bg-white rounded-[24px] hover:shadow-lg transition-all duration-[0.25s]">
+            <div className="p-[32px] bg-white rounded-[24px] hover:shadow-lg transition-all duration-300">
               <h3 className="text-[20px] leading-[130%] font-bold text-black/[0.72] mb-[16px]">
                 Attention to Detail
               </h3>
@@ -163,7 +163,7 @@ export default function AboutPage() {
             {testimonials.map((testimonial, index) => (
               <div
                 key={index}
-                className="p-[32px] bg-black/[0.03] rounded-[24px] hover:bg-black/[0.06] transition-all duration-[0.25s] group"
+                className="p-[32px] bg-black/[0.03] rounded-[24px] hover:bg-black/[0.06] transition-all duration-300 group"
               >
                 {/* Rating Stars */}
                 <div className="flex gap-[4px] mb-[16px]">

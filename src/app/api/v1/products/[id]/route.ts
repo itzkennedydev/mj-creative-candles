@@ -102,7 +102,14 @@ export async function GET(
       };
     })();
     
-    return NextResponse.json({ product: transformedProduct });
+    return NextResponse.json(
+      { product: transformedProduct },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+        },
+      }
+    );
     
   } catch (error) {
     console.error('Failed to fetch product:', error);

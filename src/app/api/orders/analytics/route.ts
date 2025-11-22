@@ -58,6 +58,10 @@ interface SizeColorItem {
   quantity: number;
 }
 
+// Cache configuration for analytics
+export const revalidate = 30; // Revalidate every 30 seconds
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await authenticateRequest(request);
@@ -70,14 +74,46 @@ export async function GET(request: NextRequest) {
     const period = searchParams.get('period') ?? 'all'; // week, month, year, all
     const groupBy = searchParams.get('groupBy') ?? 'day'; // hour, day, week, month
 
+    // Get explicit date range parameters (preferred over period)
+    const fromParam = searchParams.get('from');
+    const toParam = searchParams.get('to');
+
+    // Get filter parameters
+    const orderStatus = searchParams.getAll('orderStatus');
+    const product = searchParams.getAll('product');
+    const category = searchParams.getAll('category');
+    const customer = searchParams.getAll('customer');
+    const paymentMethod = searchParams.getAll('paymentMethod');
+    const country = searchParams.getAll('country');
+    const city = searchParams.getAll('city');
+    const region = searchParams.getAll('region');
+
     const client = await clientPromise;
     const db = client.db('stitch_orders');
     const orders = db.collection('orders');
 
     const now = new Date();
-    let startDate = new Date(0); // Default to beginning of time
+    let startDate: Date;
+    let endDate: Date = now;
 
-    // Set date ranges
+    // Use explicit date range if provided, otherwise fall back to period
+    if (fromParam) {
+      startDate = new Date(fromParam);
+    } else if (toParam) {
+      // If only to is provided, use period to calculate from
+      endDate = new Date(toParam);
+      startDate = new Date(0); // Default to beginning of time
+    } else {
+      // Fall back to period-based calculation
+      startDate = new Date(0); // Default to beginning of time
+    }
+
+    if (toParam) {
+      endDate = new Date(toParam);
+    }
+
+    // Set date ranges based on period if explicit dates not provided
+    if (!fromParam && !toParam) {
     switch (period) {
       case 'week':
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -88,16 +124,50 @@ export async function GET(request: NextRequest) {
       case 'year':
         startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
         break;
+      }
+    }
+
+    // Build match conditions for filters
+    const matchConditions: Record<string, any> = {
+      createdAt: { 
+        $gte: startDate,
+        $lte: endDate
+      },
+      // Include all order statuses except cancelled and payment_failed for analytics
+      status: { $in: ['pending', 'paid', 'delivered', 'ready_for_pickup', 'processing', 'shipped'] }
+    };
+
+    // Apply filters
+    if (orderStatus.length > 0) {
+      matchConditions.status = { $in: orderStatus };
+    }
+    if (product.length > 0) {
+      matchConditions['items.productName'] = { $in: product };
+    }
+    if (category.length > 0) {
+      matchConditions['items.category'] = { $in: category };
+    }
+    if (customer.length > 0) {
+      matchConditions['customer.email'] = { $in: customer };
+    }
+    if (paymentMethod.length > 0) {
+      matchConditions.paymentMethod = { $in: paymentMethod };
+    }
+    if (country.length > 0) {
+      matchConditions['shipping.country'] = { $in: country };
+    }
+    if (city.length > 0) {
+      matchConditions['shipping.city'] = { $in: city };
+    }
+    if (region.length > 0) {
+      matchConditions['shipping.state'] = { $in: region };
     }
 
     // Build aggregation pipeline
     const pipeline: Array<Record<string, unknown>> = [
-      // Filter by date range and paid status
+      // Filter by date range, status, and other filters
       {
-        $match: {
-          createdAt: { $gte: startDate },
-          status: { $in: ['paid', 'delivered', 'ready_for_pickup', 'processing'] }
-        }
+        $match: matchConditions
       },
       // Add computed fields for grouping
       {
@@ -206,6 +276,56 @@ export async function GET(request: NextRequest) {
       { $limit: 10 } // Top 10 customers
     ];
 
+    // Get available filter values (unique countries, cities, states, payment methods, order statuses)
+    const filterValuesPipeline = [
+      ...pipeline,
+      {
+        $group: {
+          _id: null,
+          countries: { $addToSet: "$shipping.country" },
+          cities: { $addToSet: "$shipping.city" },
+          states: { $addToSet: "$shipping.state" },
+          paymentMethods: { $addToSet: "$paymentMethod" },
+          orderStatuses: { $addToSet: "$status" },
+          customers: { $addToSet: "$customer.email" }
+        }
+      }
+    ];
+
+    // Get recent orders (limit to 50 most recent)
+    const recentOrdersPipeline = [
+      ...pipeline,
+      { $sort: { createdAt: -1 } },
+      { $limit: 50 },
+      {
+        $project: {
+          _id: 1,
+          orderNumber: 1,
+          customer: {
+            firstName: 1,
+            lastName: 1,
+            email: 1
+          },
+          total: 1,
+          status: 1,
+          createdAt: 1,
+          items: {
+            $map: {
+              input: "$items",
+              as: "item",
+              in: {
+                productName: "$$item.productName",
+                quantity: "$$item.quantity",
+                productPrice: "$$item.productPrice",
+                selectedSize: "$$item.selectedSize",
+                selectedColor: "$$item.selectedColor"
+              }
+            }
+          }
+        }
+      }
+    ];
+
     // Execute all pipelines in parallel
     const [
       timeRevenue,
@@ -213,7 +333,9 @@ export async function GET(request: NextRequest) {
       hourlyPattern,
       dayOfWeekPattern,
       topCustomers,
-      summaryStats
+      summaryStats,
+      filterValues,
+      recentOrders
     ] = await Promise.all([
       orders.aggregate(timePipeline).toArray(),
       orders.aggregate(productPipeline).toArray(),
@@ -233,7 +355,9 @@ export async function GET(request: NextRequest) {
             minOrderValue: { $min: "$total" }
           }
         }
-      ]).toArray()
+      ]).toArray(),
+      orders.aggregate(filterValuesPipeline).toArray(),
+      orders.aggregate(recentOrdersPipeline).toArray()
     ]);
 
     // Process product data to get size and color insights
@@ -281,11 +405,14 @@ export async function GET(request: NextRequest) {
       avgOrderValue: day.avgOrderValue
     }));
 
-    return NextResponse.json({
+    const filterData = (filterValues[0] as { countries?: string[]; cities?: string[]; states?: string[]; paymentMethods?: string[]; orderStatuses?: string[]; customers?: string[] } | undefined) ?? {};
+
+    return NextResponse.json(
+      {
       period,
       dateRange: {
         from: startDate.toISOString(),
-        to: now.toISOString()
+        to: endDate.toISOString()
       },
       summary: (summaryStats[0] as SummaryStatsResult | undefined) ?? {
         totalRevenue: 0,
@@ -311,8 +438,54 @@ export async function GET(request: NextRequest) {
         customerLifetimeValue: c.totalSpent,
         daysSinceFirstOrder: Math.floor((now.getTime() - new Date(c.firstOrder).getTime()) / (1000 * 60 * 60 * 24)),
         daysSinceLastOrder: Math.floor((now.getTime() - new Date(c.lastOrder).getTime()) / (1000 * 60 * 60 * 24))
+      })),
+      filterOptions: {
+        countries: (filterData.countries ?? []).filter((c): c is string => Boolean(c)),
+        cities: (filterData.cities ?? []).filter((c): c is string => Boolean(c)),
+        states: (filterData.states ?? []).filter((s): s is string => Boolean(s)),
+        paymentMethods: (filterData.paymentMethods ?? []).filter((p): p is string => Boolean(p)),
+        orderStatuses: (filterData.orderStatuses ?? []).filter((s): s is string => Boolean(s)),
+        customers: (filterData.customers ?? []).filter((c): c is string => Boolean(c))
+      },
+      recentOrders: (recentOrders as Array<{
+        _id: string;
+        orderNumber: string;
+        customer: { firstName: string; lastName: string; email: string };
+        total: number;
+        status: string;
+        createdAt: Date;
+        items: Array<{ 
+          productName: string; 
+          quantity: number; 
+          productPrice: number;
+          selectedSize?: string;
+          selectedColor?: string;
+        }>;
+      }>).map(order => ({
+        id: String(order._id),
+        orderNumber: order.orderNumber,
+        customerName: `${order.customer.firstName} ${order.customer.lastName}`.trim(),
+        customerEmail: order.customer.email,
+        total: order.total,
+        status: order.status,
+        createdAt: order.createdAt,
+        itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
+        items: order.items.map(item => ({
+          productName: item.productName,
+          quantity: item.quantity,
+          productPrice: item.productPrice,
+          selectedSize: item.selectedSize,
+          selectedColor: item.selectedColor
+        }))
       }))
-    });
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=60',
+          'X-Content-Type-Options': 'nosniff',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error fetching analytics:', error);
     return NextResponse.json(
