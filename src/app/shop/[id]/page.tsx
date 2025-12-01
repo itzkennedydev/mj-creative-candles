@@ -654,11 +654,11 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Delivery Timeframe */}
-                <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-2xl">
-                  <Clock className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-3 p-4 bg-gray-100 rounded-2xl">
+                  <Clock className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="font-medium text-blue-900">Estimated Turnaround</p>
-                    <p className="text-sm text-blue-700 mt-0.5">
+                    <p className="font-medium text-gray-900">Estimated Turnaround</p>
+                    <p className="text-sm text-gray-600 mt-0.5">
                       5-7 business days (may vary if materials need to be ordered)
                     </p>
                   </div>
