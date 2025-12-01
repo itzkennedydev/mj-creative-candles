@@ -196,7 +196,7 @@ export default function ProductDetailPage() {
       selectedColor, 
       selectedColor === "Custom" ? customColorValue : undefined,
       isBeanie ? embroideryName : undefined,
-      isBeanie ? orderNotes : undefined
+      orderNotes || undefined // Notes available for all products
     );
     
     // Brief delay for visual feedback
@@ -622,10 +622,12 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
-                {/* Personalization for Beanie - Progressive Disclosure */}
-                {isBeanie && (
-                  <div className="space-y-4 p-4 bg-gray-50 rounded-2xl">
-                    <h3 className="font-semibold text-gray-900">Personalization (Optional)</h3>
+                {/* Personalization Section - Available for all products */}
+                <div className="space-y-4 p-4 bg-gray-50 rounded-2xl">
+                  <h3 className="font-semibold text-gray-900">Personalization (Optional)</h3>
+                  
+                  {/* Embroidery Name - Only for Beanie */}
+                  {isBeanie && (
                     <div>
                       <label className="block text-sm text-gray-600 mb-2">Embroidery Name</label>
                       <input
@@ -636,18 +638,31 @@ export default function ProductDetailPage() {
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0A5565] focus:border-transparent bg-white"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-2">Special Instructions</label>
-                      <textarea
-                        value={orderNotes}
-                        onChange={(e) => setOrderNotes(e.target.value)}
-                        rows={2}
-                        placeholder="Any special requests..."
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0A5565] focus:border-transparent bg-white resize-none"
-                      />
-                    </div>
+                  )}
+                  
+                  {/* Order Notes - Available for all products */}
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-2">Order Notes</label>
+                    <textarea
+                      value={orderNotes}
+                      onChange={(e) => setOrderNotes(e.target.value)}
+                      rows={2}
+                      placeholder="Any special requests, color preferences, or instructions..."
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0A5565] focus:border-transparent bg-white resize-none"
+                    />
                   </div>
-                )}
+                </div>
+
+                {/* Delivery Timeframe */}
+                <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-2xl">
+                  <Clock className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-blue-900">Estimated Turnaround</p>
+                    <p className="text-sm text-blue-700 mt-0.5">
+                      5-7 business days (may vary if materials need to be ordered)
+                    </p>
+                  </div>
+                </div>
 
                 {/* Baby Clothes Reminder */}
                 {product.requiresBabyClothes && (
