@@ -347,13 +347,11 @@ export default function ProductDetailPage() {
                 )}
                 
                 {/* Sale Badge - Von Restorff Effect (stands out) */}
-                {isBeanie && (
-                  <div className="absolute top-4 left-4 z-10">
-                    <span className="inline-flex items-center gap-1.5 bg-[#0A5565] text-white px-3 py-1.5 rounded-full text-xs font-semibold">
-                      🎉 15% OFF
-                    </span>
-                  </div>
-                )}
+                <div className="absolute top-4 left-4 z-10">
+                  <span className="inline-flex items-center gap-1.5 bg-[#0A5565] text-white px-3 py-1.5 rounded-full text-xs font-semibold">
+                    🎉 15% OFF with code STITCHIT
+                  </span>
+                </div>
 
                 {/* Navigation Arrows - Fitts's Law (large touch targets) */}
                 {allImages.length > 1 && (
@@ -475,9 +473,6 @@ export default function ProductDetailPage() {
                   {/* Price - Von Restorff Effect (prominent) */}
                   <div className="mt-3 flex items-baseline gap-3">
                     <span className="text-3xl font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
-                    {isBeanie && (
-                      <span className="text-lg text-gray-400 line-through">${(displayPrice / 0.85).toFixed(2)}</span>
-                    )}
                   </div>
 
                   {/* Trust Indicators - Law of Uniform Connectedness */}
@@ -498,16 +493,14 @@ export default function ProductDetailPage() {
                 </header>
 
                 {/* Promo Alert - Von Restorff Effect */}
-                {isBeanie && (
-                  <div className="bg-[#0A5565] text-white rounded-2xl p-4">
-                    <p className="font-semibold flex items-center gap-2">
-                      🎉 Cyber Monday Sale!
-                    </p>
-                    <p className="text-white/90 text-sm mt-1">
-                      Use code <span className="font-bold bg-white/10 px-2 py-0.5 rounded">STITCHIT</span> for 15% off at checkout.
-                    </p>
-                  </div>
-                )}
+                <div className="bg-[#0A5565] text-white rounded-2xl p-4">
+                  <p className="font-semibold flex items-center gap-2">
+                    🎉 15% Off Sale!
+                  </p>
+                  <p className="text-white/90 text-sm mt-1">
+                    Use code <span className="font-bold bg-white/10 px-2 py-0.5 rounded">STITCHIT</span> at checkout for 15% off your order.
+                  </p>
+                </div>
 
                 {/* Description - Cognitive Load (concise info) */}
                 <p className="text-gray-600 leading-relaxed">

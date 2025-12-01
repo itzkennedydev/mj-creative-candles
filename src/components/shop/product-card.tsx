@@ -398,11 +398,9 @@ function ProductCardComponent({ product }: ProductCardProps) {
                   {product.sizes.length} sizes
                 </span>
               )}
-              {product.name.toLowerCase() === 'beanie' && (
-                <span className="text-xs text-[#0A5565] bg-[#E6F7FA] px-2 py-1 rounded-full font-medium">
-                  15% OFF
-                </span>
-              )}
+              <span className="text-xs text-[#0A5565] bg-[#E6F7FA] px-2 py-1 rounded-full font-medium">
+                15% OFF
+              </span>
             </div>
           </div>
 
