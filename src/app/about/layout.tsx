@@ -32,7 +32,7 @@ export const metadata: Metadata = generateSEOTags({
 });
 
 // FAQ Schema for the about page
-export const faqSchema = generateFAQSchema(faqs);
+const faqSchema = generateFAQSchema(faqs);
 
 export default function AboutLayout({
   children,
