@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, X, Clock, Sparkles } from "lucide-react";
 import { usePrefetchProducts } from "~/lib/hooks/use-products";
 import { ProductGrid } from "~/components/shop/product-grid";
 import { FloatingCart } from "~/components/shop/floating-cart";
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
+
+// Discount code expiration: Dec 1st 11:59 PM CST = Dec 2nd 05:59:59 UTC
+const PROMO_EXPIRES = new Date('2025-12-02T05:59:59Z');
 
 export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,12 +18,48 @@ export default function ShopPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<Set<string>>(new Set());
+  const [showPromoBanner, setShowPromoBanner] = useState(true);
+  const [timeLeft, setTimeLeft] = useState<string>("");
   const prefetchProducts = usePrefetchProducts();
+
+  // Check if promo is still active
+  const isPromoActive = new Date() < PROMO_EXPIRES;
 
   // Prefetch products as soon as component mounts
   useEffect(() => {
     prefetchProducts();
   }, [prefetchProducts]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (!isPromoActive) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const diff = PROMO_EXPIRES.getTime() - now.getTime();
+      
+      if (diff <= 0) {
+        setTimeLeft("");
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      if (hours > 0) {
+        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+      } else if (minutes > 0) {
+        setTimeLeft(`${minutes}m ${seconds}s`);
+      } else {
+        setTimeLeft(`${seconds}s`);
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [isPromoActive]);
 
   return (
     <main className="min-h-screen bg-white pb-[80px] lg:pb-0">
@@ -29,6 +68,48 @@ export default function ShopPage() {
         className="pointer-events-none fixed h-full w-full z-[100] top-0" 
         style={{ backgroundColor: "rgb(247, 247, 247)", opacity: 0 }}
       />
+
+      {/* Promo Banner - Urgency-driven */}
+      {isPromoActive && showPromoBanner && (
+        <div className="bg-[#0A5565] text-white relative">
+          <Container>
+            <div className="py-3 flex items-center justify-center gap-3 sm:gap-4 text-center">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 animate-pulse" />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                <span className="text-sm sm:text-base font-semibold">
+                  15% OFF Everything
+                </span>
+                <span className="hidden sm:inline text-white/60">•</span>
+                <span className="text-xs sm:text-sm text-white/90">
+                  Use code <span className="font-bold bg-white/20 px-2 py-0.5 rounded mx-1">STITCHIT</span> at checkout
+                </span>
+              </div>
+              {timeLeft && (
+                <div className="hidden md:flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full ml-2">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span className="text-xs font-mono font-bold">{timeLeft}</span>
+                </div>
+              )}
+              <button
+                onClick={() => setShowPromoBanner(false)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-full transition-colors"
+                aria-label="Dismiss banner"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </Container>
+          {/* Mobile countdown */}
+          {timeLeft && (
+            <div className="md:hidden bg-white/10 py-1.5 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-xs">
+                <Clock className="w-3 h-3" />
+                <span>Ends in <span className="font-mono font-bold">{timeLeft}</span></span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Shop Header - NEO Style */}
       <section className="bg-[#F7F7F7]/50 backdrop-blur-sm border-b border-black/[0.06]">
