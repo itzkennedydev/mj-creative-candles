@@ -12,21 +12,44 @@ interface Settings {
   shippingCost: number;
 }
 
-export function OrderSummary() {
+// Valid discount codes (you can expand this or move to a database)
+const VALID_DISCOUNT_CODES: Record<string, { discountPercent: number; description: string }> = {
+  'STITCHIT': { discountPercent: 15, description: '15% off - Cyber Monday Sale' },
+};
+
+interface OrderSummaryProps {
+  appliedDiscount?: { code: string; percent: number; amount: number } | null;
+  setAppliedDiscount?: (discount: { code: string; percent: number; amount: number } | null) => void;
+}
+
+export function OrderSummary({ appliedDiscount: propAppliedDiscount, setAppliedDiscount: propSetAppliedDiscount }: OrderSummaryProps = {}) {
   const { items: cartItems, getTotalPrice, updateQuantity } = useCart();
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [discountCode, setDiscountCode] = useState("");
+  const [internalDiscount, setInternalDiscount] = useState<{ code: string; percent: number; amount: number } | null>(null);
+  const [discountError, setDiscountError] = useState("");
+  
+  // Use prop discount if provided, otherwise use internal state
+  const appliedDiscount = propAppliedDiscount !== undefined ? propAppliedDiscount : internalDiscount;
+  const setAppliedDiscount = propSetAppliedDiscount || setInternalDiscount;
   
   const subtotal = getTotalPrice();
   const taxRate = settings?.taxRate ?? 8.5;
+  
+  // Calculate discount - recalculate amount based on current subtotal
+  const discountAmount = appliedDiscount ? (subtotal * appliedDiscount.percent / 100) : 0;
+  const subtotalAfterDiscount = subtotal - discountAmount;
+  
+  // Calculate tax on original subtotal (before discount)
   const tax = subtotal * (taxRate / 100);
   
-  // Calculate shipping based on settings
+  // Calculate shipping based on settings (on original subtotal before discount)
   let shipping = 0;
   if (settings && !settings.pickupOnly && subtotal < settings.freeShippingThreshold) {
     shipping = settings.shippingCost;
   }
   
-  const total = subtotal + tax + shipping;
+  const total = subtotalAfterDiscount + tax + shipping;
 
   // Load settings on mount
   useEffect(() => {
@@ -51,6 +74,37 @@ export function OrderSummary() {
 
     void loadSettings();
   }, []);
+
+  const handleApplyDiscount = () => {
+    setDiscountError("");
+    const code = discountCode.trim().toUpperCase();
+    
+    if (!code) {
+      setDiscountError("Please enter a discount code");
+      return;
+    }
+    
+    const discount = VALID_DISCOUNT_CODES[code];
+    if (!discount) {
+      setDiscountError("Invalid discount code");
+      setAppliedDiscount(null);
+      return;
+    }
+    
+    const discountAmount = subtotal * discount.discountPercent / 100;
+    setAppliedDiscount({
+      code,
+      percent: discount.discountPercent,
+      amount: discountAmount
+    });
+    setDiscountError("");
+  };
+
+  const handleRemoveDiscount = () => {
+    setAppliedDiscount(null);
+    setDiscountCode("");
+    setDiscountError("");
+  };
 
   return (
     <div className="bg-gray-50 rounded-xl md:rounded-2xl p-6 md:p-8">
@@ -122,6 +176,18 @@ export function OrderSummary() {
           <span className="text-gray-600">Subtotal</span>
           <span className="text-gray-900">${subtotal.toFixed(2)}</span>
         </div>
+        {appliedDiscount && (
+          <div className="flex justify-between items-center py-2 px-3 bg-green-50 border border-green-200 rounded-lg -mx-1">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🎉</span>
+              <div>
+                <span className="text-sm font-semibold text-green-700">You&apos;re saving {appliedDiscount.percent}%!</span>
+                <p className="text-xs text-green-600">{appliedDiscount.code} applied</p>
+              </div>
+            </div>
+            <span className="text-sm font-bold text-green-700">-${discountAmount.toFixed(2)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Tax</span>
           <span className="text-gray-900">${tax.toFixed(2)}</span>
@@ -152,16 +218,54 @@ export function OrderSummary() {
 
       {/* Promo Code */}
       <div className="mt-4 md:mt-6">
-        <div className="flex flex-col sm:flex-row gap-2">
+        {appliedDiscount ? (
+          <div className="bg-green-50 border border-green-200 rounded-md p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-800">Discount Applied</p>
+                <p className="text-xs text-green-600 mt-1">{appliedDiscount.code} - {appliedDiscount.percent}% off</p>
+              </div>
+              <button
+                onClick={handleRemoveDiscount}
+                className="text-sm text-green-700 hover:text-green-900 underline"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 placeholder="Promo code"
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                value={discountCode}
+                onChange={(e) => {
+                  setDiscountCode(e.target.value.toUpperCase());
+                  setDiscountError("");
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleApplyDiscount();
+                  }
+                }}
+                className={`flex-1 px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                  discountError ? 'border-red-300' : 'border-gray-300'
+                }`}
               />
-          <button className="px-4 py-3 bg-[#74CADC] text-[#0A5565] rounded-md hover:bg-[#74CADC]/90 transition-colors font-medium">
-            Apply
-          </button>
-        </div>
+              <button
+                onClick={handleApplyDiscount}
+                className="px-4 py-3 bg-[#0A5565] text-white rounded-xl hover:bg-[#083d4a] transition-colors font-medium"
+              >
+                Apply
+              </button>
+            </div>
+            {discountError && (
+              <p className="text-sm text-red-600">{discountError}</p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Security Notice */}

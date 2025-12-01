@@ -66,19 +66,19 @@ export default function MobileEmbroideryPage() {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                   <div className="bg-[#F8FAFC] rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center relative">
-                    <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-[#74CADC] text-[#0A5565] w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm sm:text-base">1</div>
+                    <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-[#0A5565] text-white w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm sm:text-base">1</div>
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 mt-3 sm:mt-4">Schedule Your Event</h3>
                     <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Choose your preferred date and time through our easy online booking system. We&apos;ll confirm your reservation and discuss your event details.</p>
                   </div>
                   
                   <div className="bg-[#F8FAFC] rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center relative">
-                    <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-[#74CADC] text-[#0A5565] w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm sm:text-base">2</div>
+                    <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-[#0A5565] text-white w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm sm:text-base">2</div>
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 mt-3 sm:mt-4">Choose Your Designs</h3>
                     <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Browse our extensive design collection or share your custom artwork. We&apos;ll help you select the perfect design for your event.</p>
                   </div>
                   
                   <div className="bg-[#F8FAFC] rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center relative sm:col-span-2 lg:col-span-1">
-                    <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-[#74CADC] text-[#0A5565] w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm sm:text-base">3</div>
+                    <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-[#0A5565] text-white w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm sm:text-base">3</div>
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4 mt-3 sm:mt-4">Enjoy On-Site Service</h3>
                     <p className="text-sm sm:text-base text-gray-600 leading-relaxed">We&apos;ll arrive at your venue with all necessary equipment. Watch as we create beautiful embroidered items right before your eyes.</p>
                   </div>
@@ -86,7 +86,7 @@ export default function MobileEmbroideryPage() {
 
                 <div className="text-center mt-8 sm:mt-12 lg:mt-16">
                   <Button
-                    className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium px-6 sm:px-8 py-3 sm:py-4 h-auto rounded-xl text-base sm:text-lg w-full sm:w-auto"
+                    className="bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 h-auto rounded-xl text-base sm:text-lg w-full sm:w-auto"
                     onClick={() => setShowForm(true)}
                   >
                     Get Started
@@ -102,7 +102,7 @@ export default function MobileEmbroideryPage() {
       {/* Floating Action Button - Mobile Only */}
       <div className="fixed bottom-4 left-4 right-4 z-40 md:hidden">
         <Button
-          className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium px-8 py-4 h-auto rounded-xl text-lg w-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+          className="bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold px-8 py-4 h-auto rounded-xl text-lg w-full transition-colors duration-200"
           onClick={() => setShowForm(true)}
         >
           Get Started

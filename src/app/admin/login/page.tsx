@@ -175,7 +175,7 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] p-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 disabled={loading || !email}
               >
                 {loading ? "Processing..." : "Sign In"}
@@ -220,7 +220,7 @@ export default function LoginPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] p-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  className="flex-1 bg-[#0A5565] hover:bg-[#083d4a] text-white p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   disabled={loading || code.length !== 6}
                 >
                   {loading ? "Verifying..." : "Verify Code"}

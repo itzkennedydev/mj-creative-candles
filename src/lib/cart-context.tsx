@@ -7,7 +7,7 @@ import { trackAddToCart } from "./analytics";
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity: number, selectedSize?: string, selectedColor?: string, customColorValue?: string) => void;
+  addItem: (product: Product, quantity: number, selectedSize?: string, selectedColor?: string, customColorValue?: string, embroideryName?: string, orderNotes?: string) => void;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -32,7 +32,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const addItem = (product: Product, quantity: number, selectedSize?: string, selectedColor?: string, customColorValue?: string) => {
+  const addItem = (product: Product, quantity: number, selectedSize?: string, selectedColor?: string, customColorValue?: string, embroideryName?: string, orderNotes?: string) => {
     // Calculate price with size surcharge
     const sizeSurcharge = selectedSize === 'XXL' ? 3 : selectedSize === '3XL' ? 5 : 0;
     const itemPrice = product.price + sizeSurcharge;
@@ -61,7 +61,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         quantity,
         selectedSize,
         selectedColor,
-        customColorValue
+        customColorValue,
+        embroideryName,
+        orderNotes
       }];
     });
   };

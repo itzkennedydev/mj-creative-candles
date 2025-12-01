@@ -251,7 +251,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                   <p className="text-gray-600 mb-4">Connect with Calendly to schedule your consultation</p>
                   <Button 
                     size="lg" 
-                    className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium"
+                    className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold rounded-xl py-3"
                     onClick={onClose}
                   >
                     Schedule Consultation
@@ -278,7 +278,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
             {step < 5 && (
               <Button 
                 onClick={handleNext}
-                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]"
+                className="bg-[#0A5565] hover:bg-[#083d4a] text-white font-medium rounded-xl"
               >
                 Continue
                 <ArrowRight className="ml-2 h-5 w-5" />

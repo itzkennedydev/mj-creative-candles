@@ -212,7 +212,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
                 onClick={() => setActiveSchoolTab('all')}
                 className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 whitespace-nowrap justify-center touch-manipulation ${
                   activeSchoolTab === 'all'
-                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
+                    ? 'bg-[#0A5565] text-white'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >
@@ -224,7 +224,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
                 onClick={() => setActiveSchoolTab('moline')}
                 className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
                   activeSchoolTab === 'moline'
-                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
+                    ? 'bg-[#0A5565] text-white'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >
@@ -247,7 +247,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
                 onClick={() => setActiveSchoolTab('united-township')}
                 className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
                   activeSchoolTab === 'united-township'
-                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
+                    ? 'bg-[#0A5565] text-white'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >
@@ -270,7 +270,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
                 onClick={() => setActiveSchoolTab('rock-island')}
                 className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
                   activeSchoolTab === 'rock-island'
-                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
+                    ? 'bg-[#0A5565] text-white'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >
@@ -293,7 +293,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
                 onClick={() => setActiveSchoolTab('north')}
                 className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
                   activeSchoolTab === 'north'
-                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
+                    ? 'bg-[#0A5565] text-white'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >
@@ -316,7 +316,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
                 onClick={() => setActiveSchoolTab('elite-volleyball')}
                 className={`w-full sm:w-auto px-4 py-3.5 sm:px-4 md:px-6 sm:py-2.5 md:py-3 text-sm sm:text-sm md:text-base font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation ${
                   activeSchoolTab === 'elite-volleyball'
-                    ? 'bg-[#74CADC] text-[#0A5565] shadow-sm'
+                    ? 'bg-[#0A5565] text-white'
                     : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
                 }`}
               >

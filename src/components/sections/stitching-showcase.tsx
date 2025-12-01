@@ -103,7 +103,7 @@ export function StitchingShowcase() {
           >
             <Button 
               size="lg" 
-              className="w-full sm:w-auto bg-[#74CADC] text-[#0A5565] hover:bg-[#74CADC]/90"
+              className="w-full sm:w-auto bg-[#0A5565] text-white hover:bg-[#083d4a] font-semibold rounded-xl px-8"
               onClick={() => router.push('/shop')}
             >
               Get Started

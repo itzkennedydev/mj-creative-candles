@@ -16,7 +16,11 @@ interface Settings {
   pickupInstructions: string;
 }
 
-export function CheckoutForm() {
+interface CheckoutFormProps {
+  appliedDiscount?: { code: string; percent: number; amount: number } | null;
+}
+
+export function CheckoutForm({ appliedDiscount }: CheckoutFormProps = {}) {
   const { items: cartItems, getTotalPrice } = useCart();
   const { addToast } = useToast();
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -30,7 +34,6 @@ export function CheckoutForm() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState<'card'>('card');
-  const [notes, setNotes] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Load settings on mount
@@ -109,15 +112,21 @@ export function CheckoutForm() {
     try {
       // Calculate totals using settings
       const subtotal = getTotalPrice();
+      
+      // Apply discount if available
+      const discountAmount = appliedDiscount ? (subtotal * appliedDiscount.percent / 100) : 0;
+      const subtotalAfterDiscount = subtotal - discountAmount;
+      
+      // Calculate tax on original subtotal (before discount)
       const tax = subtotal * (settings.taxRate / 100);
       
-      // Calculate shipping cost based on settings
+      // Calculate shipping cost based on settings (on original subtotal before discount)
       let shippingCost = 0;
       if (!settings.pickupOnly && subtotal < settings.freeShippingThreshold) {
         shippingCost = settings.shippingCost;
       }
       
-      const total = subtotal + tax + shippingCost;
+      const total = subtotalAfterDiscount + tax + shippingCost;
 
       // Prepare order items with XXL and 3XL surcharge
       const orderItems = cartItems.map(item => {
@@ -135,17 +144,29 @@ export function CheckoutForm() {
         };
       });
 
-      // Build notes with custom color information
+      // Build notes with custom color information and embroidery name from cart items
       const customColorNotes: string[] = [];
+      const embroideryNotes: string[] = [];
+      const itemOrderNotes: string[] = [];
+      
       cartItems.forEach(item => {
         if (item.customColorValue && item.selectedColor === "Custom") {
           customColorNotes.push(`${item.product.name}: Custom color - ${item.customColorValue}`);
+        }
+        // Get embroidery name from cart item (for beanie)
+        if (item.embroideryName?.trim()) {
+          embroideryNotes.push(`${item.product.name} - Embroidery Name: ${item.embroideryName.trim()}`);
+        }
+        // Get order notes from cart item (for beanie)
+        if (item.orderNotes?.trim()) {
+          itemOrderNotes.push(`${item.product.name} - Notes: ${item.orderNotes.trim()}`);
         }
       });
       
       const allNotes = [
         ...(customColorNotes.length > 0 ? customColorNotes : []),
-        ...(notes.trim() ? [notes.trim()] : [])
+        ...(embroideryNotes.length > 0 ? embroideryNotes : []),
+        ...(itemOrderNotes.length > 0 ? itemOrderNotes : [])
       ].join('\n\n');
 
       // Prepare order data for database
@@ -165,9 +186,11 @@ export function CheckoutForm() {
           country: "United States"
         },
         items: orderItems,
-        subtotal,
+        subtotal: subtotalAfterDiscount,
         tax,
         shippingCost,
+        discountCode: appliedDiscount?.code,
+        discountAmount: discountAmount > 0 ? discountAmount : undefined,
         total,
         paymentMethod,
         notes: allNotes || undefined
@@ -184,9 +207,11 @@ export function CheckoutForm() {
       const checkoutResult: { sessionId?: string; url?: string; error?: string } = await api.createCheckoutSession({
         orderId: result.orderId,
         items: orderItems,
-        subtotal,
+        subtotal: subtotalAfterDiscount,
         tax,
         shippingCost,
+        discountCode: appliedDiscount?.code,
+        discountAmount: discountAmount > 0 ? discountAmount : undefined,
         total,
         customerEmail: customerInfo.email
       });
@@ -337,40 +362,23 @@ export function CheckoutForm() {
               </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Order Notes (Optional)
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
-                placeholder={
-                  cartItems.some(item => item.product.requiresBabyClothes)
-                    ? "Any special instructions, color preferences for sweatshirt (if not available in options), or notes for your order..."
-                    : "Any special instructions or notes for your order..."
-                }
-                suppressHydrationWarning
-              />
-              {cartItems.some(item => item.product.requiresBabyClothes) && (
-                <div className="mt-4 p-3 sm:p-4 bg-[#FFF4E6] border border-[#FF8C00] rounded-md">
-                  <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold text-[#CC6600] mb-1">
-                    Don&apos;t forget to bring your baby clothes!
-                  </p>
-                  <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-[#B35900]">
-                    Please bring your baby clothes within {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days of placing your order.
-                  </p>
-                </div>
-              )}
-            </div>
+            {cartItems.some(item => item.product.requiresBabyClothes) && (
+              <div className="p-3 sm:p-4 bg-[#E6F7FA] border border-[#74CADC] rounded-md">
+                <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold text-[#0A5565] mb-1">
+                  👶 Don&apos;t forget to bring your baby clothes!
+                </p>
+                <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-[#0A5565]">
+                  Please bring your baby clothes within {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days of placing your order.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
         <Button
           type="submit"
           disabled={isProcessing || !settings}
-          className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-3 text-base font-medium"
+          className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white py-4 text-base font-semibold rounded-xl"
         >
           {isProcessing ? "Processing..." : "Continue to Payment"}
         </Button>

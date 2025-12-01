@@ -56,6 +56,35 @@ function ProductCardComponent({ product }: ProductCardProps) {
       const imageSrc = allImages[i]?.src ?? '';
       const imageSrcLower = imageSrc.toLowerCase();
       
+      // Beanie-specific color mappings
+      if (colorLower.includes('forest green') && (imageSrcLower.includes('forest green') || imageSrcLower.includes('forestgreen'))) {
+        return i;
+      }
+      if (colorLower.includes('gold') && colorLower.includes('white') && (imageSrcLower.includes('gold') || imageSrcLower.includes('white'))) {
+        return i;
+      }
+      if (colorLower.includes('icon grey') && imageSrcLower.includes('icon grey')) {
+        return i;
+      }
+      if (colorLower.includes('maroon') && colorLower.includes('black') && (imageSrcLower.includes('maroon') || imageSrcLower.includes('black'))) {
+        return i;
+      }
+      if (colorLower.includes('pink raspberry') && (imageSrcLower.includes('pink') || imageSrcLower.includes('raspberry'))) {
+        return i;
+      }
+      if (colorLower.includes('purple') && colorLower.includes('black') && (imageSrcLower.includes('purple') || imageSrcLower.includes('black'))) {
+        return i;
+      }
+      if (colorLower.includes('red') && colorLower.includes('black') && !colorLower.includes('royal') && (imageSrcLower.includes('red') && imageSrcLower.includes('black'))) {
+        return i;
+      }
+      if (colorLower.includes('red') && colorLower.includes('royal') && (imageSrcLower.includes('red') && imageSrcLower.includes('royal'))) {
+        return i;
+      }
+      if (colorLower.includes('true royal') && (imageSrcLower.includes('true royal') || imageSrcLower.includes('trueroyal'))) {
+        return i;
+      }
+      
       // More specific matches first
       if (colorLower.includes('black on black') && (imageSrcLower.includes('blackonblack') || imageSrcLower.includes('black-on-black'))) {
         return i;
@@ -229,7 +258,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
       />
       {/* Product Image - Clickable to product detail */}
       <Link href={`/shop/${product.id}`}>
-        <div className="aspect-square relative mb-6 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer"
+        <div className="aspect-square relative mb-6 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border border-gray-200"
              onTouchStart={handleTouchStart}
              onTouchMove={handleTouchMove}
              onTouchEnd={handleTouchEnd}
@@ -246,6 +275,8 @@ function ProductCardComponent({ product }: ProductCardProps) {
             loading={currentImageIndex === 0 ? undefined : 'lazy'}
           />
         )}
+        
+        
         {!product.inStock && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <span className="text-white font-medium">Out of Stock</span>
@@ -304,7 +335,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
               e.preventDefault();
               setIsExpanded(true);
             }}
-            className="absolute top-2 right-2 bg-white/90 hover:bg-white text-black p-2 rounded-full transition-all duration-200 z-20 shadow-lg active:scale-95"
+            className="absolute top-2 right-2 bg-white hover:bg-gray-100 text-black p-2 rounded-full transition-colors duration-200 z-20 border border-gray-200"
             aria-label="Expand image"
           >
             <Maximize2 className="h-4 w-4" />
@@ -321,7 +352,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
         >
           <button
             onClick={() => setIsExpanded(false)}
-            className="absolute top-4 right-4 bg-white/90 hover:bg-white text-black p-3 rounded-full transition-all duration-200 shadow-lg z-50"
+            className="absolute top-4 right-4 bg-white hover:bg-gray-100 text-black p-3 rounded-full transition-colors duration-200 z-50"
             aria-label="Close expanded view"
           >
             <X className="h-6 w-6" />
@@ -335,7 +366,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
                   e.stopPropagation();
                   setCurrentImageIndex(currentImageIndex > 0 ? currentImageIndex - 1 : allImages.length - 1);
                 }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-4 rounded-full transition-all duration-200 z-50 shadow-lg"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 text-black p-4 rounded-full transition-colors duration-200 z-50"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="h-6 w-6" />
@@ -345,7 +376,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
                   e.stopPropagation();
                   setCurrentImageIndex(currentImageIndex < allImages.length - 1 ? currentImageIndex + 1 : 0);
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black p-4 rounded-full transition-all duration-200 z-50 shadow-lg"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 text-black p-4 rounded-full transition-colors duration-200 z-50"
                 aria-label="Next image"
               >
                 <ChevronRight className="h-6 w-6" />
@@ -397,11 +428,21 @@ function ProductCardComponent({ product }: ProductCardProps) {
             </Link>
             <p className="text-sm md:text-base text-gray-600 line-clamp-3" itemProp="description">{product.description}</p>
             
+            {/* Cyber Monday Sale Alert */}
+            {product.name.toLowerCase() === 'beanie' && (
+              <div className="mt-3 p-3 bg-[#E6F7FA] border border-[#74CADC] rounded-md">
+                <p className="text-sm font-medium text-[#0A5565] mb-1">🎉 Cyber Monday Sale!</p>
+                <p className="text-xs text-[#0A5565]">
+                  Use code <span className="font-bold">STITCHIT</span> for 15% off at checkout.
+                </p>
+              </div>
+            )}
+            
             {/* Special Instructions for Mama Keepsake Sweatshirt */}
             {product.requiresBabyClothes && (
-              <div className="mt-3 p-3 bg-[#FFF4E6] border border-[#FF8C00] rounded-md">
-                <p className="text-sm font-medium text-[#CC6600] mb-1">Don&apos;t forget to bring your baby clothes!</p>
-                <p className="text-xs text-[#B35900]">
+              <div className="mt-3 p-3 bg-[#E6F7FA] border border-[#74CADC] rounded-md">
+                <p className="text-sm font-medium text-[#0A5565] mb-1">👶 Don&apos;t forget to bring your baby clothes!</p>
+                <p className="text-xs text-[#0A5565]">
                     Please bring your baby clothes within {product.babyClothesDeadlineDays ?? 5} days of placing your order.
                 </p>
               </div>
@@ -429,7 +470,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
                     onClick={() => setSelectedSize(size)}
                     className={`px-3 md:px-4 py-2 text-sm border rounded-md transition-colors ${
                       isSelected
-                        ? "border-[#74CADC] bg-[#74CADC] text-[#0A5565]"
+                        ? "border-[#0A5565] bg-[#0A5565] text-white"
                         : "border-gray-300 text-gray-700 hover:border-gray-400"
                     }`}
                   >
@@ -457,7 +498,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
                     }}
                     className={`px-3 md:px-4 py-2 text-sm border rounded-md transition-colors ${
                       isSelected
-                        ? "border-[#74CADC] bg-[#74CADC] text-[#0A5565]"
+                        ? "border-[#0A5565] bg-[#0A5565] text-white"
                         : "border-gray-300 text-gray-700 hover:border-gray-400"
                     }`}
                   >
@@ -471,7 +512,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
                   onClick={() => setSelectedColor("Custom")}
                   className={`px-3 md:px-4 py-2 text-sm border rounded-md transition-colors ${
                     selectedColor === "Custom"
-                      ? "border-[#74CADC] bg-[#74CADC] text-[#0A5565]"
+                      ? "border-[#0A5565] bg-[#0A5565] text-white"
                       : "border-gray-300 text-gray-700 hover:border-gray-400"
                   }`}
                 >
@@ -521,7 +562,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
           <Button
             onClick={handleAddToCart}
             disabled={!product.inStock}
-            className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] py-2 md:py-3 text-sm md:text-base font-medium"
+            className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white py-3 md:py-4 text-sm md:text-base font-semibold rounded-xl"
             aria-label={`Add ${product.name} to cart`}
           >
             <ShoppingCart className="h-4 w-4 mr-2" aria-hidden="true" />

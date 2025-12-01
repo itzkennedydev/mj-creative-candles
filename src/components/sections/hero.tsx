@@ -50,7 +50,7 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-4">
               <Button 
                 size="lg"
-                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium shadow-lg shadow-[#74CADC]/20 w-full sm:w-auto"
+                className="bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold w-full sm:w-auto rounded-xl px-8 py-3"
                 onClick={() => router.push('/shop')}
               >
                 Shop

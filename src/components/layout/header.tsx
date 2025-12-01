@@ -41,7 +41,7 @@ export function Header() {
       {/* Header with NEO styling */}
       <header 
         className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
-          scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white'
+          scrolled ? 'bg-white/95 backdrop-blur-md border-b border-gray-100' : 'bg-white'
         }`}
       >
         <Container>
@@ -86,7 +86,7 @@ export function Header() {
               >
                 <ShoppingCart className="h-[20px] w-[20px] text-black/[0.72]" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-[4px] -right-[4px] bg-[#74CADC] text-[#0A5565] text-[10px] font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-[6px] shadow-sm border-2 border-white">
+                  <span className="absolute -top-[4px] -right-[4px] bg-[#0A5565] text-white text-[10px] font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-[6px] border-2 border-white">
                     {itemCount}
                   </span>
                 )}
@@ -107,7 +107,7 @@ export function Header() {
 
               {/* Desktop Order Button */}
               <Link href="/shop">
-                <Button className="hidden lg:flex bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]">
+                <Button className="hidden lg:flex bg-[#0A5565] hover:bg-[#083d4a] text-white font-medium rounded-xl">
                   Order Now
                 </Button>
               </Link>
@@ -147,7 +147,7 @@ export function Header() {
               {/* Mobile CTA Button */}
               <div className="mt-[32px] pt-[32px] border-t border-black/[0.06]">
                 <Link href="/shop" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="w-full bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]">
+                  <Button className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white font-medium rounded-xl">
                     Start Shopping
                   </Button>
                 </Link>
@@ -194,7 +194,7 @@ function NavLink({
         <span className="absolute bottom-[-4px] left-0 right-0 h-[2px] bg-black/[0.72] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
       </span>
       {badge && (
-        <span className="bg-[#74CADC] text-[#0A5565] text-[10px] font-bold px-[8px] py-[4px] rounded-full whitespace-nowrap flex-shrink-0 shadow-sm border border-[#74CADC]/20">
+        <span className="bg-[#0A5565] text-white text-[10px] font-bold px-[8px] py-[4px] rounded-full whitespace-nowrap flex-shrink-0">
           {badge}
         </span>
       )}
@@ -224,7 +224,7 @@ function MobileNavLink({
         {children}
       </span>
       {badge ? (
-        <span className="bg-[#74CADC] text-[#0A5565] text-[11px] font-bold px-[10px] py-[4px] rounded-full whitespace-nowrap flex-shrink-0 shadow-sm border border-[#74CADC]/20">
+        <span className="bg-[#0A5565] text-white text-[11px] font-bold px-[10px] py-[4px] rounded-full whitespace-nowrap flex-shrink-0">
           {badge}
         </span>
       ) : null}

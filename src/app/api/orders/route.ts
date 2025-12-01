@@ -65,6 +65,8 @@ export async function POST(request: NextRequest) {
       subtotal: body.subtotal,
       tax: body.tax,
       shippingCost: body.shippingCost,
+      discountCode: body.discountCode,
+      discountAmount: body.discountAmount,
       total: body.total,
       status: 'pending',
       paymentMethod: body.paymentMethod,

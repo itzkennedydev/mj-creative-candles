@@ -102,7 +102,7 @@ export default function ServicesPage() {
                 onClick={() => setActiveCategory(category.name)}
                 className={`px-[22px] py-[11px] text-[14px] border-[2px] leading-[130%] rounded-full ${
                   activeCategory === category.name
-                    ? 'bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] border-[#74CADC]'
+                    ? 'bg-[#0A5565] hover:bg-[#083d4a] text-white border-[#0A5565]'
                     : 'border-black/[0.06] hover:border-black/[0.12] text-black/[0.72] bg-transparent'
                 }`}
                 variant={activeCategory === category.name ? 'default' : 'outline'}
@@ -153,7 +153,7 @@ export default function ServicesPage() {
             </p>
             <Button
               onClick={() => window.open("tel:3093736017", "_blank")}
-              className="inline-flex items-center px-[24px] py-[14px] bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] group"
+              className="inline-flex items-center px-6 py-4 bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold rounded-xl group"
             >
               <Phone className="mr-[8px] h-[16px] w-[16px] group-hover:scale-110 transition-transform" />
               <span className="text-[14px] leading-[130%] font-medium">Call or Text (309) 373-6017</span>

@@ -28,11 +28,13 @@ export async function POST(request: NextRequest) {
       subtotal: number;
       tax: number;
       shippingCost?: number;
+      discountCode?: string;
+      discountAmount?: number;
       total: number;
       customerEmail: string;
     };
     
-    const { orderId, items, subtotal, tax, shippingCost = 0, total, customerEmail } = body;
+    const { orderId, items, subtotal, tax, shippingCost = 0, discountCode, discountAmount = 0, total, customerEmail } = body;
 
     // Validate required fields
     if (!orderId || !items || items.length === 0 || !customerEmail) {
@@ -98,6 +100,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Add discount as a separate line item if applicable
+    if (discountAmount > 0) {
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Discount${discountCode ? ` (${discountCode})` : ''}`,
+          },
+          unit_amount: -Math.round(discountAmount * 100), // Negative amount for discount
+        },
+        quantity: 1,
+      });
+    }
+
     // Add shipping as a separate line item if applicable
     if (shippingCost > 0) {
       lineItems.push({
@@ -142,6 +158,8 @@ export async function POST(request: NextRequest) {
         subtotal: subtotal.toString(),
         tax: tax.toString(),
         total: total.toString(),
+        ...(discountCode && { discountCode: discountCode }),
+        ...(discountAmount > 0 && { discountAmount: discountAmount.toString() }),
       },
     });
 

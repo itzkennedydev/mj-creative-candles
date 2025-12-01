@@ -41,6 +41,8 @@ export interface CartItem {
   selectedSize?: string;
   selectedColor?: string;
   customColorValue?: string; // For custom color requests (when selectedColor is "Custom")
+  embroideryName?: string; // Optional name for embroidery
+  orderNotes?: string; // Optional notes for the order
 }
 
 export interface CustomerInfo {

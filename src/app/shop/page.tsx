@@ -50,7 +50,7 @@ export default function ShopPage() {
                   onClick={() => setActiveShop("regular-shop")}
                   className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-300 whitespace-nowrap ${
                     activeShop === 'regular-shop' 
-                      ? 'bg-[#74CADC] text-[#0A5565] font-medium shadow-sm' 
+                      ? 'bg-[#0A5565] text-white font-medium' 
                       : 'text-black/[0.72] hover:text-black'
                   }`}
                 >
@@ -60,7 +60,7 @@ export default function ShopPage() {
                   onClick={() => setActiveShop("spirit-wear")}
                   className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-300 whitespace-nowrap ${
                     activeShop === 'spirit-wear' 
-                      ? 'bg-[#74CADC] text-[#0A5565] font-medium shadow-sm' 
+                      ? 'bg-[#0A5565] text-white font-medium' 
                       : 'text-black/[0.72] hover:text-black'
                   }`}
                 >
@@ -119,7 +119,7 @@ export default function ShopPage() {
             {showFilters && (
               <div className="lg:hidden fixed inset-0 z-[200] bg-black/50" onClick={() => setShowFilters(false)}>
                 <div 
-                  className="absolute right-0 top-0 h-full w-[85%] sm:w-[80%] max-w-[320px] bg-white shadow-2xl"
+                  className="absolute right-0 top-0 h-full w-[85%] sm:w-[80%] max-w-[320px] bg-white border-l border-gray-200"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-[20px] sm:p-[24px] border-b border-black/[0.06]">
@@ -228,7 +228,7 @@ function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, selectedPri
               variant={selectedCategory === category ? 'default' : 'ghost'}
               className={`w-full justify-start px-[14px] sm:px-[16px] py-[10px] sm:py-[12px] rounded-[12px] text-[13px] sm:text-[14px] leading-[130%] transition-all duration-300 ${
                 selectedCategory === category
-                  ? 'bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565]'
+                  ? 'bg-[#0A5565] hover:bg-[#083d4a] text-white'
                   : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
               }`}
             >
@@ -276,7 +276,7 @@ function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, selectedPri
               variant="outline"
                 className={`px-[10px] sm:px-[12px] py-[6px] sm:py-[8px] rounded-[8px] text-[12px] sm:text-[14px] leading-[130%] transition-all duration-300 border-[2px] ${
                   isSelected
-                    ? 'bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] border-[#74CADC]'
+                    ? 'bg-[#0A5565] hover:bg-[#083d4a] text-white border-[#0A5565]'
                     : 'bg-black/[0.03] hover:bg-black/[0.06] text-black/[0.72] hover:border-black/[0.12] border-black/[0.12]'
                 }`}
             >

@@ -106,7 +106,7 @@ export default function AboutPage() {
               {/* CTA Button - NEO Style */}
               <Button
                 onClick={() => router.push('/shop')}
-                className="w-full lg:w-auto px-[32px] py-[16px] bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] transition-all duration-300 flex items-center justify-center gap-[8px] group"
+                className="w-full lg:w-auto px-8 py-4 bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
               >
                 <span className="text-[16px] leading-[130%] font-medium">Start Your Project</span>
                 <ArrowRight className="h-[20px] w-[20px] group-hover:translate-x-[4px] transition-transform" />

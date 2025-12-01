@@ -34,6 +34,8 @@ export interface Order {
   subtotal: number;
   tax: number;
   shippingCost: number;
+  discountCode?: string;
+  discountAmount?: number;
   total: number;
   status: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed';
   paymentMethod: 'card';
@@ -63,6 +65,8 @@ export interface CreateOrderRequest {
   subtotal: number;
   tax: number;
   shippingCost: number;
+  discountCode?: string;
+  discountAmount?: number;
   total: number;
   paymentMethod: 'card';
   notes?: string;

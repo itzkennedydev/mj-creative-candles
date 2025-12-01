@@ -114,7 +114,7 @@ export default function StitchSniffHolidayEvent() {
                 
                 <Button
                   onClick={() => window.open("https://maps.google.com/?q=415+13th+St,+Moline+IL+61265", "_blank")}
-                  className="mt-[24px] w-full lg:w-auto px-[24px] py-[14px] bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] text-[14px] leading-[130%] transition-all duration-300 flex items-center justify-center gap-[8px] group"
+                  className="mt-6 w-full lg:w-auto px-6 py-4 bg-[#0A5565] hover:bg-[#083d4a] text-white text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
                 >
                   <span className="font-medium">Get Directions</span>
                   <ArrowRight className="h-[16px] w-[16px] group-hover:translate-x-[4px] transition-transform" />

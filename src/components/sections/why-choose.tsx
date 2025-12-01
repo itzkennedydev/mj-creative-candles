@@ -76,7 +76,7 @@ export function WhyChoose() {
             >
               <Button 
                 size="lg"
-                className="bg-[#74CADC] hover:bg-[#74CADC]/90 text-[#0A5565] font-medium text-sm sm:text-base transition-colors duration-200"
+                className="bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold text-sm sm:text-base transition-colors duration-200 rounded-xl px-6"
                 onClick={() => router.push('/shop')}
               >
                 <motion.span
