@@ -11,7 +11,7 @@ export default function CheckoutPage() {
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; percent: number; amount: number } | null>(null);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Checkout Header - Focused, minimal distractions */}
       <div className="bg-white border-b border-gray-100">
         <Container>
