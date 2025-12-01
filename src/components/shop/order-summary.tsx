@@ -12,10 +12,28 @@ interface Settings {
   shippingCost: number;
 }
 
-// Valid discount codes
-const VALID_DISCOUNT_CODES: Record<string, { discountPercent: number; description: string }> = {
-  'STITCHIT': { discountPercent: 15, description: '15% off' },
+// Valid discount codes with optional expiration
+interface DiscountCode {
+  discountPercent: number;
+  description: string;
+  expiresAt?: Date; // Optional expiration date
+}
+
+const VALID_DISCOUNT_CODES: Record<string, DiscountCode> = {
+  'STITCHIT': { 
+    discountPercent: 15, 
+    description: '15% off',
+    expiresAt: new Date('2025-12-02T05:59:59Z'), // Dec 1st 11:59 PM CST = Dec 2nd 05:59:59 UTC
+  },
 };
+
+// Check if a discount code is still valid (not expired)
+function isDiscountCodeValid(code: string): boolean {
+  const discount = VALID_DISCOUNT_CODES[code];
+  if (!discount) return false;
+  if (!discount.expiresAt) return true; // No expiration = always valid
+  return new Date() < discount.expiresAt;
+}
 
 interface OrderSummaryProps {
   appliedDiscount?: { code: string; percent: number; amount: number } | null;
@@ -88,6 +106,13 @@ export function OrderSummary({ appliedDiscount: propAppliedDiscount, setAppliedD
     const discount = VALID_DISCOUNT_CODES[code];
     if (!discount) {
       setDiscountError("Invalid discount code");
+      setAppliedDiscount(null);
+      return;
+    }
+    
+    // Check if the code has expired
+    if (!isDiscountCodeValid(code)) {
+      setDiscountError("This discount code has expired");
       setAppliedDiscount(null);
       return;
     }

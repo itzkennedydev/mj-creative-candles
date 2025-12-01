@@ -347,11 +347,13 @@ export default function ProductDetailPage() {
                 )}
                 
                 {/* Sale Badge - Von Restorff Effect (stands out) */}
-                <div className="absolute top-4 left-4 z-10">
-                  <span className="inline-flex items-center gap-1.5 bg-[#0A5565] text-white px-3 py-1.5 rounded-full text-xs font-semibold">
-                    🎉 15% OFF with code STITCHIT
-                  </span>
-                </div>
+                {new Date() < new Date('2025-12-02T05:59:59Z') && (
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="inline-flex items-center gap-1.5 bg-[#0A5565] text-white px-3 py-1.5 rounded-full text-xs font-semibold">
+                      🎉 15% OFF — Code: STITCHIT
+                    </span>
+                  </div>
+                )}
 
                 {/* Navigation Arrows - Fitts's Law (large touch targets) */}
                 {allImages.length > 1 && (
@@ -493,14 +495,16 @@ export default function ProductDetailPage() {
                 </header>
 
                 {/* Promo Alert - Von Restorff Effect */}
-                <div className="bg-[#0A5565] text-white rounded-2xl p-4">
-                  <p className="font-semibold flex items-center gap-2">
-                    🎉 15% Off Sale!
-                  </p>
-                  <p className="text-white/90 text-sm mt-1">
-                    Use code <span className="font-bold bg-white/10 px-2 py-0.5 rounded">STITCHIT</span> at checkout for 15% off your order.
-                  </p>
-                </div>
+                {new Date() < new Date('2025-12-02T05:59:59Z') && (
+                  <div className="bg-[#0A5565] text-white rounded-2xl p-4">
+                    <p className="font-semibold flex items-center gap-2">
+                      🎉 15% Off Sale — Ends Tonight!
+                    </p>
+                    <p className="text-white/90 text-sm mt-1">
+                      Use code <span className="font-bold bg-white/10 px-2 py-0.5 rounded">STITCHIT</span> at checkout. Hurry, offer expires Dec 1st at 11:59 PM!
+                    </p>
+                  </div>
+                )}
 
                 {/* Description - Cognitive Load (concise info) */}
                 <p className="text-gray-600 leading-relaxed">

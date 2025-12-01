@@ -398,9 +398,11 @@ function ProductCardComponent({ product }: ProductCardProps) {
                   {product.sizes.length} sizes
                 </span>
               )}
-              <span className="text-xs text-[#0A5565] bg-[#E6F7FA] px-2 py-1 rounded-full font-medium">
-                15% OFF
-              </span>
+              {new Date() < new Date('2025-12-02T05:59:59Z') && (
+                <span className="text-xs text-[#0A5565] bg-[#E6F7FA] px-2 py-1 rounded-full font-medium">
+                  15% OFF
+                </span>
+              )}
             </div>
           </div>
 
