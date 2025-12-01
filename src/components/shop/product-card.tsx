@@ -6,9 +6,7 @@ import Link from "next/link";
 import type { Product } from "~/lib/types";
 import { getOptimizedImageUrl } from "~/lib/types";
 import { Button } from "~/components/ui/button";
-import { ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
-import { useCart } from "~/lib/cart-context";
-import { useToast } from "~/lib/toast-context";
+import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import { generateProductStructuredData } from "~/lib/seo";
 
 interface ProductCardProps {
@@ -16,16 +14,11 @@ interface ProductCardProps {
 }
 
 function ProductCardComponent({ product }: ProductCardProps) {
-  const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
-  const [customColorValue, setCustomColorValue] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
-  const { addItem } = useCart();
-  const { addToast } = useToast();
 
   // Create array of all images including primary with optimized URLs
   // Only use optimization endpoint if we have an imageId, otherwise use the dataUri directly
@@ -118,24 +111,18 @@ function ProductCardComponent({ product }: ProductCardProps) {
     return null;
   }, [allImages, product.colors]);
 
-  // Calculate price with XXL and 3XL surcharge
-  const displayPrice = product.price + (selectedSize === 'XXL' ? 3 : selectedSize === '3XL' ? 5 : 0);
+  // Base price (surcharges shown on detail page)
+  const displayPrice = product.price;
 
-  // Set default selections when component mounts if there's only one option
+  // Set default color selection when component mounts
   useEffect(() => {
-    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-      const firstSize = product.sizes[0];
-      if (firstSize) {
-        setSelectedSize(firstSize);
-      }
-    }
     if (product.colors && product.colors.length > 0 && !selectedColor) {
       const firstColor = product.colors[0];
       if (firstColor) {
         setSelectedColor(firstColor);
       }
     }
-  }, [product.sizes, product.colors, selectedSize, selectedColor]);
+  }, [product.colors, selectedColor]);
 
   // Update image when color selection changes
   useEffect(() => {
@@ -205,42 +192,8 @@ function ProductCardComponent({ product }: ProductCardProps) {
     }
   };
 
-  const handleAddToCart = () => {
-    if (product.sizes && product.sizes.length > 1 && !selectedSize) {
-      addToast({
-        title: "Size Required",
-        description: "Please select a size before adding to cart.",
-        type: "warning"
-      });
-      return;
-    }
-    if (product.colors && product.colors.length > 1 && !selectedColor) {
-      addToast({
-        title: "Color Required",
-        description: "Please select a color before adding to cart.",
-        type: "warning"
-      });
-      return;
-    }
-    if (selectedColor === "Custom" && !customColorValue.trim()) {
-      addToast({
-        title: "Custom Color Required",
-        description: "Please specify your custom color.",
-        type: "warning"
-      });
-      return;
-    }
-    
-    addItem(product, quantity, selectedSize, selectedColor, selectedColor === "Custom" ? customColorValue : undefined);
-    addToast({
-      title: "Added to Cart!",
-      description: `${product.name} has been added to your cart.`,
-      type: "success"
-    });
-  };
-
   return (
-    <article className="bg-white h-full flex flex-col" itemScope itemType="https://schema.org/Product">
+    <article className="bg-white h-full flex flex-col p-4 border border-gray-200 rounded-xl" itemScope itemType="https://schema.org/Product">
       {/* Structured Data */}
       <script
         type="application/ld+json"
@@ -258,7 +211,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
       />
       {/* Product Image - Clickable to product detail */}
       <Link href={`/shop/${product.id}`}>
-        <div className="aspect-square relative mb-6 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border border-gray-200"
+        <div className="aspect-square relative mb-4 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border border-gray-100"
              onTouchStart={handleTouchStart}
              onTouchMove={handleTouchMove}
              onTouchEnd={handleTouchEnd}
@@ -420,156 +373,62 @@ function ProductCardComponent({ product }: ProductCardProps) {
         </div>
       )}
       
-      {/* Product Details */}
-        <div className="space-y-4 md:space-y-6 flex-1 flex flex-col">
-          <div className="flex-shrink-0">
+      {/* Product Details - Simplified for consistent heights */}
+        <div className="flex flex-col flex-1">
+          {/* Product Info */}
+          <div className="flex-1">
             <Link href={`/shop/${product.id}`}>
-              <h3 className="text-lg md:text-xl font-medium text-gray-900 mb-2 line-clamp-2 hover:text-gray-700 transition-colors cursor-pointer" itemProp="name">{product.name}</h3>
+              <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-1 hover:text-[#0A5565] transition-colors cursor-pointer" itemProp="name">
+                {product.name}
+              </h3>
             </Link>
-            <p className="text-sm md:text-base text-gray-600 line-clamp-3" itemProp="description">{product.description}</p>
+            <p className="text-sm text-gray-500 line-clamp-2 mb-3" itemProp="description">
+              {product.description}
+            </p>
             
-            {/* Cyber Monday Sale Alert */}
-            {product.name.toLowerCase() === 'beanie' && (
-              <div className="mt-3 p-3 bg-[#E6F7FA] border border-[#74CADC] rounded-md">
-                <p className="text-sm font-medium text-[#0A5565] mb-1">🎉 Cyber Monday Sale!</p>
-                <p className="text-xs text-[#0A5565]">
-                  Use code <span className="font-bold">STITCHIT</span> for 15% off at checkout.
-                </p>
-              </div>
-            )}
-            
-            {/* Special Instructions for Mama Keepsake Sweatshirt */}
-            {product.requiresBabyClothes && (
-              <div className="mt-3 p-3 bg-[#E6F7FA] border border-[#74CADC] rounded-md">
-                <p className="text-sm font-medium text-[#0A5565] mb-1">👶 Don&apos;t forget to bring your baby clothes!</p>
-                <p className="text-xs text-[#0A5565]">
-                    Please bring your baby clothes within {product.babyClothesDeadlineDays ?? 5} days of placing your order.
-                </p>
-              </div>
-            )}
-          </div>
-          
-          <div className="text-xl md:text-2xl font-medium text-gray-900 flex-shrink-0">
-            <span itemProp="offers" itemScope itemType="https://schema.org/Offer">
-              <span itemProp="price" content={displayPrice.toString()}>${displayPrice.toFixed(2)}</span>
-              <meta itemProp="priceCurrency" content="USD" />
-              <meta itemProp="availability" content={product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
-            </span>
-          </div>
-
-        {/* Size Selection */}
-        {product.sizes && product.sizes.length > 0 && (
-          <div className="flex-shrink-0">
-            <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Size</label>
-            <div className="flex flex-wrap gap-1 md:gap-2">
-              {product.sizes.map((size) => {
-                const isSelected = selectedSize === size;
-                return (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-3 md:px-4 py-2 text-sm border rounded-md transition-colors ${
-                      isSelected
-                        ? "border-[#0A5565] bg-[#0A5565] text-white"
-                        : "border-gray-300 text-gray-700 hover:border-gray-400"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Color Selection */}
-        {product.colors && product.colors.length > 1 && (
-          <div className="flex-shrink-0">
-            <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Color</label>
-            <div className="flex flex-wrap gap-1 md:gap-2">
-              {product.colors.map((color) => {
-                const isSelected = selectedColor === color;
-                return (
-                  <button
-                    key={color}
-                    onClick={() => {
-                      setSelectedColor(color);
-                      setCustomColorValue("");
-                    }}
-                    className={`px-3 md:px-4 py-2 text-sm border rounded-md transition-colors ${
-                      isSelected
-                        ? "border-[#0A5565] bg-[#0A5565] text-white"
-                        : "border-gray-300 text-gray-700 hover:border-gray-400"
-                    }`}
-                  >
-                    {color}
-                  </button>
-                );
-              })}
-              {/* Custom Color Option for Keepsake Sweater */}
-              {product.requiresBabyClothes && (
-                <button
-                  onClick={() => setSelectedColor("Custom")}
-                  className={`px-3 md:px-4 py-2 text-sm border rounded-md transition-colors ${
-                    selectedColor === "Custom"
-                      ? "border-[#0A5565] bg-[#0A5565] text-white"
-                      : "border-gray-300 text-gray-700 hover:border-gray-400"
-                  }`}
-                >
-                  Custom 🎨
-                </button>
+            {/* Quick info badges */}
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {product.colors && product.colors.length > 1 && (
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  {product.colors.length} colors
+                </span>
+              )}
+              {product.sizes && product.sizes.length > 1 && (
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  {product.sizes.length} sizes
+                </span>
+              )}
+              {product.name.toLowerCase() === 'beanie' && (
+                <span className="text-xs text-[#0A5565] bg-[#E6F7FA] px-2 py-1 rounded-full font-medium">
+                  15% OFF
+                </span>
               )}
             </div>
-            {/* Custom Color Input */}
-            {selectedColor === "Custom" && product.requiresBabyClothes && (
-              <div className="mt-2">
-                <input
-                  type="text"
-                  value={customColorValue}
-                  onChange={(e) => setCustomColorValue(e.target.value)}
-                  placeholder="Enter your custom color"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                />
-              </div>
-            )}
           </div>
-        )}
 
-        {/* Quantity Selector */}
-        <div className="flex-shrink-0">
-          <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">Quantity</label>
-          <div className="flex items-center gap-2 md:gap-3">
-            <button
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              <Minus className="h-4 w-4" />
-            </button>
-            <span className="px-3 md:px-4 py-2 border border-gray-300 rounded-md min-w-[3rem] md:min-w-[4rem] text-center">
-              {quantity}
-            </span>
-            <button
-              onClick={() => setQuantity(quantity + 1)}
-              className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
+          {/* Price and CTA - Always at bottom */}
+          <div className="mt-auto pt-3 border-t border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-lg font-bold text-gray-900" itemProp="offers" itemScope itemType="https://schema.org/Offer">
+                <span itemProp="price" content={displayPrice.toString()}>${displayPrice.toFixed(2)}</span>
+                <meta itemProp="priceCurrency" content="USD" />
+                <meta itemProp="availability" content={product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+              </span>
+              {!product.inStock && (
+                <span className="text-xs text-red-500 font-medium">Out of Stock</span>
+              )}
+            </div>
+            
+            <Link href={`/shop/${product.id}`} className="block">
+              <Button
+                disabled={!product.inStock}
+                className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white py-3 text-sm font-medium rounded-xl transition-colors"
+              >
+                {product.inStock ? 'View Product' : 'Out of Stock'}
+              </Button>
+            </Link>
           </div>
         </div>
-
-        {/* Add to Cart Button */}
-        <div className="mt-auto pt-4">
-          <Button
-            onClick={handleAddToCart}
-            disabled={!product.inStock}
-            className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white py-3 md:py-4 text-sm md:text-base font-semibold rounded-xl"
-            aria-label={`Add ${product.name} to cart`}
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" aria-hidden="true" />
-            Add to Cart
-          </Button>
-        </div>
-      </div>
     </article>
   );
 }

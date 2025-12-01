@@ -75,27 +75,38 @@ export default function ShopPage() {
               </div>
             </div>
 
-            {/* Search Bar - NEO Style */}
-            <div className="mt-[20px] sm:mt-[24px] flex gap-[12px] sm:gap-[16px]">
-              <div className="flex-1 relative">
-                <Search className="absolute left-[12px] sm:left-[16px] top-1/2 transform -translate-y-1/2 h-[16px] w-[16px] sm:h-[18px] sm:w-[18px] text-black/[0.44]" />
+            {/* Search Bar - Clean & functional */}
+            <div className="mt-5 sm:mt-6 flex gap-3">
+              <div className="flex-1 relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-gray-600 transition-colors" />
                 <input
                   type="text"
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-[40px] sm:pl-[48px] pr-[16px] sm:pr-[24px] py-[12px] sm:py-[14px] bg-black/[0.03] rounded-md text-[13px] sm:text-[14px] leading-[130%] placeholder:text-black/[0.44] focus:outline-none focus:bg-black/[0.06] transition-all duration-300"
+                  className="w-full pl-11 pr-10 py-3 bg-gray-100 rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#0A5565] transition-all"
                 />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
               </div>
               
               {/* Filter Toggle - Mobile/Tablet */}
               <Button
                 onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden shrink-0 px-[14px] sm:px-[16px] py-[12px] sm:py-[14px]"
+                className="lg:hidden shrink-0 px-4 py-3 rounded-xl"
                 variant="outline"
               >
-                <Filter className="h-[16px] w-[16px] sm:h-[18px] sm:w-[18px]" />
-                <span className="hidden xs:inline ml-2 text-[13px] sm:text-[14px]">Filters</span>
+                <Filter className="h-4 w-4" />
+                <span className="hidden sm:inline ml-2 text-sm">Filters</span>
               </Button>
             </div>
           </div>
