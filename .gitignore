@@ -43,5 +43,8 @@ yarn-error.log*
 *.tsbuildinfo
 
 # idea files
-.ideapublic/_DSC0250.jpg
+.idea
+
+# Large unoptimized image files (exceed GitHub 100MB limit)
+# NOTE: BlackonBlack.png was optimized to BlackonBlack.jpg (160MB -> 298KB)
 public/products/beanies/BlackonBlack.png
