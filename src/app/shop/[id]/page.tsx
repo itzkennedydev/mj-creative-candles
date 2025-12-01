@@ -77,10 +77,12 @@ export default function ProductDetailPage() {
     },
     enabled: !!productId,
     retry: 1,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 min fresh
+    gcTime: 60 * 60 * 1000, // 1 hour cache
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    refetchOnReconnect: false,
+    placeholderData: (prev) => prev, // Show stale data immediately
   });
 
   // Track product view analytics

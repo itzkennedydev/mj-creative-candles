@@ -28,19 +28,24 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#74CADC" />
+        <meta name="theme-color" content="#0A5565" />
         <link rel="manifest" href="/manifest.json" />
+        {/* Preconnect to external domains for faster loads */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        {/* Prefetch critical pages */}
+        <link rel="prefetch" href="/shop" as="document" />
         
-        {/* Google Analytics */}
+        {/* Google Analytics - load after page is interactive */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-              strategy="afterInteractive"
+              strategy="lazyOnload"
             />
-            <Script id="google-analytics" strategy="afterInteractive">
+            <Script id="google-analytics" strategy="lazyOnload">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
