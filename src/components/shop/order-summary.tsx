@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Plus, Minus, Tag, Trash2 } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
+import type { Product } from "~/lib/types";
 
 interface Settings {
   taxRate: number;
@@ -38,6 +39,45 @@ function isDiscountCodeValid(code: string): boolean {
 interface OrderSummaryProps {
   appliedDiscount?: { code: string; percent: number; amount: number } | null;
   setAppliedDiscount?: (discount: { code: string; percent: number; amount: number } | null) => void;
+}
+
+// Helper function to get the correct image for a selected color
+function getImageForColor(product: Product, selectedColor: string | undefined): string {
+  if (!selectedColor || !product.colors || product.colors.length <= 1) {
+    return product.image;
+  }
+
+  const colorLower = selectedColor.toLowerCase();
+  const allImages = [
+    product.image,
+    ...(product.images ?? []).map(img => typeof img === 'string' ? img : img.dataUri)
+  ];
+
+  for (const imageSrc of allImages) {
+    const imageSrcLower = (imageSrc ?? '').toLowerCase();
+    
+    // Beanie-specific color mappings - match specific color keywords
+    if (colorLower.includes('forest green') && imageSrcLower.includes('forest')) return imageSrc;
+    if (colorLower.includes('gold') && colorLower.includes('white') && imageSrcLower.includes('gold')) return imageSrc;
+    if (colorLower.includes('icon grey') && imageSrcLower.includes('icon')) return imageSrc;
+    if (colorLower.includes('maroon') && imageSrcLower.includes('maroon')) return imageSrc;
+    if (colorLower.includes('pink raspberry') && imageSrcLower.includes('pink')) return imageSrc;
+    if (colorLower.includes('purple') && imageSrcLower.includes('purple')) return imageSrc;
+    if (colorLower.includes('red') && colorLower.includes('black') && !colorLower.includes('royal') && imageSrcLower.includes('red:black')) return imageSrc;
+    if (colorLower.includes('red') && colorLower.includes('royal') && imageSrcLower.includes('red:royal')) return imageSrc;
+    if (colorLower.includes('true royal') && imageSrcLower.includes('true')) return imageSrc;
+    if (colorLower.includes('black on black') && imageSrcLower.includes('blackonblack')) return imageSrc;
+    if (colorLower.includes('moline black') && imageSrcLower.includes('molineblack')) return imageSrc;
+    if (colorLower.includes('royal blue') && imageSrcLower.includes('blue')) return imageSrc;
+    if (colorLower === 'moline' && imageSrcLower.includes('beanie') && !imageSrcLower.includes('black')) return imageSrc;
+    // Generic fallbacks
+    if (colorLower === 'black' && imageSrcLower.includes('black') && !imageSrcLower.includes('maroon') && !imageSrcLower.includes('purple') && !imageSrcLower.includes('red')) return imageSrc;
+    if (colorLower === 'blue' && imageSrcLower.includes('blue')) return imageSrc;
+    if (colorLower === 'white' && imageSrcLower.includes('white')) return imageSrc;
+    if (colorLower === 'red' && imageSrcLower.includes('red')) return imageSrc;
+  }
+
+  return product.image; // Fallback to primary image
 }
 
 export function OrderSummary({ appliedDiscount: propAppliedDiscount, setAppliedDiscount: propSetAppliedDiscount }: OrderSummaryProps = {}) {
@@ -156,7 +196,7 @@ export function OrderSummary({ appliedDiscount: propAppliedDiscount, setAppliedD
               <div key={itemId} className="flex gap-3 group">
                 <div className="w-14 h-14 relative rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                   <Image
-                    src={item.product.image}
+                    src={getImageForColor(item.product, item.selectedColor)}
                     alt={item.product.name}
                     fill
                     className="object-cover"

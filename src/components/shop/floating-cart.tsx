@@ -6,6 +6,44 @@ import Image from "next/image";
 import { ShoppingCart, X, Plus, Minus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/cart-context";
+import type { Product } from "~/lib/types";
+
+// Helper function to get the correct image for a selected color
+function getImageForColor(product: Product, selectedColor: string | undefined): string {
+  if (!selectedColor || !product.colors || product.colors.length <= 1) {
+    return product.image;
+  }
+
+  const colorLower = selectedColor.toLowerCase();
+  const allImages = [
+    product.image,
+    ...(product.images ?? []).map(img => typeof img === 'string' ? img : img.dataUri)
+  ];
+
+  for (const imageSrc of allImages) {
+    const imageSrcLower = (imageSrc ?? '').toLowerCase();
+    
+    if (colorLower.includes('forest green') && imageSrcLower.includes('forest')) return imageSrc;
+    if (colorLower.includes('gold') && colorLower.includes('white') && imageSrcLower.includes('gold')) return imageSrc;
+    if (colorLower.includes('icon grey') && imageSrcLower.includes('icon')) return imageSrc;
+    if (colorLower.includes('maroon') && imageSrcLower.includes('maroon')) return imageSrc;
+    if (colorLower.includes('pink raspberry') && imageSrcLower.includes('pink')) return imageSrc;
+    if (colorLower.includes('purple') && imageSrcLower.includes('purple')) return imageSrc;
+    if (colorLower.includes('red') && colorLower.includes('black') && !colorLower.includes('royal') && imageSrcLower.includes('red:black')) return imageSrc;
+    if (colorLower.includes('red') && colorLower.includes('royal') && imageSrcLower.includes('red:royal')) return imageSrc;
+    if (colorLower.includes('true royal') && imageSrcLower.includes('true')) return imageSrc;
+    if (colorLower.includes('black on black') && imageSrcLower.includes('blackonblack')) return imageSrc;
+    if (colorLower.includes('moline black') && imageSrcLower.includes('molineblack')) return imageSrc;
+    if (colorLower.includes('royal blue') && imageSrcLower.includes('blue')) return imageSrc;
+    if (colorLower === 'moline' && imageSrcLower.includes('beanie') && !imageSrcLower.includes('black')) return imageSrc;
+    if (colorLower === 'black' && imageSrcLower.includes('black') && !imageSrcLower.includes('maroon') && !imageSrcLower.includes('purple') && !imageSrcLower.includes('red')) return imageSrc;
+    if (colorLower === 'blue' && imageSrcLower.includes('blue')) return imageSrc;
+    if (colorLower === 'white' && imageSrcLower.includes('white')) return imageSrc;
+    if (colorLower === 'red' && imageSrcLower.includes('red')) return imageSrc;
+  }
+
+  return product.image;
+}
 
 export function FloatingCart() {
   const [isOpen, setIsOpen] = useState(false);
@@ -72,7 +110,7 @@ export function FloatingCart() {
                         <div key={itemId} className="flex gap-3 sm:gap-4 border-b border-gray-100 pb-3 sm:pb-4">
                           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
                             <Image
-                              src={item.product.image}
+                              src={getImageForColor(item.product, item.selectedColor)}
                               alt={item.product.name}
                               width={64}
                               height={64}

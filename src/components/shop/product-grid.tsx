@@ -134,7 +134,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
   
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 auto-rows-fr">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8 auto-rows-fr">
         {[...Array(6)].map((_, idx) => (
           <div key={idx} className="bg-white rounded-lg overflow-hidden animate-pulse h-full">
             <div className="aspect-square bg-gray-200"></div>
@@ -339,7 +339,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
         
         {/* Products Grid */}
         {productsToShow.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 auto-rows-fr">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8 auto-rows-fr">
             {productsToShow.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -355,7 +355,7 @@ export function ProductGrid({ shopType = "regular-shop", searchQuery = "", selec
   
   // For regular shop, show normal grid
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 auto-rows-fr">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8 auto-rows-fr">
       {filteredProducts.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
