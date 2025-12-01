@@ -26,7 +26,7 @@ export interface SEOProps {
   keywords?: string[];
   image?: string;
   url?: string;
-  type?: 'website' | 'product' | 'article';
+  type?: 'website' | 'article';
   price?: number;
   currency?: string;
   availability?: 'in stock' | 'out of stock';
