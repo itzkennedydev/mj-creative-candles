@@ -425,7 +425,7 @@ export function CheckoutForm({ appliedDiscount }: CheckoutFormProps = {}) {
               👶 Don&apos;t forget your baby clothes!
             </p>
             <p className="text-sm text-[#0A5565]">
-              Bring them within {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days of ordering.
+              Please bring your baby clothes within {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days of placing your order.
             </p>
           </div>
         )}

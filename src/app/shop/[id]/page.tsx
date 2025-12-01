@@ -653,16 +653,11 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
 
-                {/* Delivery Timeframe */}
-                <div className="flex items-start gap-3 p-4 bg-gray-100 rounded-2xl">
-                  <Clock className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-gray-900">Estimated Turnaround</p>
-                    <p className="text-sm text-gray-600 mt-0.5">
-                      5-7 business days (may vary if materials need to be ordered)
-                    </p>
-                  </div>
-                </div>
+                {/* Delivery Timeframe - Subtle */}
+                <p className="text-sm text-gray-500 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  5-7 business days (may vary if materials need to be ordered)
+                </p>
 
                 {/* Baby Clothes Reminder */}
                 {product.requiresBabyClothes && (
