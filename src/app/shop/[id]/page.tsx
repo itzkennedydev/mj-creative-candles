@@ -124,24 +124,25 @@ export default function ProductDetailPage() {
       const imageSrc = allImages[i]?.src ?? '';
       const imageSrcLower = imageSrc.toLowerCase();
       
-      // Beanie-specific color mappings
-      if (colorLower.includes('forest green') && (imageSrcLower.includes('forest green') || imageSrcLower.includes('forestgreen'))) return i;
-      if (colorLower.includes('gold') && colorLower.includes('white') && (imageSrcLower.includes('gold') || imageSrcLower.includes('white'))) return i;
-      if (colorLower.includes('icon grey') && imageSrcLower.includes('icon grey')) return i;
-      if (colorLower.includes('maroon') && colorLower.includes('black') && (imageSrcLower.includes('maroon') || imageSrcLower.includes('black'))) return i;
-      if (colorLower.includes('pink raspberry') && (imageSrcLower.includes('pink') || imageSrcLower.includes('raspberry'))) return i;
-      if (colorLower.includes('purple') && colorLower.includes('black') && (imageSrcLower.includes('purple') || imageSrcLower.includes('black'))) return i;
-      if (colorLower.includes('red') && colorLower.includes('black') && !colorLower.includes('royal') && (imageSrcLower.includes('red') && imageSrcLower.includes('black'))) return i;
-      if (colorLower.includes('red') && colorLower.includes('royal') && (imageSrcLower.includes('red') && imageSrcLower.includes('royal'))) return i;
-      if (colorLower.includes('true royal') && (imageSrcLower.includes('true royal') || imageSrcLower.includes('trueroyal'))) return i;
-      if (colorLower.includes('black on black') && (imageSrcLower.includes('blackonblack') || imageSrcLower.includes('black-on-black'))) return i;
-      if (colorLower.includes('moline black') && (imageSrcLower.includes('molineblack') || imageSrcLower.includes('moline-black'))) return i;
+      // Beanie-specific color mappings - require SPECIFIC color word in filename
+      if (colorLower.includes('forest green') && imageSrcLower.includes('forest')) return i;
+      if (colorLower.includes('gold') && colorLower.includes('white') && imageSrcLower.includes('gold')) return i;
+      if (colorLower.includes('icon grey') && imageSrcLower.includes('icon')) return i;
+      if (colorLower.includes('maroon') && imageSrcLower.includes('maroon')) return i;
+      if (colorLower.includes('pink raspberry') && imageSrcLower.includes('pink')) return i;
+      if (colorLower.includes('purple') && imageSrcLower.includes('purple')) return i;
+      if (colorLower.includes('red') && colorLower.includes('black') && !colorLower.includes('royal') && imageSrcLower.includes('red:black')) return i;
+      if (colorLower.includes('red') && colorLower.includes('royal') && imageSrcLower.includes('red:royal')) return i;
+      if (colorLower.includes('true royal') && imageSrcLower.includes('true')) return i;
+      if (colorLower.includes('black on black') && imageSrcLower.includes('blackonblack')) return i;
+      if (colorLower.includes('moline black') && imageSrcLower.includes('molineblack')) return i;
       if (colorLower.includes('royal blue') && imageSrcLower.includes('blue')) return i;
-      if (colorLower.includes('black') && imageSrcLower.includes('black') && !imageSrcLower.includes('molineblack') && !imageSrcLower.includes('blackonblack')) return i;
-      if (colorLower.includes('blue') && imageSrcLower.includes('blue')) return i;
-      if (colorLower.includes('white') && imageSrcLower.includes('white')) return i;
-      if (colorLower.includes('red') && imageSrcLower.includes('red')) return i;
-      if (colorLower === 'moline' && (imageSrcLower.includes('beanie') && !imageSrcLower.includes('black'))) return i;
+      if (colorLower === 'moline' && imageSrcLower.includes('beanie') && !imageSrcLower.includes('black')) return i;
+      // Generic fallbacks (less specific, checked last)
+      if (colorLower === 'black' && imageSrcLower.includes('black') && !imageSrcLower.includes('maroon') && !imageSrcLower.includes('purple') && !imageSrcLower.includes('red')) return i;
+      if (colorLower === 'blue' && imageSrcLower.includes('blue')) return i;
+      if (colorLower === 'white' && imageSrcLower.includes('white')) return i;
+      if (colorLower === 'red' && imageSrcLower.includes('red')) return i;
     }
     
     return null;
@@ -313,7 +314,7 @@ export default function ProductDetailPage() {
             {/* Left Panel - Product Images (Law of Common Region - contained in clear boundary) */}
             <section 
               ref={imageContainerRef}
-              className="relative aspect-[3/4] sm:aspect-[4/5] md:aspect-auto md:h-[720px] lg:h-[850px] xl:h-[88vh] xl:max-h-[950px] rounded-2xl md:rounded-3xl overflow-hidden md:sticky md:top-24 touch-pan-y"
+              className="relative aspect-[4/5] sm:aspect-square md:aspect-auto md:h-[720px] lg:h-[850px] xl:h-[88vh] xl:max-h-[950px] rounded-2xl md:rounded-3xl overflow-hidden md:sticky md:top-24 touch-pan-y"
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}

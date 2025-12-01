@@ -44,68 +44,30 @@ function ProductCardComponent({ product }: ProductCardProps) {
     
     const colorLower = color.toLowerCase();
     
-    // Try to match color names to image filenames (check more specific matches first)
+    // Try to match color names to image filenames - require SPECIFIC color word
     for (let i = 0; i < allImages.length; i++) {
       const imageSrc = allImages[i]?.src ?? '';
       const imageSrcLower = imageSrc.toLowerCase();
       
-      // Beanie-specific color mappings
-      if (colorLower.includes('forest green') && (imageSrcLower.includes('forest green') || imageSrcLower.includes('forestgreen'))) {
-        return i;
-      }
-      if (colorLower.includes('gold') && colorLower.includes('white') && (imageSrcLower.includes('gold') || imageSrcLower.includes('white'))) {
-        return i;
-      }
-      if (colorLower.includes('icon grey') && imageSrcLower.includes('icon grey')) {
-        return i;
-      }
-      if (colorLower.includes('maroon') && colorLower.includes('black') && (imageSrcLower.includes('maroon') || imageSrcLower.includes('black'))) {
-        return i;
-      }
-      if (colorLower.includes('pink raspberry') && (imageSrcLower.includes('pink') || imageSrcLower.includes('raspberry'))) {
-        return i;
-      }
-      if (colorLower.includes('purple') && colorLower.includes('black') && (imageSrcLower.includes('purple') || imageSrcLower.includes('black'))) {
-        return i;
-      }
-      if (colorLower.includes('red') && colorLower.includes('black') && !colorLower.includes('royal') && (imageSrcLower.includes('red') && imageSrcLower.includes('black'))) {
-        return i;
-      }
-      if (colorLower.includes('red') && colorLower.includes('royal') && (imageSrcLower.includes('red') && imageSrcLower.includes('royal'))) {
-        return i;
-      }
-      if (colorLower.includes('true royal') && (imageSrcLower.includes('true royal') || imageSrcLower.includes('trueroyal'))) {
-        return i;
-      }
-      
-      // More specific matches first
-      if (colorLower.includes('black on black') && (imageSrcLower.includes('blackonblack') || imageSrcLower.includes('black-on-black'))) {
-        return i;
-      }
-      if (colorLower.includes('moline black') && (imageSrcLower.includes('molineblack') || imageSrcLower.includes('moline-black'))) {
-        return i;
-      }
-      if (colorLower.includes('royal blue') && imageSrcLower.includes('blue')) {
-        return i;
-      }
-      // General matches
-      if (colorLower.includes('black') && imageSrcLower.includes('black') && !imageSrcLower.includes('molineblack') && !imageSrcLower.includes('blackonblack')) {
-        return i;
-      }
-      if (colorLower.includes('blue') && imageSrcLower.includes('blue')) {
-        return i;
-      }
-      // Add more color mappings as needed
-      if (colorLower.includes('white') && imageSrcLower.includes('white')) {
-        return i;
-      }
-      if (colorLower.includes('red') && imageSrcLower.includes('red')) {
-        return i;
-      }
-      // Match "Moline" to Beanie.png (default/primary image)
-      if (colorLower === 'moline' && (imageSrcLower.includes('beanie') && !imageSrcLower.includes('black'))) {
-        return i;
-      }
+      // Beanie-specific color mappings - match specific color keywords
+      if (colorLower.includes('forest green') && imageSrcLower.includes('forest')) return i;
+      if (colorLower.includes('gold') && colorLower.includes('white') && imageSrcLower.includes('gold')) return i;
+      if (colorLower.includes('icon grey') && imageSrcLower.includes('icon')) return i;
+      if (colorLower.includes('maroon') && imageSrcLower.includes('maroon')) return i;
+      if (colorLower.includes('pink raspberry') && imageSrcLower.includes('pink')) return i;
+      if (colorLower.includes('purple') && imageSrcLower.includes('purple')) return i;
+      if (colorLower.includes('red') && colorLower.includes('black') && !colorLower.includes('royal') && imageSrcLower.includes('red:black')) return i;
+      if (colorLower.includes('red') && colorLower.includes('royal') && imageSrcLower.includes('red:royal')) return i;
+      if (colorLower.includes('true royal') && imageSrcLower.includes('true')) return i;
+      if (colorLower.includes('black on black') && imageSrcLower.includes('blackonblack')) return i;
+      if (colorLower.includes('moline black') && imageSrcLower.includes('molineblack')) return i;
+      if (colorLower.includes('royal blue') && imageSrcLower.includes('blue')) return i;
+      if (colorLower === 'moline' && imageSrcLower.includes('beanie') && !imageSrcLower.includes('black')) return i;
+      // Generic fallbacks (less specific, checked last)
+      if (colorLower === 'black' && imageSrcLower.includes('black') && !imageSrcLower.includes('maroon') && !imageSrcLower.includes('purple') && !imageSrcLower.includes('red')) return i;
+      if (colorLower === 'blue' && imageSrcLower.includes('blue')) return i;
+      if (colorLower === 'white' && imageSrcLower.includes('white')) return i;
+      if (colorLower === 'red' && imageSrcLower.includes('red')) return i;
     }
     
     return null;
