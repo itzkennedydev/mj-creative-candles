@@ -311,7 +311,7 @@ export default function ProductDetailPage() {
             {/* Left Panel - Product Images (Law of Common Region - contained in clear boundary) */}
             <section 
               ref={imageContainerRef}
-              className="relative aspect-square md:aspect-auto md:h-[680px] lg:h-[800px] xl:h-[85vh] xl:max-h-[900px] rounded-2xl md:rounded-3xl overflow-hidden md:sticky md:top-24 touch-pan-y"
+              className="relative aspect-[3/4] sm:aspect-[4/5] md:aspect-auto md:h-[720px] lg:h-[850px] xl:h-[88vh] xl:max-h-[950px] rounded-2xl md:rounded-3xl overflow-hidden md:sticky md:top-24 touch-pan-y"
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
