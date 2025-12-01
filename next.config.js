@@ -36,8 +36,6 @@ const nextConfig = {
   },
   // Enable compression
   compress: true,
-  // Optimize production builds
-  swcMinify: true,
   // Disable ESLint during builds
   eslint: {
     ignoreDuringBuilds: true,
