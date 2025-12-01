@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/cart-context";
 import { useToast } from "~/lib/toast-context";
 import type { CustomerInfo } from "~/lib/types";
 import type { CreateOrderRequest } from "~/lib/order-types";
 import { api, handleApiError } from "~/lib/api-client";
+import { Lock, Shield, CheckCircle } from "lucide-react";
 
 interface Settings {
   taxRate: number;
@@ -25,6 +26,7 @@ export function CheckoutForm({ appliedDiscount }: CheckoutFormProps = {}) {
   const { addToast } = useToast();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
+  const firstInputRef = useRef<HTMLInputElement>(null);
   
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     firstName: "",
@@ -33,8 +35,43 @@ export function CheckoutForm({ appliedDiscount }: CheckoutFormProps = {}) {
     phone: ""
   });
 
+  // Inline validation states
+  const [touched, setTouched] = useState({
+    firstName: false,
+    lastName: false,
+    email: false,
+    phone: false
+  });
+
   const [paymentMethod, setPaymentMethod] = useState<'card'>('card');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Auto-focus first input
+  useEffect(() => {
+    if (!settingsLoading && firstInputRef.current) {
+      firstInputRef.current.focus();
+    }
+  }, [settingsLoading]);
+
+  // Validation helpers
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidPhone = (phone: string) => phone.replace(/\D/g, '').length >= 10;
+  
+  const getFieldError = (field: keyof typeof touched) => {
+    if (!touched[field]) return null;
+    switch (field) {
+      case 'firstName': return !customerInfo.firstName.trim() ? 'First name is required' : null;
+      case 'lastName': return !customerInfo.lastName.trim() ? 'Last name is required' : null;
+      case 'email': return !customerInfo.email.trim() ? 'Email is required' : !isValidEmail(customerInfo.email) ? 'Enter a valid email' : null;
+      case 'phone': return !customerInfo.phone.trim() ? 'Phone is required' : !isValidPhone(customerInfo.phone) ? 'Enter a valid phone number' : null;
+    }
+  };
+
+  const isFormValid = 
+    customerInfo.firstName.trim() && 
+    customerInfo.lastName.trim() && 
+    isValidEmail(customerInfo.email) && 
+    isValidPhone(customerInfo.phone);
 
   // Load settings on mount
   useEffect(() => {
@@ -246,142 +283,197 @@ export function CheckoutForm({ appliedDiscount }: CheckoutFormProps = {}) {
     );
   }
 
+  // Format phone as user types
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+  };
+
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
     <div className="bg-white" suppressHydrationWarning>
-      
+      {/* Progress indicator */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#0A5565] text-white flex items-center justify-center font-medium">1</div>
+            <span className="font-medium text-gray-900">Your Info</span>
+          </div>
+          <div className="flex-1 h-[2px] bg-gray-200 mx-4" />
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-medium">2</div>
+            <span className="text-gray-500">Payment</span>
+          </div>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-6" suppressHydrationWarning>
-        {/* Customer Information */}
+        {/* Customer Information - Streamlined */}
         <div>
-          <h3 className="text-base md:text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">Contact Information</h3>
+          <p className="text-sm text-gray-500 mb-4">We&apos;ll use this to send your order confirmation</p>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                First Name *
+                First Name
               </label>
               <input
+                ref={firstInputRef}
                 type="text"
                 required
+                autoComplete="given-name"
                 value={customerInfo.firstName}
                 onChange={(e) => setCustomerInfo({...customerInfo, firstName: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                onBlur={() => setTouched({...touched, firstName: true})}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A5565] focus:border-transparent transition-colors ${
+                  getFieldError('firstName') ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+                placeholder="John"
                 suppressHydrationWarning
               />
+              {getFieldError('firstName') && (
+                <p className="mt-1 text-sm text-red-600">{getFieldError('firstName')}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Last Name *
+                Last Name
               </label>
               <input
                 type="text"
                 required
+                autoComplete="family-name"
                 value={customerInfo.lastName}
                 onChange={(e) => setCustomerInfo({...customerInfo, lastName: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                onBlur={() => setTouched({...touched, lastName: true})}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A5565] focus:border-transparent transition-colors ${
+                  getFieldError('lastName') ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+                placeholder="Doe"
                 suppressHydrationWarning
               />
+              {getFieldError('lastName') && (
+                <p className="mt-1 text-sm text-red-600">{getFieldError('lastName')}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
+                Email
               </label>
               <input
                 type="email"
                 required
+                autoComplete="email"
                 value={customerInfo.email}
                 onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                onBlur={() => setTouched({...touched, email: true})}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A5565] focus:border-transparent transition-colors ${
+                  getFieldError('email') ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+                placeholder="john@example.com"
                 suppressHydrationWarning
               />
+              {getFieldError('email') && (
+                <p className="mt-1 text-sm text-red-600">{getFieldError('email')}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone *
+                Phone
               </label>
               <input
                 type="tel"
                 required
+                autoComplete="tel"
                 value={customerInfo.phone}
-                onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                onChange={(e) => setCustomerInfo({...customerInfo, phone: formatPhone(e.target.value)})}
+                onBlur={() => setTouched({...touched, phone: true})}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A5565] focus:border-transparent transition-colors ${
+                  getFieldError('phone') ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+                placeholder="(555) 123-4567"
                 suppressHydrationWarning
               />
+              {getFieldError('phone') && (
+                <p className="mt-1 text-sm text-red-600">{getFieldError('phone')}</p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Pickup Information */}
-        <div>
-          <h3 className="text-base md:text-lg font-medium text-gray-900 mb-4">Pickup Information</h3>
-          <div className="space-y-4">
+        {/* Pickup - Simplified with clear value proposition */}
+        <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Pickup Location
-              </label>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h4 className="text-sm font-medium text-green-800">Local Pickup Available</h4>
-                    <p className="text-sm text-green-700 mt-1">
-                      {settings?.pickupInstructions || "Your order will be ready for pickup at our local location. We'll contact you when your order is ready."}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <h4 className="font-medium text-green-800">Free Local Pickup</h4>
+              <p className="text-sm text-green-700 mt-1">
+                {settings?.pickupInstructions || "We'll contact you when your order is ready for pickup."}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Payment Information */}
-        <div>
-          <h3 className="text-base md:text-lg font-medium text-gray-900 mb-4">Payment Information</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment Method
-              </label>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="card"
-                    checked={paymentMethod === 'card'}
-                    onChange={(e) => setPaymentMethod(e.target.value as 'card')}
-                    className="mr-3"
-                  />
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Pay Online (Credit/Debit Card)</span>
-                    <p className="text-xs text-gray-500 mt-1">Secure online payment required</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {cartItems.some(item => item.product.requiresBabyClothes) && (
-              <div className="p-3 sm:p-4 bg-[#E6F7FA] border border-[#74CADC] rounded-md">
-                <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] font-bold text-[#0A5565] mb-1">
-                  👶 Don&apos;t forget to bring your baby clothes!
-                </p>
-                <p className="text-[13px] sm:text-[14px] leading-[140%] sm:leading-[130%] text-[#0A5565]">
-                  Please bring your baby clothes within {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days of placing your order.
-                </p>
-              </div>
+        {/* Baby clothes reminder if applicable */}
+        {cartItems.some(item => item.product.requiresBabyClothes) && (
+          <div className="p-4 bg-[#E6F7FA] border border-[#74CADC] rounded-xl">
+            <p className="text-sm font-semibold text-[#0A5565] mb-1">
+              👶 Don&apos;t forget your baby clothes!
+            </p>
+            <p className="text-sm text-[#0A5565]">
+              Bring them within {cartItems.find(item => item.product.requiresBabyClothes)?.product.babyClothesDeadlineDays || 5} days of ordering.
+            </p>
+          </div>
+        )}
+
+        {/* CTA Section */}
+        <div className="space-y-4">
+          <Button
+            type="submit"
+            disabled={isProcessing || !settings || !isFormValid}
+            className={`w-full py-4 text-base font-semibold rounded-xl transition-all ${
+              isFormValid 
+                ? 'bg-[#0A5565] hover:bg-[#083d4a] text-white' 
+                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {isProcessing ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Processing...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <Lock className="w-4 h-4" />
+                Pay Now • ${(getTotalPrice() * (1 + (settings?.taxRate || 8.5) / 100) - (appliedDiscount ? getTotalPrice() * appliedDiscount.percent / 100 : 0)).toFixed(2)}
+              </span>
             )}
-          </div>
-        </div>
+          </Button>
 
-        <Button
-          type="submit"
-          disabled={isProcessing || !settings}
-          className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white py-4 text-base font-semibold rounded-xl"
-        >
-          {isProcessing ? "Processing..." : "Continue to Payment"}
-        </Button>
+          {/* Trust signals */}
+          <div className="flex items-center justify-center gap-6 text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <Shield className="w-4 h-4" />
+              Secure Checkout
+            </span>
+            <span className="flex items-center gap-1">
+              <Lock className="w-4 h-4" />
+              SSL Encrypted
+            </span>
+          </div>
+
+          {/* Reassurance */}
+          <p className="text-center text-xs text-gray-500">
+            By completing your purchase, you agree to our terms of service.
+          </p>
+        </div>
       </form>
     </div>
   );

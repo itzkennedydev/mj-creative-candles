@@ -193,7 +193,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
   };
 
   return (
-    <article className="bg-white h-full flex flex-col p-4 border border-gray-200 rounded-xl" itemScope itemType="https://schema.org/Product">
+    <article className="bg-white h-full flex flex-col" itemScope itemType="https://schema.org/Product">
       {/* Structured Data */}
       <script
         type="application/ld+json"

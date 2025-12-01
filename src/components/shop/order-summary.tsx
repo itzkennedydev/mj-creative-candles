@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Tag, Trash2 } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
 
 interface Settings {
@@ -12,9 +12,9 @@ interface Settings {
   shippingCost: number;
 }
 
-// Valid discount codes (you can expand this or move to a database)
+// Valid discount codes
 const VALID_DISCOUNT_CODES: Record<string, { discountPercent: number; description: string }> = {
-  'STITCHIT': { discountPercent: 15, description: '15% off - Cyber Monday Sale' },
+  'STITCHIT': { discountPercent: 15, description: '15% off' },
 };
 
 interface OrderSummaryProps {
@@ -23,11 +23,12 @@ interface OrderSummaryProps {
 }
 
 export function OrderSummary({ appliedDiscount: propAppliedDiscount, setAppliedDiscount: propSetAppliedDiscount }: OrderSummaryProps = {}) {
-  const { items: cartItems, getTotalPrice, updateQuantity } = useCart();
+  const { items: cartItems, getTotalPrice, updateQuantity, removeItem } = useCart();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [discountCode, setDiscountCode] = useState("");
   const [internalDiscount, setInternalDiscount] = useState<{ code: string; percent: number; amount: number } | null>(null);
   const [discountError, setDiscountError] = useState("");
+  const [isApplyingCode, setIsApplyingCode] = useState(false);
   
   // Use prop discount if provided, otherwise use internal state
   const appliedDiscount = propAppliedDiscount !== undefined ? propAppliedDiscount : internalDiscount;
@@ -106,22 +107,29 @@ export function OrderSummary({ appliedDiscount: propAppliedDiscount, setAppliedD
     setDiscountError("");
   };
 
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
-    <div className="bg-gray-50 rounded-xl md:rounded-2xl p-6 md:p-8">
-      <h2 className="text-xl md:text-2xl font-light text-gray-900 mb-6 md:mb-8">Order Summary</h2>
+    <div className="bg-white border border-gray-200 rounded-xl p-5 md:p-6 sticky top-4">
+      {/* Header with item count */}
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-lg font-semibold text-gray-900">Your Order</h2>
+        <span className="text-sm text-gray-500">{totalItems} {totalItems === 1 ? 'item' : 'items'}</span>
+      </div>
       
-      {/* Cart Items */}
-      <div className="space-y-4 mb-6">
+      {/* Cart Items - Compact */}
+      <div className="space-y-3 mb-5 max-h-[280px] overflow-y-auto">
         {cartItems.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            <p>Your cart is empty</p>
+          <div className="text-center text-gray-500 py-6">
+            <p className="text-sm">Your cart is empty</p>
           </div>
         ) : (
           cartItems.map((item) => {
             const itemId = `${item.product.id}-${item.selectedSize ?? 'default'}-${item.selectedColor ?? 'default'}-${item.customColorValue ?? 'default'}`;
+            const itemPrice = (item.product.price + (item.selectedSize === 'XXL' ? 3 : item.selectedSize === '3XL' ? 5 : 0)) * item.quantity;
             return (
-              <div key={itemId} className="flex gap-4">
-                <div className="w-16 h-16 relative rounded-md overflow-hidden flex-shrink-0">
+              <div key={itemId} className="flex gap-3 group">
+                <div className="w-14 h-14 relative rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                   <Image
                     src={item.product.image}
                     alt={item.product.name}
@@ -129,40 +137,40 @@ export function OrderSummary({ appliedDiscount: propAppliedDiscount, setAppliedD
                     className="object-cover"
                   />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">{item.product.name}</h3>
-                  <p className="text-sm text-gray-600">
-                    {item.selectedSize && `Size: ${item.selectedSize}`}
-                    {item.selectedSize && item.selectedColor && " • "}
-                    {item.selectedColor && item.selectedColor === "Custom" && item.customColorValue
-                      ? `Color: Custom (${item.customColorValue})`
-                      : item.selectedColor && `Color: ${item.selectedColor}`}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-gray-900 text-sm truncate">{item.product.name}</h3>
+                  <p className="text-xs text-gray-500 truncate">
+                    {[item.selectedSize, item.selectedColor].filter(Boolean).join(' • ')}
                   </p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="text-sm text-gray-600">Qty:</span>
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center bg-gray-100 rounded-md">
                       <button 
                         onClick={() => updateQuantity(itemId, item.quantity - 1)}
-                        className="p-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                        className="p-1 hover:bg-gray-200 rounded-l-md transition-colors"
                         aria-label="Decrease quantity"
                       >
-                        <Minus className="h-4 w-4" />
+                        <Minus className="h-3 w-3" />
                       </button>
-                      <span className="text-sm font-medium text-gray-900 min-w-[2rem] text-center">{item.quantity}</span>
+                      <span className="text-xs font-medium text-gray-900 px-2">{item.quantity}</span>
                       <button 
                         onClick={() => updateQuantity(itemId, item.quantity + 1)}
-                        className="p-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                        className="p-1 hover:bg-gray-200 rounded-r-md transition-colors"
                         aria-label="Increase quantity"
                       >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="h-3 w-3" />
                       </button>
                     </div>
+                    <button
+                      onClick={() => removeItem(itemId)}
+                      className="p-1 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                      aria-label="Remove item"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-medium text-gray-900">
-                    ${((item.product.price + (item.selectedSize === 'XXL' ? 3 : item.selectedSize === '3XL' ? 5 : 0)) * item.quantity).toFixed(2)}
-                  </p>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-medium text-gray-900 text-sm">${itemPrice.toFixed(2)}</p>
                 </div>
               </div>
             );
@@ -170,113 +178,106 @@ export function OrderSummary({ appliedDiscount: propAppliedDiscount, setAppliedD
         )}
       </div>
 
-      {/* Order Totals */}
-      <div className="border-t pt-4 space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Subtotal</span>
-          <span className="text-gray-900">${subtotal.toFixed(2)}</span>
-        </div>
-        {appliedDiscount && (
-          <div className="flex justify-between items-center py-2 px-3 bg-green-50 border border-green-200 rounded-lg -mx-1">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🎉</span>
-              <div>
-                <span className="text-sm font-semibold text-green-700">You&apos;re saving {appliedDiscount.percent}%!</span>
-                <p className="text-xs text-green-600">{appliedDiscount.code} applied</p>
-              </div>
-            </div>
-            <span className="text-sm font-bold text-green-700">-${discountAmount.toFixed(2)}</span>
-          </div>
-        )}
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Tax</span>
-          <span className="text-gray-900">${tax.toFixed(2)}</span>
-        </div>
-        {settings?.pickupOnly ? (
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Pickup</span>
-            <span className="text-gray-900">Free</span>
-          </div>
-        ) : shipping > 0 ? (
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Shipping</span>
-            <span className="text-gray-900">${shipping.toFixed(2)}</span>
-          </div>
-        ) : subtotal >= (settings?.freeShippingThreshold ?? 50) ? (
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Shipping</span>
-            <span className="text-gray-900">Free</span>
-          </div>
-        ) : null}
-        <div className="border-t pt-2">
-        <div className="flex justify-between text-lg font-medium">
-          <span className="text-gray-900">Total</span>
-          <span className="text-gray-900">${total.toFixed(2)}</span>
-        </div>
-        </div>
-      </div>
-
-      {/* Promo Code */}
-      <div className="mt-4 md:mt-6">
+      {/* Promo Code - Collapsible style */}
+      <div className="border-t border-gray-100 pt-4 mb-4">
         {appliedDiscount ? (
-          <div className="bg-green-50 border border-green-200 rounded-md p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-800">Discount Applied</p>
-                <p className="text-xs text-green-600 mt-1">{appliedDiscount.code} - {appliedDiscount.percent}% off</p>
-              </div>
-              <button
-                onClick={handleRemoveDiscount}
-                className="text-sm text-green-700 hover:text-green-900 underline"
-              >
-                Remove
-              </button>
+          <div className="flex items-center justify-between bg-green-50 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Tag className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-700">{appliedDiscount.code}</span>
+              <span className="text-xs text-green-600">({appliedDiscount.percent}% off)</span>
             </div>
+            <button
+              onClick={handleRemoveDiscount}
+              className="text-xs text-green-700 hover:text-green-900"
+            >
+              Remove
+            </button>
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                placeholder="Promo code"
-                value={discountCode}
-                onChange={(e) => {
-                  setDiscountCode(e.target.value.toUpperCase());
-                  setDiscountError("");
-                }}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleApplyDiscount();
-                  }
-                }}
-                className={`flex-1 px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
-                  discountError ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Discount code"
+                  value={discountCode}
+                  onChange={(e) => {
+                    setDiscountCode(e.target.value.toUpperCase());
+                    setDiscountError("");
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleApplyDiscount();
+                    }
+                  }}
+                  className={`w-full pl-9 pr-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A5565] focus:border-transparent ${
+                    discountError ? 'border-red-300' : 'border-gray-200'
+                  }`}
+                />
+              </div>
               <button
                 onClick={handleApplyDiscount}
-                className="px-4 py-3 bg-[#0A5565] text-white rounded-xl hover:bg-[#083d4a] transition-colors font-medium"
+                disabled={isApplyingCode}
+                className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors font-medium"
               >
                 Apply
               </button>
             </div>
             {discountError && (
-              <p className="text-sm text-red-600">{discountError}</p>
+              <p className="text-xs text-red-600">{discountError}</p>
             )}
           </div>
         )}
       </div>
 
-      {/* Security Notice */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-md">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-          </svg>
-          <span>Secure checkout with SSL encryption</span>
+      {/* Order Totals - Clear hierarchy */}
+      <div className="border-t border-gray-100 pt-4 space-y-2">
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">Subtotal</span>
+          <span className="text-gray-900">${subtotal.toFixed(2)}</span>
+        </div>
+        
+        {appliedDiscount && (
+          <div className="flex justify-between text-sm">
+            <span className="text-green-600">Discount ({appliedDiscount.percent}%)</span>
+            <span className="text-green-600 font-medium">-${discountAmount.toFixed(2)}</span>
+          </div>
+        )}
+        
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">Tax</span>
+          <span className="text-gray-900">${tax.toFixed(2)}</span>
+        </div>
+        
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">Pickup</span>
+          <span className="text-green-600 font-medium">Free</span>
+        </div>
+        
+        <div className="border-t border-gray-100 pt-3 mt-2">
+          <div className="flex justify-between">
+            <span className="text-base font-semibold text-gray-900">Total</span>
+            <div className="text-right">
+              {appliedDiscount && (
+                <span className="text-sm text-gray-400 line-through block">${(subtotal + tax).toFixed(2)}</span>
+              )}
+              <span className="text-lg font-bold text-gray-900">${total.toFixed(2)}</span>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Savings callout if discount applied */}
+      {appliedDiscount && (
+        <div className="mt-4 bg-green-50 rounded-lg p-3 text-center">
+          <p className="text-sm font-medium text-green-700">
+            🎉 You&apos;re saving ${discountAmount.toFixed(2)} on this order!
+          </p>
+        </div>
+      )}
     </div>
   );
 }
