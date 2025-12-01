@@ -36,35 +36,41 @@ export default function ShopPage() {
           <div className="py-[24px] sm:py-[28px] md:py-[32px] lg:py-[40px]">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-[16px] sm:gap-[20px] lg:gap-[24px]">
               <div className="flex flex-col">
-                <h1 className="text-[28px] sm:text-[32px] md:text-[36px] lg:text-[40px] leading-[130%] font-bold text-black/[0.72]">
+                <h1 className="text-[28px] sm:text-[32px] md:text-[36px] lg:text-[40px] leading-[130%] font-bold text-gray-900">
                   Shop
                 </h1>
-                <span className="text-[14px] sm:text-[15px] md:text-[16px] lg:text-[20px] leading-[130%] text-black/[0.44] mt-[4px]">
-                  Custom embroidery and apparel
+                <span className="text-[14px] sm:text-[15px] md:text-[16px] leading-[140%] text-gray-500 mt-1">
+                  Handcrafted embroidery • Local pickup available
                 </span>
               </div>
 
-              {/* Shop Selector Tabs - NEO Style */}
-              <div className="relative inline-flex p-[4px] bg-black/[0.03] rounded-md border border-black/[0.06] w-full sm:w-auto">
+              {/* Shop Selector Tabs - Clear labels with descriptions */}
+              <div className="relative inline-flex p-[4px] bg-black/[0.03] rounded-xl border border-black/[0.06] w-full sm:w-auto">
                 <button
                   onClick={() => setActiveShop("regular-shop")}
-                  className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-300 whitespace-nowrap ${
+                  className={`relative flex-1 sm:flex-none px-[16px] sm:px-[20px] py-[10px] sm:py-[12px] rounded-lg transition-all duration-200 ${
                     activeShop === 'regular-shop' 
-                      ? 'bg-[#0A5565] text-white font-medium' 
-                      : 'text-black/[0.72] hover:text-black'
+                      ? 'bg-[#0A5565] text-white' 
+                      : 'text-black/[0.72] hover:text-black hover:bg-black/[0.03]'
                   }`}
                 >
-                  Stitch Please
+                  <span className="block text-[13px] sm:text-[14px] font-medium">Custom Orders</span>
+                  <span className={`block text-[10px] sm:text-[11px] mt-0.5 ${activeShop === 'regular-shop' ? 'text-white/70' : 'text-black/[0.44]'}`}>
+                    Beanies & Apparel
+                  </span>
                 </button>
                 <button
                   onClick={() => setActiveShop("spirit-wear")}
-                  className={`relative flex-1 sm:flex-none px-[18px] sm:px-[22px] py-[10px] sm:py-[11px] text-[13px] sm:text-[14px] leading-[130%] rounded-md transition-all duration-300 whitespace-nowrap ${
+                  className={`relative flex-1 sm:flex-none px-[16px] sm:px-[20px] py-[10px] sm:py-[12px] rounded-lg transition-all duration-200 ${
                     activeShop === 'spirit-wear' 
-                      ? 'bg-[#0A5565] text-white font-medium' 
-                      : 'text-black/[0.72] hover:text-black'
+                      ? 'bg-[#0A5565] text-white' 
+                      : 'text-black/[0.72] hover:text-black hover:bg-black/[0.03]'
                   }`}
                 >
-                  Spirit Wear
+                  <span className="block text-[13px] sm:text-[14px] font-medium">Spirit Wear</span>
+                  <span className={`block text-[10px] sm:text-[11px] mt-0.5 ${activeShop === 'spirit-wear' ? 'text-white/70' : 'text-black/[0.44]'}`}>
+                    School & Team Gear
+                  </span>
                 </button>
               </div>
             </div>
