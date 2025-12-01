@@ -659,13 +659,13 @@ export default function ProductDetailPage() {
                   5-7 business days (may vary if materials need to be ordered)
                 </p>
 
-                {/* Baby Clothes Reminder */}
+                {/* Baby Clothes Reminder - Matches checkout page styling */}
                 {product.requiresBabyClothes && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                    <p className="font-semibold text-amber-800 flex items-center gap-2">
-                      <span>👶</span> Don&apos;t forget your baby clothes!
+                  <div className="p-4 bg-[#E6F7FA] border border-[#74CADC] rounded-xl">
+                    <p className="text-sm font-semibold text-[#0A5565] mb-1">
+                      👶 Don&apos;t forget your baby clothes!
                     </p>
-                    <p className="text-amber-700 text-sm mt-1">
+                    <p className="text-sm text-[#0A5565]">
                       Please bring your baby clothes within {product.babyClothesDeadlineDays ?? 5} days of placing your order.
                     </p>
                   </div>
