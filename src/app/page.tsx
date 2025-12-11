@@ -217,7 +217,7 @@ export default function HomePage() {
       <section className="w-full bg-gradient-to-br from-gray-100 to-gray-50">
         <div className="relative h-64 w-full overflow-hidden rounded-sm sm:h-80 lg:h-96">
           <Image
-            src="/images/banner.png"
+            src="/images/banner_optimized.jpg"
             alt="MJ Creative Candles Banner"
             fill
             loading="lazy"
@@ -310,7 +310,7 @@ export default function HomePage() {
       <section className="hidden w-full sm:block">
         <div className="grid grid-cols-2 gap-0 sm:grid-cols-4 lg:grid-cols-8">
           <Image
-            src="/images/lowergal/1g.png"
+            src="/images/lowergal/optimized_1g.png"
             alt="Gallery Image 1"
             width={320}
             height={256}
@@ -318,7 +318,7 @@ export default function HomePage() {
             className="h-32 w-full object-cover sm:h-40 lg:h-48"
           />
           <Image
-            src="/images/lowergal/2g.png"
+            src="/images/lowergal/optimized_2g.png"
             alt="Gallery Image 2"
             width={320}
             height={256}
@@ -326,7 +326,7 @@ export default function HomePage() {
             className="h-32 w-full object-cover sm:h-40 lg:h-48"
           />
           <Image
-            src="/images/lowergal/3g.png"
+            src="/images/lowergal/optimized_3g.png"
             alt="Gallery Image 3"
             width={320}
             height={256}
@@ -334,7 +334,7 @@ export default function HomePage() {
             className="h-32 w-full object-cover sm:h-40 lg:h-48"
           />
           <Image
-            src="/images/lowergal/4g.png"
+            src="/images/lowergal/optimized_4g.png"
             alt="Gallery Image 4"
             width={320}
             height={256}
@@ -342,7 +342,7 @@ export default function HomePage() {
             className="h-32 w-full object-cover sm:h-40 lg:h-48"
           />
           <Image
-            src="/images/lowergal/5g.png"
+            src="/images/lowergal/optimized_5g.png"
             alt="Gallery Image 5"
             width={320}
             height={256}
@@ -350,7 +350,7 @@ export default function HomePage() {
             className="h-32 w-full object-cover sm:h-40 lg:h-48"
           />
           <Image
-            src="/images/lowergal/6.png"
+            src="/images/lowergal/optimized_6.png"
             alt="Gallery Image 6"
             width={320}
             height={256}
@@ -358,7 +358,7 @@ export default function HomePage() {
             className="h-32 w-full object-cover sm:h-40 lg:h-48"
           />
           <Image
-            src="/images/lowergal/7g.png"
+            src="/images/lowergal/optimized_7g.png"
             alt="Gallery Image 7"
             width={320}
             height={256}
@@ -366,7 +366,7 @@ export default function HomePage() {
             className="h-32 w-full object-cover sm:h-40 lg:h-48"
           />
           <Image
-            src="/images/lowergal/8g.png"
+            src="/images/lowergal/optimized_8g.png"
             alt="Gallery Image 8"
             width={320}
             height={256}

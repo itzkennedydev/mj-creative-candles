@@ -11,20 +11,20 @@ export const IMAGE_URLS = {
 
   // Featured Product Images
   featured: {
-    product1: "/images/featured/F1.png",
-    product2: "/images/featured/F2.png",
-    product3: "/images/featured/F3.png",
-    product4: "/images/featured/F4.png",
+    product1: "/images/featured/optimized_F1.png",
+    product2: "/images/featured/optimized_F2.png",
+    product3: "/images/featured/optimized_F3.png",
+    product4: "/images/featured/optimized_F4.png",
   },
 
   // Logo Images
   logo: {
-    main: "/images/logo/MJLogo.png",
+    main: "/images/logo/MJLogo_optimized.png",
   },
 
   // Banner Image
   banner: {
-    main: "/images/banner.png",
+    main: "/images/banner_optimized.jpg",
   },
 
   // Icon Images
@@ -37,14 +37,14 @@ export const IMAGE_URLS = {
 
   // Gallery Images (Lower Gallery)
   gallery: {
-    image1: "/images/lowergal/1g.png",
-    image2: "/images/lowergal/2g.png",
-    image3: "/images/lowergal/3g.png",
-    image4: "/images/lowergal/4g.png",
-    image5: "/images/lowergal/5g.png",
-    image6: "/images/lowergal/6.png",
-    image7: "/images/lowergal/7g.png",
-    image8: "/images/lowergal/8g.png",
+    image1: "/images/lowergal/optimized_1g.png",
+    image2: "/images/lowergal/optimized_2g.png",
+    image3: "/images/lowergal/optimized_3g.png",
+    image4: "/images/lowergal/optimized_4g.png",
+    image5: "/images/lowergal/optimized_5g.png",
+    image6: "/images/lowergal/optimized_6.png",
+    image7: "/images/lowergal/optimized_7g.png",
+    image8: "/images/lowergal/optimized_8g.png",
   },
 
   // Owner Images
