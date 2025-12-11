@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React from "react";
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
@@ -26,45 +26,57 @@ const businessHours = [
 export default function ContactPage() {
   return (
     <Container>
-      <div className="py-16 space-y-16">
+      <div className="space-y-16 py-16">
         {/* Contact Header */}
-        <div className="text-center space-y-4">
+        <div className="space-y-4 text-center">
           <h1 className="text-4xl font-bold text-[#1d1d1f]">Contact Us</h1>
-          <p className="text-xl text-[#1d1d1f]/60 max-w-2xl mx-auto">
-            Have questions or ready to start your custom project? Reach out to us using any of the methods below.
+          <p className="mx-auto max-w-2xl text-xl text-[#1d1d1f]/60">
+            Have questions about our candles? We&apos;d love to hear from you.
+            Reach out using any of the methods below.
           </p>
         </div>
 
         {/* Contact Information */}
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid gap-8 md:grid-cols-2">
           <Card className="border border-zinc-200">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#1d1d1f]">Visit Our Store</CardTitle>
+              <CardTitle className="text-2xl text-[#1d1d1f]">
+                Visit Our Store
+              </CardTitle>
               <CardDescription>
                 Come see us during business hours
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-start gap-4">
-                <MapPin className="h-6 w-6 text-[#0A5565] shrink-0 mt-1" />
+                <MapPin className="mt-1 h-6 w-6 shrink-0 text-[#1d1d1f]" />
                 <div>
-                  <h3 className="font-semibold mb-1">Address</h3>
-                  <p className="text-[#1d1d1f]/60">415 13th St</p>
-                  <p className="text-[#1d1d1f]/60">Moline, IL 61265</p>
-                  <Button 
-                    variant="link" 
-                    className="text-[#0A5565] p-0 h-auto mt-2"
-                    onClick={() => window.open("https://maps.google.com/?q=415+13th+St,+Moline+IL+61265", "_blank")}
+                  <h3 className="mb-1 font-semibold">Email</h3>
+                  <p className="text-[#1d1d1f]/60">
+                    hello@mjcreativecandles.com
+                  </p>
+                  <p className="mt-1 text-sm text-[#1d1d1f]/40">
+                    We&apos;ll respond within 24 hours
+                  </p>
+                  <Button
+                    variant="link"
+                    className="mt-1 h-auto p-0 text-[#1d1d1f]"
+                    onClick={() =>
+                      window.open(
+                        "mailto:hello@mjcreativecandles.com",
+                        "_blank",
+                      )
+                    }
                   >
-                    Get Directions
+                    Send Email
                   </Button>
                 </div>
               </div>
 
               <div className="flex items-start gap-4">
-                <Clock className="h-6 w-6 text-[#0A5565] shrink-0 mt-1" />
+                <Clock className="mt-1 h-6 w-6 shrink-0 text-[#1d1d1f]" />
                 <div>
-                  <h3 className="font-semibold mb-2">Business Hours</h3>
+                  <h3 className="mb-2 font-semibold">Business Hours</h3>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                     {businessHours.map((item, index) => (
                       <React.Fragment key={index}>
@@ -80,21 +92,23 @@ export default function ContactPage() {
 
           <Card className="border border-zinc-200">
             <CardHeader>
-              <CardTitle className="text-2xl text-[#1d1d1f]">Get In Touch</CardTitle>
-              <CardDescription>
-                We&apos;d love to hear from you
-              </CardDescription>
+              <CardTitle className="text-2xl text-[#1d1d1f]">
+                Get In Touch
+              </CardTitle>
+              <CardDescription>We&apos;d love to hear from you</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-start gap-4">
-                <Phone className="h-6 w-6 text-[#0A5565] shrink-0 mt-1" />
+                <Phone className="mt-1 h-6 w-6 shrink-0 text-[#1d1d1f]" />
                 <div>
-                  <h3 className="font-semibold mb-1">Phone</h3>
+                  <h3 className="mb-1 font-semibold">Phone</h3>
                   <p className="text-[#1d1d1f]/60">(309) 373-6017</p>
-                  <p className="text-sm text-[#1d1d1f]/40 mt-1">Call or text during business hours</p>
-                  <Button 
-                    variant="link" 
-                    className="text-[#0A5565] p-0 h-auto mt-1"
+                  <p className="mt-1 text-sm text-[#1d1d1f]/40">
+                    Call or text during business hours
+                  </p>
+                  <Button
+                    variant="link"
+                    className="mt-1 h-auto p-0 text-[#1d1d1f]"
                     onClick={() => window.open("tel:3093736017", "_blank")}
                   >
                     Call Now
@@ -103,15 +117,19 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-start gap-4">
-                <Mail className="h-6 w-6 text-[#0A5565] shrink-0 mt-1" />
+                <Mail className="mt-1 h-6 w-6 shrink-0 text-[#1d1d1f]" />
                 <div>
-                  <h3 className="font-semibold mb-1">Email</h3>
+                  <h3 className="mb-1 font-semibold">Email</h3>
                   <p className="text-[#1d1d1f]/60">pleasestitch18@gmail.com</p>
-                  <p className="text-sm text-[#1d1d1f]/40 mt-1">We&apos;ll respond as soon as possible</p>
-                  <Button 
-                    variant="link" 
-                    className="text-[#0A5565] p-0 h-auto mt-1"
-                    onClick={() => window.open("mailto:pleasestitch18@gmail.com", "_blank")}
+                  <p className="mt-1 text-sm text-[#1d1d1f]/40">
+                    We&apos;ll respond as soon as possible
+                  </p>
+                  <Button
+                    variant="link"
+                    className="mt-1 h-auto p-0 text-[#1d1d1f]"
+                    onClick={() =>
+                      window.open("mailto:pleasestitch18@gmail.com", "_blank")
+                    }
                   >
                     Send Email
                   </Button>
@@ -124,14 +142,17 @@ export default function ContactPage() {
         {/* Contact Form */}
         <Card className="border border-zinc-200">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-[#1d1d1f]">Send Us a Message</CardTitle>
+            <CardTitle className="text-2xl text-[#1d1d1f]">
+              Send Us a Message
+            </CardTitle>
             <CardDescription>
-              Fill out the form below and we&apos;ll get back to you as soon as possible
+              Fill out the form below and we&apos;ll get back to you as soon as
+              possible
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-6 max-w-2xl mx-auto">
-              <div className="grid md:grid-cols-2 gap-6">
+            <form className="mx-auto max-w-2xl space-y-6">
+              <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="firstName" className="text-sm font-medium">
                     First Name
@@ -139,7 +160,7 @@ export default function ContactPage() {
                   <input
                     id="firstName"
                     type="text"
-                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:border-[#0A5565] focus:ring-[#0A5565] transition-colors"
+                    className="w-full rounded-xl border border-zinc-200 px-4 py-3 transition-colors focus:border-[#1d1d1f] focus:ring-[#1d1d1f]"
                   />
                 </div>
                 <div className="space-y-2">
@@ -149,11 +170,11 @@ export default function ContactPage() {
                   <input
                     id="lastName"
                     type="text"
-                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:border-[#0A5565] focus:ring-[#0A5565] transition-colors"
+                    className="w-full rounded-xl border border-zinc-200 px-4 py-3 transition-colors focus:border-[#1d1d1f] focus:ring-[#1d1d1f]"
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">
                   Email Address
@@ -161,10 +182,10 @@ export default function ContactPage() {
                 <input
                   id="email"
                   type="email"
-                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:border-[#0A5565] focus:ring-[#0A5565] transition-colors"
+                  className="w-full rounded-xl border border-zinc-200 px-4 py-3 transition-colors focus:border-[#1d1d1f] focus:ring-[#1d1d1f]"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label htmlFor="phone" className="text-sm font-medium">
                   Phone Number
@@ -172,10 +193,10 @@ export default function ContactPage() {
                 <input
                   id="phone"
                   type="tel"
-                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:border-[#0A5565] focus:ring-[#0A5565] transition-colors"
+                  className="w-full rounded-xl border border-zinc-200 px-4 py-3 transition-colors focus:border-[#1d1d1f] focus:ring-[#1d1d1f]"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label htmlFor="message" className="text-sm font-medium">
                   Message
@@ -183,14 +204,14 @@ export default function ContactPage() {
                 <textarea
                   id="message"
                   rows={5}
-                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:border-[#0A5565] focus:ring-[#0A5565] transition-colors"
+                  className="w-full rounded-xl border border-zinc-200 px-4 py-3 transition-colors focus:border-[#1d1d1f] focus:ring-[#1d1d1f]"
                 ></textarea>
               </div>
-              
-              <Button 
+
+              <Button
                 type="submit"
                 size="lg"
-                className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white text-lg font-semibold rounded-xl py-4"
+                className="w-full rounded-xl bg-[#1d1d1f] py-4 text-lg font-semibold text-white hover:bg-[#0a0a0a]"
               >
                 Send Message
               </Button>
@@ -200,4 +221,4 @@ export default function ContactPage() {
       </div>
     </Container>
   );
-} 
+}

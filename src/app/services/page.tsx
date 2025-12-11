@@ -102,7 +102,7 @@ export default function ServicesPage() {
                 onClick={() => setActiveCategory(category.name)}
                 className={`px-[22px] py-[11px] text-[14px] border-[2px] leading-[130%] rounded-full ${
                   activeCategory === category.name
-                    ? 'bg-[#0A5565] hover:bg-[#083d4a] text-white border-[#0A5565]'
+                    ? 'bg-[#1d1d1f] hover:bg-[#0a0a0a] text-white border-[#1d1d1f]'
                     : 'border-black/[0.06] hover:border-black/[0.12] text-black/[0.72] bg-transparent'
                 }`}
                 variant={activeCategory === category.name ? 'default' : 'outline'}
@@ -129,7 +129,7 @@ export default function ServicesPage() {
                     className="group p-[24px] bg-white hover:bg-black/[0.06] rounded-[24px] transition-all duration-300 cursor-pointer"
                   >
                     <div className="flex items-start gap-[16px]">
-                      <div className="w-[32px] h-[32px] rounded-full bg-[#74CADC]/20 group-hover:bg-[#74CADC] flex items-center justify-center flex-shrink-0 transition-all duration-300">
+                      <div className="w-[32px] h-[32px] rounded-full bg-[#737373]/20 group-hover:bg-[#737373] flex items-center justify-center flex-shrink-0 transition-all duration-300">
                         <span className="text-[14px] font-bold text-black/[0.72] group-hover:text-white">
                           {i + 1}
                         </span>
@@ -144,7 +144,7 @@ export default function ServicesPage() {
           </div>
 
           {/* CTA Section - NEO Style */}
-          <div className="mt-[40px] p-[32px] lg:p-[48px] bg-gradient-to-br from-[#74CADC]/10 to-[#74CADC]/5 rounded-[40px] text-center">
+          <div className="mt-[40px] p-[32px] lg:p-[48px] bg-gradient-to-br from-[#737373]/10 to-[#737373]/5 rounded-[40px] text-center">
             <h3 className="text-[20px] lg:text-[24px] leading-[130%] font-bold text-black/[0.72] mb-[8px]">
               Don&apos;t see what you&apos;re looking for?
             </h3>
@@ -153,7 +153,7 @@ export default function ServicesPage() {
             </p>
             <Button
               onClick={() => window.open("tel:3093736017", "_blank")}
-              className="inline-flex items-center px-6 py-4 bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold rounded-xl group"
+              className="inline-flex items-center px-6 py-4 bg-[#1d1d1f] hover:bg-[#0a0a0a] text-white font-semibold rounded-xl group"
             >
               <Phone className="mr-[8px] h-[16px] w-[16px] group-hover:scale-110 transition-transform" />
               <span className="text-[14px] leading-[130%] font-medium">Call or Text (309) 373-6017</span>

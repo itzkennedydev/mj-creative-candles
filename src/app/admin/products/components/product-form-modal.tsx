@@ -475,16 +475,16 @@ export function ProductFormModal({ open, onOpenChange, product, onSuccess }: Pro
                   </div>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center w-full aspect-square max-w-sm border-2 border-dashed border-neutral-300 rounded-xl cursor-pointer hover:border-[#74CADC] hover:bg-[#74CADC]/5 transition-all bg-neutral-50 group">
+                <label className="flex flex-col items-center justify-center w-full aspect-square max-w-sm border-2 border-dashed border-neutral-300 rounded-xl cursor-pointer hover:border-[#737373] hover:bg-[#737373]/5 transition-all bg-neutral-50 group">
                   {isUploading ? (
                     <>
-                      <Loader2 className="h-10 w-10 animate-spin text-[#74CADC] mb-3" />
+                      <Loader2 className="h-10 w-10 animate-spin text-[#737373] mb-3" />
                       <span className="text-sm font-medium text-neutral-700">Uploading...</span>
                     </>
                   ) : (
                     <>
-                      <div className="bg-[#74CADC]/10 group-hover:bg-[#74CADC]/20 rounded-full p-4 mb-4 transition-colors">
-                        <Upload className="h-8 w-8 text-[#74CADC]" />
+                      <div className="bg-[#737373]/10 group-hover:bg-[#737373]/20 rounded-full p-4 mb-4 transition-colors">
+                        <Upload className="h-8 w-8 text-[#737373]" />
                       </div>
                       <span className="text-sm font-medium text-neutral-700 mb-1">Click to upload</span>
                       <span className="text-xs text-neutral-500">PNG, JPG, GIF up to 25MB</span>
@@ -528,13 +528,13 @@ export function ProductFormModal({ open, onOpenChange, product, onSuccess }: Pro
                   </div>
                 ))}
                 
-                <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-neutral-300 rounded-xl cursor-pointer hover:border-[#74CADC] hover:bg-[#74CADC]/5 transition-all bg-neutral-50 group">
+                <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-neutral-300 rounded-xl cursor-pointer hover:border-[#737373] hover:bg-[#737373]/5 transition-all bg-neutral-50 group">
                   {isUploading ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-[#74CADC]" />
+                    <Loader2 className="h-6 w-6 animate-spin text-[#737373]" />
                   ) : (
                     <>
-                      <Upload className="h-6 w-6 text-neutral-400 group-hover:text-[#74CADC] mb-1 transition-colors" />
-                      <span className="text-xs text-neutral-600 group-hover:text-[#74CADC] transition-colors">Add Image</span>
+                      <Upload className="h-6 w-6 text-neutral-400 group-hover:text-[#737373] mb-1 transition-colors" />
+                      <span className="text-xs text-neutral-600 group-hover:text-[#737373] transition-colors">Add Image</span>
                     </>
                   )}
                   <input

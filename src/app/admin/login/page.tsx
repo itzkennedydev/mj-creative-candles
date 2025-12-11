@@ -135,8 +135,8 @@ export default function LoginPage() {
         <div className="max-w-md w-full">
           <div className="mb-16">
             <Image 
-              src="/Stitch Please Ish Black.png" 
-              alt="Stitch Please Logo" 
+              src="/MJ Creative Candles Ish Black.png" 
+              alt="MJ Creative Candles Logo" 
               width={360}
               height={120}
               className="h-32 w-auto mb-16"
@@ -175,7 +175,7 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="w-full bg-[#1d1d1f] hover:bg-[#0a0a0a] text-white p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 disabled={loading || !email}
               >
                 {loading ? "Processing..." : "Sign In"}
@@ -220,7 +220,7 @@ export default function LoginPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-[#0A5565] hover:bg-[#083d4a] text-white p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  className="flex-1 bg-[#1d1d1f] hover:bg-[#0a0a0a] text-white p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   disabled={loading || code.length !== 6}
                 >
                   {loading ? "Verifying..." : "Verify Code"}
@@ -236,7 +236,7 @@ export default function LoginPage() {
         <div className="h-full rounded-lg overflow-hidden relative">
           <Image
             src="/_DSC0250.jpg"
-            alt="Stitch Please"
+            alt="MJ Creative Candles"
             fill
             className="object-cover rounded-lg"
             priority

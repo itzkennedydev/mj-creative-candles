@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
     if (session.url) {
       try {
         const client = await clientPromise;
-        const db = client.db('stitch_orders');
+        const db = client.db('mj-creative-candles');
         const incompleteSessionsCollection = db.collection('incomplete_checkout_sessions');
         
         await incompleteSessionsCollection.insertOne({

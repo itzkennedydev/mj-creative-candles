@@ -51,7 +51,7 @@ export function Gallery() {
             className="flex items-center gap-2 text-lg font-medium text-[#1d1d1f] hover:text-[#1d1d1f]/70 transition-colors"
           >
             <Instagram className="w-5 h-5" />
-            <span>Follow us @stitchpleaseqc</span>
+            <span>Follow us @mjcreativecandles</span>
           </a>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full">
             {galleryImages.map((image, index) => (

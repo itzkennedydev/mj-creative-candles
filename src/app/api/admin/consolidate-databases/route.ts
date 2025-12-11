@@ -25,8 +25,8 @@ export async function POST(request: NextRequest) {
 
     // 1. Migrate verification codes from stitchplease to stitch_orders
     try {
-      const sourceDb = client.db('stitchplease');
-      const targetDb = client.db('stitch_orders');
+      const sourceDb = client.db('mj-creative-candles');
+      const targetDb = client.db('mj-creative-candles');
       
       const sourceCollection = sourceDb.collection('verification_codes');
       const targetCollection = targetDb.collection('verification_codes');
@@ -48,8 +48,8 @@ export async function POST(request: NextRequest) {
 
     // 2. Migrate any remaining orders from stitchplease to stitch_orders
     try {
-      const sourceDb = client.db('stitchplease');
-      const targetDb = client.db('stitch_orders');
+      const sourceDb = client.db('mj-creative-candles');
+      const targetDb = client.db('mj-creative-candles');
       
       const sourceCollection = sourceDb.collection('orders');
       const targetCollection = targetDb.collection('orders');
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Drop the unused stitchplease database
     try {
-      await client.db('stitchplease').dropDatabase();
+      await client.db('mj-creative-candles').dropDatabase();
       migrationResults.cleanup.dropped = true;
       console.log('✅ Dropped unused stitchplease database');
     } catch (error) {
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
 
     // Check if stitchplease database exists and what it contains
     try {
-      const stitchpleaseDb = client.db('stitchplease');
+      const stitchpleaseDb = client.db('mj-creative-candles');
       const adminDb = client.db('admin');
       
       // List databases to check if stitchplease exists

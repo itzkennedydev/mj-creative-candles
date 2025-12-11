@@ -28,7 +28,7 @@ export function CtaContent() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          At Stitch Please, we redefine the standard for fast and quality service. 
+          At MJ Creative Candles, we redefine the standard for fast and quality service. 
           Our commitment to speed doesn&apos;t compromise the impeccable craftsmanship that sets us apart.
         </motion.p>
         <motion.div 
@@ -40,7 +40,7 @@ export function CtaContent() {
         >
           <Button 
             size="lg" 
-            className="w-full sm:w-auto bg-[#0A5565] text-white hover:bg-[#083d4a] font-semibold rounded-xl px-8"
+            className="w-full sm:w-auto bg-[#1d1d1f] text-white hover:bg-[#0a0a0a] font-semibold rounded-xl px-8"
             onClick={() => router.push('/shop')}
           >
             Get Started

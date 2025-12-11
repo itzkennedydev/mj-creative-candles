@@ -14,7 +14,7 @@ interface PublicSettings {
 export async function GET(request: NextRequest) {
   try {
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const settingsCollection = db.collection<PublicSettings & { _id?: string; updatedAt?: Date }>('admin_settings');
 
     // Get the settings document (there should only be one)

@@ -25,7 +25,7 @@ export function WhyChoose() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 mb-4 bg-[#74CADC]/20 text-[#0A5565] px-4 py-2 rounded-full"
+            className="inline-flex items-center gap-2 mb-4 bg-[#737373]/20 text-[#1d1d1f] px-4 py-2 rounded-full"
           >
             <span className="font-bold text-xs sm:text-sm">Our commitment to quality</span>
           </motion.div>
@@ -40,7 +40,7 @@ export function WhyChoose() {
           >
             Why choose
             <span className="block mt-1">
-              Stitch Please?
+              MJ Creative Candles?
             </span>
           </motion.h2>
 
@@ -76,7 +76,7 @@ export function WhyChoose() {
             >
               <Button 
                 size="lg"
-                className="bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold text-sm sm:text-base transition-colors duration-200 rounded-xl px-6"
+                className="bg-[#1d1d1f] hover:bg-[#0a0a0a] text-white font-semibold text-sm sm:text-base transition-colors duration-200 rounded-xl px-6"
                 onClick={() => router.push('/shop')}
               >
                 <motion.span

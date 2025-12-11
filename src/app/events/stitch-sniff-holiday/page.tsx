@@ -45,7 +45,7 @@ export default function StitchSniffHolidayEvent() {
     <main className="min-h-screen bg-white pt-[20px] pb-[80px] lg:pb-0 lg:pt-[30px]">
       {/* Hero Section - NEO Style */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#74CADC]/5 via-transparent to-[#74CADC]/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#737373]/5 via-transparent to-[#737373]/10" />
         <div className="relative py-[40px] lg:py-[80px]">
           <Container>
             <div className="text-center">
@@ -60,7 +60,7 @@ export default function StitchSniffHolidayEvent() {
                 <span className="px-[16px] py-[6px] bg-black/[0.06] rounded-full text-[12px] leading-[130%] text-black/[0.72] font-medium">
                   Dog Friendly
                 </span>
-                <span className="px-[16px] py-[6px] bg-[#74CADC]/20 rounded-full text-[12px] leading-[130%] text-black/[0.72] font-medium">
+                <span className="px-[16px] py-[6px] bg-[#737373]/20 rounded-full text-[12px] leading-[130%] text-black/[0.72] font-medium">
                   Free Entry
                 </span>
               </div>
@@ -114,7 +114,7 @@ export default function StitchSniffHolidayEvent() {
                 
                 <Button
                   onClick={() => window.open("https://maps.google.com/?q=415+13th+St,+Moline+IL+61265", "_blank")}
-                  className="mt-6 w-full lg:w-auto px-6 py-4 bg-[#0A5565] hover:bg-[#083d4a] text-white text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
+                  className="mt-6 w-full lg:w-auto px-6 py-4 bg-[#1d1d1f] hover:bg-[#0a0a0a] text-white text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
                 >
                   <span className="font-medium">Get Directions</span>
                   <ArrowRight className="h-[16px] w-[16px] group-hover:translate-x-[4px] transition-transform" />
@@ -135,7 +135,7 @@ export default function StitchSniffHolidayEvent() {
                         className="group p-[24px] bg-black/[0.03] hover:bg-black/[0.06] rounded-[20px] transition-all duration-300 cursor-pointer"
                       >
                         <div className="flex flex-col items-center text-center">
-                          <div className="w-[48px] h-[48px] rounded-full bg-white flex items-center justify-center mb-[12px] group-hover:bg-[#74CADC] transition-all duration-300">
+                          <div className="w-[48px] h-[48px] rounded-full bg-white flex items-center justify-center mb-[12px] group-hover:bg-[#737373] transition-all duration-300">
                             <Icon className="h-[24px] w-[24px] text-black/[0.72] group-hover:text-white transition-colors" />
                           </div>
                           <h4 className="text-[14px] leading-[130%] font-bold mb-[8px] text-black/[0.72]">
@@ -152,7 +152,7 @@ export default function StitchSniffHolidayEvent() {
               </div>
 
               {/* Info Banner - NEO Style */}
-              <div className="bg-gradient-to-r from-[#74CADC]/10 to-[#74CADC]/5 rounded-[24px] p-[32px] text-center">
+              <div className="bg-gradient-to-r from-[#737373]/10 to-[#737373]/5 rounded-[24px] p-[32px] text-center">
                 <h3 className="text-[18px] leading-[130%] font-bold text-black/[0.72] mb-[16px]">
                   Join Us for Festive Fun!
                 </h3>
@@ -174,19 +174,19 @@ export default function StitchSniffHolidayEvent() {
                 <div className="flex justify-center gap-[16px]">
                   <Button
                     onClick={() => window.open("https://facebook.com/stitchpleaseqc", "_blank")}
-                    className="w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#74CADC] flex items-center justify-center transition-all duration-300 group"
+                    className="w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#737373] flex items-center justify-center transition-all duration-300 group"
                     variant="ghost"
                     aria-label="Facebook"
                   >
-                    <Facebook className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#0A5565] transition-colors" />
+                    <Facebook className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#1d1d1f] transition-colors" />
                   </Button>
                   <Button
                     onClick={() => window.open("https://instagram.com/stitchpleaseqc", "_blank")}
-                    className="w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#74CADC] flex items-center justify-center transition-all duration-300 group"
+                    className="w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#737373] flex items-center justify-center transition-all duration-300 group"
                     variant="ghost"
                     aria-label="Instagram"
                   >
-                    <Instagram className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#0A5565] transition-colors" />
+                    <Instagram className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#1d1d1f] transition-colors" />
                   </Button>
                 </div>
               </div>
@@ -217,11 +217,11 @@ export default function StitchSniffHolidayEvent() {
                               Hosted by
                             </p>
                             <p className="text-[14px] leading-[130%] text-black/[0.72] font-bold">
-                              Stitch Please Custom
+                              MJ Creative Candles Custom
                             </p>
                           </div>
-                          <div className="w-[40px] h-[40px] rounded-full bg-[#74CADC]/20 flex items-center justify-center">
-                            <PawPrint className="h-[20px] w-[20px] text-[#74CADC]" />
+                          <div className="w-[40px] h-[40px] rounded-full bg-[#737373]/20 flex items-center justify-center">
+                            <PawPrint className="h-[20px] w-[20px] text-[#737373]" />
                           </div>
                         </div>
                       </div>

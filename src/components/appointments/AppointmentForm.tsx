@@ -46,15 +46,15 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
       {/* Left Side - Info */}
       <div className="w-full lg:w-5/12 bg-[#F8FAFC] p-8 lg:p-12">
         <div className="max-w-md mx-auto">
-          <h2 className="text-2xl font-bold text-[#0A5565] mb-6">Book Your Event</h2>
+          <h2 className="text-2xl font-bold text-[#1d1d1f] mb-6">Book Your Event</h2>
           <p className="text-gray-600 mb-8">
             We bring professional embroidery services directly to your event. Fill out the form to get started.
           </p>
           
           <div className="space-y-6">
             <div className="flex items-start gap-4">
-              <div className="bg-[#74CADC]/20 p-2 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-[#0A5565]" />
+              <div className="bg-[#737373]/20 p-2 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-[#1d1d1f]" />
               </div>
               <div>
                 <h3 className="font-medium text-gray-900 mb-1">On-site Service</h3>
@@ -63,8 +63,8 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
             </div>
             
             <div className="flex items-start gap-4">
-              <div className="bg-[#74CADC]/20 p-2 rounded-lg">
-                <Users className="h-6 w-6 text-[#0A5565]" />
+              <div className="bg-[#737373]/20 p-2 rounded-lg">
+                <Users className="h-6 w-6 text-[#1d1d1f]" />
               </div>
               <div>
                 <h3 className="font-medium text-gray-900 mb-1">Perfect for Groups</h3>
@@ -73,8 +73,8 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
             </div>
             
             <div className="flex items-start gap-4">
-              <div className="bg-[#74CADC]/20 p-2 rounded-lg">
-                <Calendar className="h-6 w-6 text-[#0A5565]" />
+              <div className="bg-[#737373]/20 p-2 rounded-lg">
+                <Calendar className="h-6 w-6 text-[#1d1d1f]" />
               </div>
               <div>
                 <h3 className="font-medium text-gray-900 mb-1">Flexible Scheduling</h3> 
@@ -95,7 +95,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                   <div key={i} className="flex-1">
                     <div 
                       className={`h-1 rounded-full transition-all duration-300
-                      ${i <= step ? "bg-[#74CADC]" : "bg-gray-200"}`}
+                      ${i <= step ? "bg-[#737373]" : "bg-gray-200"}`}
                     />
                   </div>
                 ))}
@@ -120,8 +120,8 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                       onClick={() => handleSelect("eventType", type)}
                       className={`p-4 rounded-xl border transition-all duration-200 text-left
                         ${formData.eventType === type 
-                          ? "border-[#74CADC] bg-[#74CADC]/10" 
-                          : "border-gray-200 hover:border-[#74CADC] hover:bg-[#74CADC]/10"}`}
+                          ? "border-[#737373] bg-[#737373]/10" 
+                          : "border-gray-200 hover:border-[#737373] hover:bg-[#737373]/10"}`}
                     >
                       <span className="font-medium text-gray-900">{type}</span>
                     </button>
@@ -145,11 +145,11 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                       onClick={() => handleSelect("attendees", count)}
                       className={`p-4 rounded-xl border transition-all duration-200 text-left
                         ${formData.attendees === count 
-                          ? "border-[#74CADC] bg-[#74CADC]/10" 
-                          : "border-gray-200 hover:border-[#74CADC] hover:bg-[#74CADC]/10"}`}
+                          ? "border-[#737373] bg-[#737373]/10" 
+                          : "border-gray-200 hover:border-[#737373] hover:bg-[#737373]/10"}`}
                     >
                       <div className="flex items-center gap-3">
-                        <Users className="h-5 w-5 text-[#0A5565]" />
+                        <Users className="h-5 w-5 text-[#1d1d1f]" />
                         <span className="font-medium text-gray-900">{count}</span>
                       </div>
                     </button>
@@ -173,11 +173,11 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                       onClick={() => handleSelect("location", location)}
                       className={`p-4 rounded-xl border transition-all duration-200 text-left
                         ${formData.location === location 
-                          ? "border-[#74CADC] bg-[#74CADC]/10" 
-                          : "border-gray-200 hover:border-[#74CADC] hover:bg-[#74CADC]/10"}`}
+                          ? "border-[#737373] bg-[#737373]/10" 
+                          : "border-gray-200 hover:border-[#737373] hover:bg-[#737373]/10"}`}
                     >
                       <div className="flex items-center gap-3">
-                        <MapPin className="h-5 w-5 text-[#0A5565]" />
+                        <MapPin className="h-5 w-5 text-[#1d1d1f]" />
                         <span className="font-medium text-gray-900">{location}</span>
                       </div>
                     </button>
@@ -201,11 +201,11 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                       onClick={() => handleSelect("date", timeframe)}
                       className={`p-4 rounded-xl border transition-all duration-200 text-left
                         ${formData.date === timeframe 
-                          ? "border-[#74CADC] bg-[#74CADC]/10" 
-                          : "border-gray-200 hover:border-[#74CADC] hover:bg-[#74CADC]/10"}`}
+                          ? "border-[#737373] bg-[#737373]/10" 
+                          : "border-gray-200 hover:border-[#737373] hover:bg-[#737373]/10"}`}
                     >
                       <div className="flex items-center gap-3">
-                        <Calendar className="h-5 w-5 text-[#0A5565]" />
+                        <Calendar className="h-5 w-5 text-[#1d1d1f]" />
                         <span className="font-medium text-gray-900">{timeframe}</span>
                       </div>
                     </button>
@@ -218,8 +218,8 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
             {step === 5 && (
               <div className="space-y-8">
                 <div className="text-center">
-                  <div className="inline-block p-4 bg-[#74CADC]/20 rounded-full mb-4">
-                    <Clock className="h-10 w-10 text-[#0A5565]" />
+                  <div className="inline-block p-4 bg-[#737373]/20 rounded-full mb-4">
+                    <Clock className="h-10 w-10 text-[#1d1d1f]" />
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">Select a time to discuss your event</h2>
                   <p className="text-gray-600">Choose a convenient time for a quick 15-minute call</p>
@@ -251,7 +251,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
                   <p className="text-gray-600 mb-4">Connect with Calendly to schedule your consultation</p>
                   <Button 
                     size="lg" 
-                    className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold rounded-xl py-3"
+                    className="w-full bg-[#1d1d1f] hover:bg-[#0a0a0a] text-white font-semibold rounded-xl py-3"
                     onClick={onClose}
                   >
                     Schedule Consultation
@@ -278,7 +278,7 @@ export function AppointmentForm({ onClose }: AppointmentFormProps) {
             {step < 5 && (
               <Button 
                 onClick={handleNext}
-                className="bg-[#0A5565] hover:bg-[#083d4a] text-white font-medium rounded-xl"
+                className="bg-[#1d1d1f] hover:bg-[#0a0a0a] text-white font-medium rounded-xl"
               >
                 Continue
                 <ArrowRight className="ml-2 h-5 w-5" />

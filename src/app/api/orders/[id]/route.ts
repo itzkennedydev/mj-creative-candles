@@ -22,7 +22,7 @@ export async function GET(
     }
     
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const ordersCollection = db.collection<Order>('orders');
 
     const { id } = await params;
@@ -116,7 +116,7 @@ export async function PUT(
     }
 
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const ordersCollection = db.collection<Order>('orders');
 
     // CRITICAL: Verify order exists BEFORE attempting update
@@ -288,7 +288,7 @@ export async function DELETE(
     }
     
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const ordersCollection = db.collection<Order>('orders');
 
     const { id } = await params;

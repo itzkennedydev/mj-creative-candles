@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const bucket = new GridFSBucket(db, { bucketName: 'uploads' });
 
     const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');

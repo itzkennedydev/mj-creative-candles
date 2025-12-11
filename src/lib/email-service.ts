@@ -1,54 +1,55 @@
-import Mailgun from 'mailgun.js';
-import type { Order, OrderItem } from './order-types';
-import { env } from '~/env.js';
-import { getAuthorizedEmails } from './admin-emails-db';
+import { Resend } from "resend";
+import type { Order, OrderItem } from "./order-types";
+import { env } from "~/env.js";
+import { getAuthorizedEmails } from "./admin-emails-db";
 
-// Initialize Mailgun
-const mailgun = new Mailgun(FormData);
-const mg = mailgun.client({
-  username: 'api',
-  key: String(env.MAILGUN_API_KEY),
-  url: 'https://api.mailgun.net'
-});
+// Initialize Resend
+const resend = new Resend(env.RESEND_API_KEY);
 
 export async function sendNewsletterSubscriptionEmail(email: string) {
   try {
     // Skip email sending during build time or if no API key
-    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
-      console.log('Skipping newsletter subscription email - no valid Mailgun API key');
+    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === "dummy-key-for-build") {
+      console.log(
+        "Skipping newsletter subscription email - no valid Resend API key",
+      );
       return true;
     }
 
     const subscriptionEmailHtml = generateNewsletterSubscriptionTemplate();
 
-    await mg.messages.create('stitchpleaseqc.com', {
-      from: 'Stitch Please <newsletter@stitchpleaseqc.com>',
+    await resend.emails.send({
+      from: "MJ Creative Candles <newsletter@mjcreativecandles.com>",
       to: [email],
-      subject: 'Welcome to Stitch Please Newsletter!',
-      html: subscriptionEmailHtml
+      subject: "Welcome to MJ Creative Candles Newsletter!",
+      html: subscriptionEmailHtml,
     });
 
     // Send admin notification
     const adminEmails = await getAuthorizedEmails();
-    const adminEmailAddresses = adminEmails.map(admin => admin.email);
+    const adminEmailAddresses = adminEmails.map((admin) => admin.email);
 
     if (adminEmailAddresses.length === 0) {
-      adminEmailAddresses.push('pleasestitch18@gmail.com', 'itskennedy.dev@gmail.com');
+      adminEmailAddresses.push(
+        "pleasestitch18@gmail.com",
+        "itskennedy.dev@gmail.com",
+      );
     }
 
-    const adminNotificationHtml = generateAdminNewsletterNotificationTemplate(email);
+    const adminNotificationHtml =
+      generateAdminNewsletterNotificationTemplate(email);
 
-    await mg.messages.create('stitchpleaseqc.com', {
-      from: 'Stitch Please Newsletter <newsletter@stitchpleaseqc.com>',
+    await resend.emails.send({
+      from: "MJ Creative Candles Newsletter <newsletter@mjcreativecandles.com>",
       to: adminEmailAddresses,
       subject: `New Newsletter Subscription: ${email}`,
-      html: adminNotificationHtml
+      html: adminNotificationHtml,
     });
 
     console.log(`✅ Newsletter subscription emails sent for ${email}`);
     return true;
   } catch (error) {
-    console.error('Failed to send newsletter subscription email:', error);
+    console.error("Failed to send newsletter subscription email:", error);
     return false;
   }
 }
@@ -60,21 +61,21 @@ function generateNewsletterSubscriptionTemplate(): string {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to Stitch Please Newsletter</title>
+      <title>Welcome to MJ Creative Candles Newsletter</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #74CADC; color: #0A5565; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header { background: #737373; color: #1d1d1f; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-        .welcome-box { background: white; border: 2px solid #74CADC; border-radius: 8px; padding: 25px; margin: 20px 0; text-align: center; }
+        .welcome-box { background: white; border: 2px solid #737373; border-radius: 8px; padding: 25px; margin: 20px 0; text-align: center; }
         .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
-        .button { display: inline-block; background: #74CADC; color: #0A5565; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; font-weight: bold; }
+        .button { display: inline-block; background: #737373; color: #1d1d1f; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; font-weight: bold; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>Welcome to Stitch Please!</h1>
+          <h1>Welcome to MJ Creative Candles!</h1>
           <p>Thank you for subscribing to our newsletter</p>
         </div>
         
@@ -106,7 +107,7 @@ function generateNewsletterSubscriptionTemplate(): string {
         </div>
         
         <div class="footer">
-          <p>© 2025 Stitch Please. All rights reserved.</p>
+          <p>© 2025 MJ Creative Candles. All rights reserved.</p>
           <p>415 13th St, Moline, IL 61265</p>
         </div>
       </div>
@@ -126,10 +127,10 @@ function generateAdminNewsletterNotificationTemplate(email: string): string {
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header { background: #1d1d1f; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-        .info-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        .label { font-weight: bold; color: #0A5565; }
+        .info-box { background: white; border: 2px solid #1d1d1f; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .label { font-weight: bold; color: #1d1d1f; }
         .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
       </style>
     </head>
@@ -152,11 +153,11 @@ function generateAdminNewsletterNotificationTemplate(email: string): string {
             </div>
           </div>
           
-          <p>This is an automated notification from the Stitch Please newsletter system.</p>
+          <p>This is an automated notification from the MJ Creative Candles newsletter system.</p>
         </div>
         
         <div class="footer">
-          <p>© 2025 Stitch Please. All rights reserved.</p>
+          <p>© 2025 MJ Creative Candles. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -164,35 +165,50 @@ function generateAdminNewsletterNotificationTemplate(email: string): string {
   `;
 }
 
-export async function sendAccessRequestEmail(email: string, name: string, reason: string) {
+export async function sendAccessRequestEmail(
+  email: string,
+  name: string,
+  reason: string,
+) {
   try {
-    const accessRequestHtml = generateAccessRequestEmailTemplate(email, name, reason);
+    const accessRequestHtml = generateAccessRequestEmailTemplate(
+      email,
+      name,
+      reason,
+    );
 
     // Get admin emails from database
     const adminEmails = await getAuthorizedEmails();
-    const adminEmailAddresses = adminEmails.map(admin => admin.email);
+    const adminEmailAddresses = adminEmails.map((admin) => admin.email);
 
     if (adminEmailAddresses.length === 0) {
-      console.warn('No admin emails found in database, using fallback');
-      adminEmailAddresses.push('itskennedy.dev@gmail.com', 'pleasestitch18@gmail.com');
+      console.warn("No admin emails found in database, using fallback");
+      adminEmailAddresses.push(
+        "itskennedy.dev@gmail.com",
+        "pleasestitch18@gmail.com",
+      );
     }
 
-    await mg.messages.create('stitchpleaseqc.com', {
-      from: 'Stitch Please Admin <admin@stitchpleaseqc.com>',
+    await resend.emails.send({
+      from: "MJ Creative Candles Admin <admin@mjcreativecandles.com>",
       to: adminEmailAddresses,
       subject: `New Admin Access Request from ${name}`,
-      html: accessRequestHtml
+      html: accessRequestHtml,
     });
 
     console.log(`✅ Access request notification sent for ${email}`);
     return true;
   } catch (error) {
-    console.error('Failed to send access request email:', error);
+    console.error("Failed to send access request email:", error);
     return false;
   }
 }
 
-function generateAccessRequestEmailTemplate(email: string, name: string, reason: string): string {
+function generateAccessRequestEmailTemplate(
+  email: string,
+  name: string,
+  reason: string,
+): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -203,20 +219,20 @@ function generateAccessRequestEmailTemplate(email: string, name: string, reason:
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header { background: #1d1d1f; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-        .info-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        .label { font-weight: bold; color: #0A5565; }
+        .info-box { background: white; border: 2px solid #1d1d1f; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .label { font-weight: bold; color: #1d1d1f; }
         .value { margin-bottom: 15px; }
         .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
-        .button { display: inline-block; background: #0A5565; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
+        .button { display: inline-block; background: #1d1d1f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
           <h1>🔐 Admin Access Request</h1>
-          <p>Someone is requesting access to the Stitch Please admin panel</p>
+          <p>Someone is requesting access to the MJ Creative Candles admin panel</p>
         </div>
         
         <div class="content">
@@ -243,11 +259,11 @@ function generateAccessRequestEmailTemplate(email: string, name: string, reason:
           <p>Please review this access request and either approve or deny access to the admin panel.</p>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://stitchpleaseqc.com/admin" class="button">Review in Admin Panel</a>
+            <a href="https://mjcreativecandles.com/admin" class="button">Review in Admin Panel</a>
           </div>
           
           <div class="footer">
-            <p>This is an automated notification from the Stitch Please admin system.</p>
+            <p>This is an automated notification from the MJ Creative Candles admin system.</p>
             <p>If you did not expect this email, please ignore it.</p>
           </div>
         </div>
@@ -261,20 +277,22 @@ export async function sendVerificationCodeEmail(email: string, code: string) {
   try {
     const verificationEmailHtml = generateVerificationEmailTemplate(code);
 
-    await mg.messages.create('stitchpleaseqc.com', {
-      from: 'Stitch Please Admin <admin@stitchpleaseqc.com>',
+    await resend.emails.send({
+      from: "MJ Creative Candles Admin <admin@mjcreativecandles.com>",
       to: [email],
-      subject: 'Your Stitch Please Admin Verification Code',
-      html: verificationEmailHtml
+      subject: "Your MJ Creative Candles Admin Verification Code",
+      html: verificationEmailHtml,
     });
 
     console.log(`✅ Verification code sent to ${email}`);
     return true;
   } catch (error) {
-    console.error('Failed to send verification email:', error);
+    console.error("Failed to send verification email:", error);
     // Fallback: log the code for development
     console.log(`📧 [FALLBACK] Verification code for ${email}: ${code}`);
-    console.log(`📧 [FALLBACK] Email sending failed, but code is available above`);
+    console.log(
+      `📧 [FALLBACK] Email sending failed, but code is available above`,
+    );
     return true; // Don't fail the request, just log the code
   }
 }
@@ -290,22 +308,22 @@ function generateVerificationEmailTemplate(code: string): string {
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header { background: #1d1d1f; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-        .code-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }
-        .code { font-size: 32px; font-weight: bold; color: #0A5565; letter-spacing: 4px; }
+        .code-box { background: white; border: 2px solid #1d1d1f; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }
+        .code { font-size: 32px; font-weight: bold; color: #1d1d1f; letter-spacing: 4px; }
         .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>Stitch Please Admin</h1>
+          <h1>MJ Creative Candles Admin</h1>
           <p>Verification Code</p>
         </div>
         <div class="content">
           <h2>Your Verification Code</h2>
-          <p>Use this code to sign in to your Stitch Please admin account:</p>
+          <p>Use this code to sign in to your MJ Creative Candles admin account:</p>
           
           <div class="code-box">
             <div class="code">${code}</div>
@@ -316,7 +334,7 @@ function generateVerificationEmailTemplate(code: string): string {
           <p>If you didn't request this code, please ignore this email.</p>
         </div>
         <div class="footer">
-          <p>© 2025 Stitch Please. All rights reserved.</p>
+          <p>© 2025 MJ Creative Candles. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -329,50 +347,52 @@ export async function sendOrderConfirmationEmail(order: Order) {
     // SECURITY: Only send confirmation emails if payment has been verified
     // The order status must be 'paid' - this ensures the Stripe webhook has verified payment
     // Never send customer confirmation emails for unpaid orders
-    if (order.status !== 'paid') {
-      console.warn(`[SECURITY] Attempted to send order confirmation email for order ${order.orderNumber} with status '${order.status}'. Customer emails are only sent after payment verification.`);
+    if (order.status !== "paid") {
+      console.warn(
+        `[SECURITY] Attempted to send order confirmation email for order ${order.orderNumber} with status '${order.status}'. Customer emails are only sent after payment verification.`,
+      );
       return false;
     }
 
     // Skip email sending during build time or if no API key
-    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
-      console.log('Skipping email sending - no valid Mailgun API key');
+    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === "dummy-key-for-build") {
+      console.log("Skipping email sending - no valid Resend API key");
       return true;
     }
 
     // Customer email - only sent after payment verification (status === 'paid')
     const customerEmailHtml = generateCustomerEmailTemplate(order);
-    
-    await mg.messages.create('stitchpleaseqc.com', {
-      from: 'Stitch Please <orders@stitchpleaseqc.com>',
+
+    await resend.emails.send({
+      from: "MJ Creative Candles <orders@mjcreativecandles.com>",
       to: [order.customer.email],
       subject: `Order Confirmation - ${order.orderNumber}`,
-      html: customerEmailHtml
+      html: customerEmailHtml,
     });
 
     // Owner email - only sent after payment verification (status === 'paid')
     const ownerEmailHtml = generateOwnerEmailTemplate(order);
-    
+
     // Get admin emails from database
     const adminEmails = await getAuthorizedEmails();
-    const adminEmailAddresses = adminEmails.map(admin => admin.email);
+    const adminEmailAddresses = adminEmails.map((admin) => admin.email);
 
     if (adminEmailAddresses.length === 0) {
-      console.warn('No admin emails found in database, using fallback');
-      adminEmailAddresses.push('pleasestitch18@gmail.com');
+      console.warn("No admin emails found in database, using fallback");
+      adminEmailAddresses.push("pleasestitch18@gmail.com");
     }
-    
-    await mg.messages.create('stitchpleaseqc.com', {
-      from: 'Stitch Please Orders <orders@stitchpleaseqc.com>',
+
+    await resend.emails.send({
+      from: "MJ Creative Candles Orders <orders@mjcreativecandles.com>",
       to: adminEmailAddresses,
       subject: `New Order Received - ${order.orderNumber}`,
-      html: ownerEmailHtml
+      html: ownerEmailHtml,
     });
 
-    console.log('Email notifications sent successfully');
+    console.log("Email notifications sent successfully");
     return true;
   } catch (error) {
-    console.error('Error sending emails via Mailgun:', error);
+    console.error("Error sending emails via Resend:", error);
     return false;
   }
 }
@@ -388,11 +408,11 @@ function generateCustomerEmailTemplate(order: Order): string {
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #74CADC; color: #0A5565; padding: 20px; text-align: center; }
+        .header { background: #737373; color: #1d1d1f; padding: 20px; text-align: center; }
         .content { background: #f9f9f9; padding: 20px; }
         .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
         .item { border-bottom: 1px solid #eee; padding: 10px 0; }
-        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .total { font-weight: bold; font-size: 18px; color: #1d1d1f; }
         .footer { text-align: center; padding: 20px; color: #666; }
       </style>
     </head>
@@ -413,16 +433,20 @@ function generateCustomerEmailTemplate(order: Order): string {
             <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
             
             <h4>Items Ordered:</h4>
-            ${order.items.map(item => `
+            ${order.items
+              .map(
+                (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
             
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #74CADC;">
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #737373;">
               <p><strong>Subtotal:</strong> $${order.subtotal.toFixed(2)}</p>
               <p><strong>Tax:</strong> $${order.tax.toFixed(2)}</p>
               <p><strong>Pickup:</strong> Free</p>
@@ -430,7 +454,7 @@ function generateCustomerEmailTemplate(order: Order): string {
             </div>
             
             <p><strong>Payment Method:</strong> Online Payment (Credit/Debit Card)</p>
-            ${order.notes ? `<p><strong>Notes:</strong> ${order.notes}</p>` : ''}
+            ${order.notes ? `<p><strong>Notes:</strong> ${order.notes}</p>` : ""}
           </div>
           
           <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
@@ -441,7 +465,7 @@ function generateCustomerEmailTemplate(order: Order): string {
         </div>
         
         <div class="footer">
-          <p>Thank you for choosing Stitch Please!</p>
+          <p>Thank you for choosing MJ Creative Candles!</p>
           <p>Questions? Reply to this email or call us at (309) 373-6017.</p>
         </div>
       </div>
@@ -461,11 +485,11 @@ function generateOwnerEmailTemplate(order: Order): string {
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #0A5565; color: white; padding: 20px; text-align: center; }
+        .header { background: #1d1d1f; color: white; padding: 20px; text-align: center; }
         .content { background: #f9f9f9; padding: 20px; }
         .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
         .item { border-bottom: 1px solid #eee; padding: 10px 0; }
-        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .total { font-weight: bold; font-size: 18px; color: #1d1d1f; }
         .customer-info { background: #e8f5e8; padding: 15px; border-radius: 8px; }
         .urgent { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; }
       </style>
@@ -496,16 +520,20 @@ function generateOwnerEmailTemplate(order: Order): string {
             <p><strong>Status:</strong> ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</p>
             
             <h4>Items Ordered:</h4>
-            ${order.items.map(item => `
+            ${order.items
+              .map(
+                (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
             
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #0A5565;">
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #1d1d1f;">
               <p><strong>Subtotal:</strong> $${order.subtotal.toFixed(2)}</p>
               <p><strong>Tax:</strong> $${order.tax.toFixed(2)}</p>
               <p><strong>Pickup:</strong> Free</p>
@@ -513,7 +541,7 @@ function generateOwnerEmailTemplate(order: Order): string {
             </div>
             
             <p><strong>Payment Method:</strong> Online Payment (Credit/Debit Card)</p>
-            ${order.notes ? `<p><strong>Customer Notes:</strong> ${order.notes}</p>` : ''}
+            ${order.notes ? `<p><strong>Customer Notes:</strong> ${order.notes}</p>` : ""}
           </div>
           
           <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
@@ -543,7 +571,7 @@ export async function sendPickupReadyEmail({
   pickupTime,
   customMessage,
   items,
-  total
+  total,
 }: {
   customerName: string;
   customerEmail: string;
@@ -555,8 +583,8 @@ export async function sendPickupReadyEmail({
 }) {
   try {
     // Skip email sending during build time or if no API key
-    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
-      console.log('Skipping pickup email sending - no valid Mailgun API key');
+    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === "dummy-key-for-build") {
+      console.log("Skipping pickup email sending - no valid Resend API key");
       return true;
     }
 
@@ -566,20 +594,20 @@ export async function sendPickupReadyEmail({
       pickupTime,
       customMessage,
       items,
-      total
-    });
-    
-    await mg.messages.create('stitchpleaseqc.com', {
-      from: 'Stitch Please <orders@stitchpleaseqc.com>',
-      to: [customerEmail],
-      subject: `Your Order is Ready for Pickup - ${orderNumber}`,
-      html: pickupEmailHtml
+      total,
     });
 
-    console.log('Pickup ready email sent successfully via Mailgun');
+    await resend.emails.send({
+      from: "MJ Creative Candles <orders@mjcreativecandles.com>",
+      to: [customerEmail],
+      subject: `Your Order is Ready for Pickup - ${orderNumber}`,
+      html: pickupEmailHtml,
+    });
+
+    console.log("Pickup ready email sent successfully via Resend");
     return true;
   } catch (error) {
-    console.error('Error sending pickup ready email via Mailgun:', error);
+    console.error("Error sending pickup ready email via Resend:", error);
     return false;
   }
 }
@@ -590,7 +618,7 @@ function generatePickupReadyEmailTemplate({
   pickupTime,
   customMessage,
   items,
-  total
+  total,
 }: {
   customerName: string;
   orderNumber: string;
@@ -599,14 +627,14 @@ function generatePickupReadyEmailTemplate({
   items: OrderItem[];
   total: number;
 }): string {
-  const formattedPickupTime = pickupTime.toLocaleString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
+  const formattedPickupTime = pickupTime.toLocaleString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
   });
 
   return `
@@ -619,11 +647,11 @@ function generatePickupReadyEmailTemplate({
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #74CADC; color: #0A5565; padding: 20px; text-align: center; }
+        .header { background: #737373; color: #1d1d1f; padding: 20px; text-align: center; }
         .content { background: #f9f9f9; padding: 20px; }
         .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
         .item { border-bottom: 1px solid #eee; padding: 10px 0; }
-        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .total { font-weight: bold; font-size: 18px; color: #1d1d1f; }
         .footer { text-align: center; padding: 20px; color: #666; }
         .pickup-time { background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
         .custom-message { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; }
@@ -643,7 +671,7 @@ function generatePickupReadyEmailTemplate({
           
           <div class="pickup-time">
             <h3>📅 Scheduled Pickup Time</h3>
-            <p style="font-size: 24px; font-weight: bold; color: #0A5565; margin: 10px 0;">
+            <p style="font-size: 24px; font-weight: bold; color: #1d1d1f; margin: 10px 0;">
               ${formattedPickupTime}
             </p>
             <p style="color: #666; font-size: 14px;">
@@ -651,12 +679,16 @@ function generatePickupReadyEmailTemplate({
             </p>
           </div>
 
-          ${customMessage ? `
+          ${
+            customMessage
+              ? `
             <div class="custom-message">
               <h4>📝 Special Instructions</h4>
               <p>${customMessage}</p>
             </div>
-          ` : ''}
+          `
+              : ""
+          }
 
           <div class="urgent">
             <h3>⚠️ Important Pickup Information</h3>
@@ -671,23 +703,27 @@ function generatePickupReadyEmailTemplate({
             <p><strong>Order Number:</strong> ${orderNumber}</p>
             
             <h4>Items Ready for Pickup:</h4>
-            ${items.map(item => `
+            ${items
+              .map(
+                (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
             
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #74CADC;">
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #737373;">
               <p class="total"><strong>Total Paid: $${total.toFixed(2)}</strong></p>
             </div>
           </div>
           
           <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <h4>📍 Pickup Location</h4>
-            <p><strong>Stitch Please</strong><br>
+            <p><strong>MJ Creative Candles</strong><br>
             415 13th St<br>
             Moline, IL 61265</p>
             <p><strong>Phone:</strong> (309) 373-6017</p>
@@ -695,7 +731,7 @@ function generatePickupReadyEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for choosing Stitch Please!</p>
+          <p>Thank you for choosing MJ Creative Candles!</p>
           <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
         </div>
       </div>
@@ -711,7 +747,7 @@ export async function sendStatusUpdateEmail({
   orderNumber,
   status,
   items,
-  total
+  total,
 }: {
   customerName: string;
   customerEmail: string;
@@ -722,59 +758,98 @@ export async function sendStatusUpdateEmail({
 }) {
   try {
     // Skip email sending during build time or if no API key
-    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
-      console.log('Skipping status email sending - no valid Mailgun API key');
+    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === "dummy-key-for-build") {
+      console.log("Skipping status email sending - no valid Resend API key");
       return true;
     }
 
     let emailHtml: string;
     let subject: string;
 
-    console.log(`[sendStatusUpdateEmail] Processing status: "${status}" for order ${orderNumber}`);
-    console.log(`[sendStatusUpdateEmail] Status type: ${typeof status}, length: ${status?.length}`);
+    console.log(
+      `[sendStatusUpdateEmail] Processing status: "${status}" for order ${orderNumber}`,
+    );
+    console.log(
+      `[sendStatusUpdateEmail] Status type: ${typeof status}, length: ${status?.length}`,
+    );
 
     switch (status) {
-      case 'processing':
+      case "processing":
         console.log(`[sendStatusUpdateEmail] Matched 'processing' case`);
-        emailHtml = generateProcessingEmailTemplate({ customerName, orderNumber, items, total });
+        emailHtml = generateProcessingEmailTemplate({
+          customerName,
+          orderNumber,
+          items,
+          total,
+        });
         subject = `Order Processing Started - ${orderNumber}`;
         break;
-      case 'ready_for_pickup':
-        console.log(`[sendStatusUpdateEmail] ✓ Matched 'ready_for_pickup' case`);
-        emailHtml = generateReadyForPickupEmailTemplate({ customerName, orderNumber, items, total });
+      case "ready_for_pickup":
+        console.log(
+          `[sendStatusUpdateEmail] ✓ Matched 'ready_for_pickup' case`,
+        );
+        emailHtml = generateReadyForPickupEmailTemplate({
+          customerName,
+          orderNumber,
+          items,
+          total,
+        });
         subject = `Your Order is Ready for Pickup - ${orderNumber}`;
-        console.log(`[sendStatusUpdateEmail] Generated ready_for_pickup email template`);
+        console.log(
+          `[sendStatusUpdateEmail] Generated ready_for_pickup email template`,
+        );
         break;
-      case 'delivered':
+      case "delivered":
         console.log(`[sendStatusUpdateEmail] Matched 'delivered' case`);
-        emailHtml = generateDeliveredEmailTemplate({ customerName, orderNumber, items, total });
+        emailHtml = generateDeliveredEmailTemplate({
+          customerName,
+          orderNumber,
+          items,
+          total,
+        });
         subject = `Thank You! Order Delivered - ${orderNumber}`;
         break;
-      case 'cancelled':
+      case "cancelled":
         console.log(`[sendStatusUpdateEmail] Matched 'cancelled' case`);
-        emailHtml = generateCancelledEmailTemplate({ customerName, orderNumber, items, total });
+        emailHtml = generateCancelledEmailTemplate({
+          customerName,
+          orderNumber,
+          items,
+          total,
+        });
         subject = `Order Cancelled - ${orderNumber}`;
         break;
       default:
-        console.log(`[sendStatusUpdateEmail] ✗ No match for status: "${status}" (type: ${typeof status})`);
-        console.log(`[sendStatusUpdateEmail] Available cases: processing, ready_for_pickup, delivered, cancelled`);
+        console.log(
+          `[sendStatusUpdateEmail] ✗ No match for status: "${status}" (type: ${typeof status})`,
+        );
+        console.log(
+          `[sendStatusUpdateEmail] Available cases: processing, ready_for_pickup, delivered, cancelled`,
+        );
         return true; // No email for other statuses
     }
 
-    console.log(`[sendStatusUpdateEmail] About to send email to ${customerEmail} with subject: ${subject}`);
+    console.log(
+      `[sendStatusUpdateEmail] About to send email to ${customerEmail} with subject: ${subject}`,
+    );
     console.log(`[sendStatusUpdateEmail] Customer name: ${customerName}`);
     console.log(`[sendStatusUpdateEmail] Order number: ${orderNumber}`);
 
     try {
-      const mailgunResponse = await mg.messages.create('stitchpleaseqc.com', {
-        from: 'Stitch Please <orders@stitchpleaseqc.com>',
+      const resendResponse = await resend.emails.send({
+        from: "MJ Creative Candles <orders@mjcreativecandles.com>",
         to: [customerEmail],
         subject,
-        html: emailHtml
+        html: emailHtml,
       });
 
-      console.log(`[sendStatusUpdateEmail] ✓ Mailgun API response:`, JSON.stringify(mailgunResponse, null, 2));
-      console.log(`[sendStatusUpdateEmail] ✓ Email successfully sent to ${customerEmail} via Mailgun`);
+      console.log(
+        `[sendStatusUpdateEmail] ✓ Resend API response:`,
+        JSON.stringify(resendResponse, null, 2),
+      );
+      console.log(
+        `[sendStatusUpdateEmail] ✓ Email successfully sent to ${customerEmail} via Resend`,
+      );
 
       // Send admin notification email
       try {
@@ -783,60 +858,73 @@ export async function sendStatusUpdateEmail({
           orderNumber,
           status,
           items,
-          total
+          total,
         });
-        
+
         const adminSubject = `Order Status Updated: ${statusDisplayName(status)} - ${orderNumber}`;
-        
+
         // Get admin emails from database
         const adminEmails = await getAuthorizedEmails();
-        const adminEmailAddresses = adminEmails.map(admin => admin.email);
+        const adminEmailAddresses = adminEmails.map((admin) => admin.email);
 
         if (adminEmailAddresses.length === 0) {
-          console.warn('No admin emails found in database, using fallback');
-          adminEmailAddresses.push('pleasestitch18@gmail.com', 'itskennedy.dev@gmail.com');
+          console.warn("No admin emails found in database, using fallback");
+          adminEmailAddresses.push(
+            "pleasestitch18@gmail.com",
+            "itskennedy.dev@gmail.com",
+          );
         }
-        
-        await mg.messages.create('stitchpleaseqc.com', {
-          from: 'Stitch Please Orders <orders@stitchpleaseqc.com>',
+
+        await resend.emails.send({
+          from: "MJ Creative Candles Orders <orders@mjcreativecandles.com>",
           to: adminEmailAddresses,
           subject: adminSubject,
-          html: adminEmailHtml
+          html: adminEmailHtml,
         });
-        
-        console.log(`[sendStatusUpdateEmail] ✓ Admin notification sent successfully to ${adminEmailAddresses.length} admin(s)`);
+
+        console.log(
+          `[sendStatusUpdateEmail] ✓ Admin notification sent successfully to ${adminEmailAddresses.length} admin(s)`,
+        );
       } catch (adminEmailError) {
-        console.error(`[sendStatusUpdateEmail] ✗ Failed to send admin notification:`, adminEmailError);
+        console.error(
+          `[sendStatusUpdateEmail] ✗ Failed to send admin notification:`,
+          adminEmailError,
+        );
         // Don't fail the whole operation if admin email fails
       }
 
       return true;
-    } catch (mailgunError: unknown) {
-      console.error(`[sendStatusUpdateEmail] ✗ Mailgun API error:`, mailgunError);
-      const errorMessage = mailgunError instanceof Error ? mailgunError.message : 'Unknown error';
-      const errorDetails = (mailgunError as { response?: { body?: unknown } })?.response?.body || mailgunError;
+    } catch (resendError: unknown) {
+      console.error(`[sendStatusUpdateEmail] ✗ Resend API error:`, resendError);
+      const errorMessage =
+        resendError instanceof Error ? resendError.message : "Unknown error";
+      const errorDetails =
+        (resendError as { response?: { body?: unknown } })?.response?.body ||
+        resendError;
       console.error(`[sendStatusUpdateEmail] ✗ Error message:`, errorMessage);
       console.error(`[sendStatusUpdateEmail] ✗ Error details:`, errorDetails);
-      throw mailgunError; // Re-throw to be caught by outer try-catch
+      throw resendError; // Re-throw to be caught by outer try-catch
     }
   } catch (error) {
-    console.error(`Error sending ${status} email via Mailgun:`, error);
+    console.error(`Error sending ${status} email via Resend:`, error);
     return false;
   }
 }
 
 function statusDisplayName(status: string): string {
   switch (status) {
-    case 'processing':
-      return 'Processing';
-    case 'ready_for_pickup':
-      return 'Ready for Pickup';
-    case 'delivered':
-      return 'Delivered';
-    case 'cancelled':
-      return 'Cancelled';
+    case "processing":
+      return "Processing";
+    case "ready_for_pickup":
+      return "Ready for Pickup";
+    case "delivered":
+      return "Delivered";
+    case "cancelled":
+      return "Cancelled";
     default:
-      return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
+      return (
+        status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")
+      );
   }
 }
 
@@ -845,7 +933,7 @@ function generateAdminStatusUpdateTemplate({
   orderNumber,
   status,
   items,
-  total
+  total,
 }: {
   customerName: string;
   orderNumber: string;
@@ -854,8 +942,15 @@ function generateAdminStatusUpdateTemplate({
   total: number;
 }): string {
   const statusName = statusDisplayName(status);
-  const statusEmoji = status === 'ready_for_pickup' ? '✅' : status === 'delivered' ? '🎉' : status === 'cancelled' ? '❌' : '🔄';
-  
+  const statusEmoji =
+    status === "ready_for_pickup"
+      ? "✅"
+      : status === "delivered"
+        ? "🎉"
+        : status === "cancelled"
+          ? "❌"
+          : "🔄";
+
   return `
     <!DOCTYPE html>
     <html>
@@ -866,11 +961,11 @@ function generateAdminStatusUpdateTemplate({
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #0A5565; color: white; padding: 20px; text-align: center; }
+        .header { background: #1d1d1f; color: white; padding: 20px; text-align: center; }
         .content { background: #f9f9f9; padding: 20px; }
         .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
         .item { border-bottom: 1px solid #eee; padding: 10px 0; }
-        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .total { font-weight: bold; font-size: 18px; color: #1d1d1f; }
         .status-badge { background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; }
       </style>
     </head>
@@ -893,16 +988,20 @@ function generateAdminStatusUpdateTemplate({
             <p><strong>Customer:</strong> ${customerName}</p>
             
             <h4>Items:</h4>
-            ${items.map(item => `
+            ${items
+              .map(
+                (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
             
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #0A5565;">
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #1d1d1f;">
               <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
             </div>
           </div>
@@ -926,7 +1025,7 @@ function generateProcessingEmailTemplate({
   customerName,
   orderNumber,
   items,
-  total
+  total,
 }: {
   customerName: string;
   orderNumber: string;
@@ -973,14 +1072,18 @@ function generateProcessingEmailTemplate({
             <p><strong>Order Number:</strong> ${orderNumber}</p>
             
             <h4>Items Being Processed:</h4>
-            ${items.map(item => `
+            ${items
+              .map(
+                (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
             
             <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #2196F3;">
               <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
@@ -994,7 +1097,7 @@ function generateProcessingEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for choosing Stitch Please!</p>
+          <p>Thank you for choosing MJ Creative Candles!</p>
           <p>We'll be in touch soon with pickup details.</p>
         </div>
       </div>
@@ -1007,7 +1110,7 @@ function generateDeliveredEmailTemplate({
   customerName,
   orderNumber,
   items,
-  total
+  total,
 }: {
   customerName: string;
   orderNumber: string;
@@ -1047,7 +1150,7 @@ function generateDeliveredEmailTemplate({
           
           <div class="thank-you">
             <h3>🙏 Thank You for Your Business!</h3>
-            <p>We truly appreciate you choosing Stitch Please for your custom clothing needs. Your support means the world to us!</p>
+            <p>We truly appreciate you choosing MJ Creative Candles for your custom clothing needs. Your support means the world to us!</p>
           </div>
           
           <div class="order-details">
@@ -1055,14 +1158,18 @@ function generateDeliveredEmailTemplate({
             <p><strong>Order Number:</strong> ${orderNumber}</p>
             
             <h4>Items Delivered:</h4>
-            ${items.map(item => `
+            ${items
+              .map(
+                (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
             
             <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #4CAF50;">
               <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
@@ -1072,7 +1179,7 @@ function generateDeliveredEmailTemplate({
           <div class="review">
             <h4>⭐ We'd Love Your Feedback!</h4>
             <p>If you're happy with your order, we'd be incredibly grateful if you could share your experience with others. Word-of-mouth referrals are the best compliment we can receive!</p>
-            <p>Feel free to tag us on social media or tell your friends about Stitch Please!</p>
+            <p>Feel free to tag us on social media or tell your friends about MJ Creative Candles!</p>
           </div>
           
           <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
@@ -1082,7 +1189,7 @@ function generateDeliveredEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for choosing Stitch Please!</p>
+          <p>Thank you for choosing MJ Creative Candles!</p>
           <p>We look forward to creating more amazing pieces for you in the future.</p>
           <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
         </div>
@@ -1096,7 +1203,7 @@ function generateReadyForPickupEmailTemplate({
   customerName,
   orderNumber,
   items,
-  total
+  total,
 }: {
   customerName: string;
   orderNumber: string;
@@ -1141,7 +1248,7 @@ function generateReadyForPickupEmailTemplate({
           
           <div class="pickup-info">
             <h4>📍 Pickup Location</h4>
-            <p><strong>Stitch Please</strong><br>
+            <p><strong>MJ Creative Candles</strong><br>
             415 13th St<br>
             Moline, IL 61265</p>
             <p><strong>Phone:</strong> (309) 373-6017</p>
@@ -1153,14 +1260,18 @@ function generateReadyForPickupEmailTemplate({
             <p><strong>Order Number:</strong> ${orderNumber}</p>
             
             <h4>Items Ready for Pickup:</h4>
-            ${items.map(item => `
+            ${items
+              .map(
+                (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
             
             <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #4CAF50;">
               <p class="total"><strong>Total Paid: $${total.toFixed(2)}</strong></p>
@@ -1177,7 +1288,7 @@ function generateReadyForPickupEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for choosing Stitch Please!</p>
+          <p>Thank you for choosing MJ Creative Candles!</p>
           <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
         </div>
       </div>
@@ -1190,7 +1301,7 @@ function generateCancelledEmailTemplate({
   customerName,
   orderNumber,
   items,
-  total
+  total,
 }: {
   customerName: string;
   orderNumber: string;
@@ -1238,14 +1349,18 @@ function generateCancelledEmailTemplate({
             <p><strong>Order Number:</strong> ${orderNumber}</p>
             
             <h4>Items That Were Cancelled:</h4>
-            ${items.map(item => `
+            ${items
+              .map(
+                (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
             
             <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #f44336;">
               <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
@@ -1265,7 +1380,7 @@ function generateCancelledEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for considering Stitch Please!</p>
+          <p>Thank you for considering MJ Creative Candles!</p>
           <p>We hope to work with you again soon.</p>
         </div>
       </div>
@@ -1289,8 +1404,8 @@ export async function sendBugReportEmail({
 }): Promise<boolean> {
   try {
     // Skip email sending during build time or if no API key
-    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
-      console.log('Skipping bug report email - no valid Mailgun API key');
+    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === "dummy-key-for-build") {
+      console.log("Skipping bug report email - no valid Resend API key");
       return true;
     }
 
@@ -1303,18 +1418,18 @@ export async function sendBugReportEmail({
     });
 
     // Send to specified email address
-    await mg.messages.create('stitchpleaseqc.com', {
-      from: 'Stitch Please Bug Reports <bugs@stitchpleaseqc.com>',
-      to: ['itskennedy.dev@gmail.com'],
+    await resend.emails.send({
+      from: "MJ Creative Candles Bug Reports <bugs@mjcreativecandles.com>",
+      to: ["itskennedy.dev@gmail.com"],
       subject: `Bug Report: ${subject}`,
       html: bugReportHtml,
-      replyTo: userEmail ?? 'noreply@stitchpleaseqc.com',
+      replyTo: userEmail ?? "noreply@mjcreativecandles.com",
     });
 
-    console.log('✅ Bug report email sent successfully');
+    console.log("✅ Bug report email sent successfully");
     return true;
   } catch (error) {
-    console.error('Failed to send bug report email:', error);
+    console.error("Failed to send bug report email:", error);
     return false;
   }
 }
@@ -1342,11 +1457,11 @@ function generateBugReportEmailTemplate({
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header { background: #1d1d1f; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
         .bug-box { background: white; border: 2px solid #f44336; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        .info-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        .label { font-weight: bold; color: #0A5565; margin-bottom: 5px; display: block; }
+        .info-box { background: white; border: 2px solid #1d1d1f; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .label { font-weight: bold; color: #1d1d1f; margin-bottom: 5px; display: block; }
         .value { margin-bottom: 15px; white-space: pre-wrap; }
         .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
       </style>
@@ -1355,30 +1470,30 @@ function generateBugReportEmailTemplate({
       <div class="container">
         <div class="header">
           <h1>🐛 Bug Report</h1>
-          <p>New bug report from Stitch Please iOS app</p>
+          <p>New bug report from MJ Creative Candles iOS app</p>
         </div>
         
         <div class="content">
           <div class="bug-box">
             <h2 style="color: #f44336; margin-top: 0;">${subject}</h2>
-            <div class="value">${description.replace(/\n/g, '<br>')}</div>
+            <div class="value">${description.replace(/\n/g, "<br>")}</div>
           </div>
           
           <div class="info-box">
-            <h3 style="color: #0A5565; margin-top: 0;">Report Details</h3>
-            ${userEmail ? `<div><span class="label">Reporter Email:</span><div class="value">${userEmail}</div></div>` : ''}
-            ${appVersion ? `<div><span class="label">App Version:</span><div class="value">${appVersion}</div></div>` : ''}
-            ${deviceInfo ? `<div><span class="label">Device Info:</span><div class="value">${deviceInfo}</div></div>` : ''}
+            <h3 style="color: #1d1d1f; margin-top: 0;">Report Details</h3>
+            ${userEmail ? `<div><span class="label">Reporter Email:</span><div class="value">${userEmail}</div></div>` : ""}
+            ${appVersion ? `<div><span class="label">App Version:</span><div class="value">${appVersion}</div></div>` : ""}
+            ${deviceInfo ? `<div><span class="label">Device Info:</span><div class="value">${deviceInfo}</div></div>` : ""}
             <div><span class="label">Reported At:</span><div class="value">${new Date().toLocaleString()}</div></div>
           </div>
           
           <p style="color: #666; font-size: 14px;">
-            This bug report was submitted through the Stitch Please iOS app.${userEmail ? ` You can reply directly to this email to contact the reporter.` : ''}
+            This bug report was submitted through the MJ Creative Candles iOS app.${userEmail ? ` You can reply directly to this email to contact the reporter.` : ""}
           </p>
         </div>
         
         <div class="footer">
-          <p>© 2025 Stitch Please. All rights reserved.</p>
+          <p>© 2025 MJ Creative Candles. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -1409,13 +1524,13 @@ export async function sendAbandonedCartEmail({
 }) {
   try {
     // Skip email sending during build time or if no API key
-    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
-      console.log('Skipping abandoned cart email - no valid Mailgun API key');
+    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === "dummy-key-for-build") {
+      console.log("Skipping abandoned cart email - no valid Resend API key");
       return true;
     }
 
     const abandonedCartHtml = generateAbandonedCartEmailTemplate({
-      customerName: customerName || 'there',
+      customerName: customerName || "there",
       checkoutUrl,
       items,
       total,
@@ -1428,17 +1543,20 @@ export async function sendAbandonedCartEmail({
       "Last chance! Your items are ready to checkout",
     ];
 
-    await mg.messages.create('stitchpleaseqc.com', {
-      from: 'Stitch Please <orders@stitchpleaseqc.com>',
+    await resend.emails.send({
+      from: "MJ Creative Candles <orders@mjcreativecandles.com>",
       to: [customerEmail],
-      subject: subjects[emailNumber - 1] || subjects[0],
+      subject:
+        subjects[emailNumber - 1] || subjects[0] || "Your items are waiting!",
       html: abandonedCartHtml,
     });
 
-    console.log(`✅ Abandoned cart email #${emailNumber} sent to ${customerEmail}`);
+    console.log(
+      `✅ Abandoned cart email #${emailNumber} sent to ${customerEmail}`,
+    );
     return true;
   } catch (error) {
-    console.error('Failed to send abandoned cart email:', error);
+    console.error("Failed to send abandoned cart email:", error);
     return false;
   }
 }
@@ -1478,14 +1596,14 @@ function generateAbandonedCartEmailTemplate({
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #74CADC; color: #0A5565; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header { background: #737373; color: #1d1d1f; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
         .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
         .item { border-bottom: 1px solid #eee; padding: 10px 0; }
-        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .total { font-weight: bold; font-size: 18px; color: #1d1d1f; }
         .footer { text-align: center; padding: 20px; color: #666; }
-        .cta-button { display: inline-block; background: #74CADC; color: #0A5565; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; font-size: 16px; }
-        .urgency { background: ${emailNumber === 3 ? '#fff3cd' : '#e3f2fd'}; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .cta-button { display: inline-block; background: #737373; color: #1d1d1f; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; font-size: 16px; }
+        .urgency { background: ${emailNumber === 3 ? "#fff3cd" : "#e3f2fd"}; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
         .checkout-link { background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all; }
       </style>
     </head>
@@ -1501,7 +1619,7 @@ function generateAbandonedCartEmailTemplate({
           <p>${urgencyMessages[emailNumber - 1] || urgencyMessages[0]}</p>
           
           <div class="urgency">
-            <h3>${emailNumber === 3 ? '⚠️ Last Chance!' : '🛒 Your Items Are Waiting'}</h3>
+            <h3>${emailNumber === 3 ? "⚠️ Last Chance!" : "🛒 Your Items Are Waiting"}</h3>
             <p>Your checkout link is still active. Click below to complete your purchase!</p>
           </div>
           
@@ -1512,22 +1630,26 @@ function generateAbandonedCartEmailTemplate({
           <div class="checkout-link">
             <p style="margin: 0; font-size: 12px; color: #666;">
               <strong>Or copy this link:</strong><br>
-              <a href="${checkoutUrl}" style="color: #74CADC; word-break: break-all;">${checkoutUrl}</a>
+              <a href="${checkoutUrl}" style="color: #737373; word-break: break-all;">${checkoutUrl}</a>
             </p>
           </div>
           
           <div class="order-details">
             <h3>Your Items</h3>
-            ${items.map(item => `
+            ${items
+              .map(
+                (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
             
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #74CADC;">
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #737373;">
               <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
             </div>
           </div>
@@ -1544,7 +1666,7 @@ function generateAbandonedCartEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for considering Stitch Please!</p>
+          <p>Thank you for considering MJ Creative Candles!</p>
           <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
           <p style="font-size: 12px; color: #999; margin-top: 15px;">
             This is email #${emailNumber} of 3. If you've already completed your purchase, you can safely ignore this email.

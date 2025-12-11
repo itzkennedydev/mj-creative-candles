@@ -17,7 +17,7 @@ export async function GET(
     }
 
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const bucket = new GridFSBucket(db, { bucketName: 'uploads' });
     const objectId = new ObjectId(id);
 

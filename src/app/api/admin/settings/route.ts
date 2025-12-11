@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const settingsCollection = db.collection<AdminSettings & { _id?: string; updatedAt?: Date }>('admin_settings');
 
     // Get the settings document (there should only be one)
@@ -125,7 +125,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const settingsCollection = db.collection<AdminSettings & { updatedAt: Date }>('admin_settings');
 
     // Upsert settings (update if exists, insert if not)

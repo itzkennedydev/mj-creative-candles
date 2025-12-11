@@ -125,13 +125,13 @@ export default function CheckoutSuccessPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#74CADC] hover:bg-[#74CADC]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#74CADC]"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#737373] hover:bg-[#737373]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#737373]"
               >
                 Continue Shopping
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#74CADC]"
+                className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#737373]"
               >
                 Contact Us
               </Link>

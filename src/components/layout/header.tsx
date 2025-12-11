@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Menu, ShoppingCart, X } from "lucide-react";
+import { Menu, ShoppingCart, X, ChevronDown } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
 import { useState, useEffect } from "react";
 import { Container } from "~/components/ui/container";
@@ -15,14 +15,66 @@ export function Header() {
   const itemCount = getTotalItems();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
+  const [shopMenuTimeout, setShopMenuTimeout] = useState<NodeJS.Timeout | null>(
+    null,
+  );
+
+  // Shop categories for mega menu
+  const shopCategories = [
+    {
+      title: "Product Categories",
+      items: [
+        { name: "Wax Melts", href: "/shop?category=Wax Melts" },
+        { name: "Jar Candles", href: "/shop?category=Jar Candles" },
+        { name: "Wax Melt Boxes", href: "/shop?category=Wax Melt Boxes" },
+        { name: "Dessert Candles", href: "/shop?category=Dessert Candles" },
+      ],
+    },
+    {
+      title: "By Scent Type",
+      items: [
+        { name: "Citrus Scents", href: "/shop?scent=citrus" },
+        { name: "Bakery Scents", href: "/shop?scent=bakery" },
+        { name: "Berry Scents", href: "/shop?scent=berry" },
+        { name: "Fresh Scents", href: "/shop?scent=fresh" },
+        { name: "Sweet Scents", href: "/shop?scent=sweet" },
+        { name: "Warm Scents", href: "/shop?scent=warm" },
+      ],
+    },
+    {
+      title: "Collections",
+      items: [
+        { name: "All Products", href: "/shop" },
+        { name: "Featured Items", href: "/shop?featured=true" },
+        { name: "On Sale", href: "/shop?sale=true" },
+        { name: "New Arrivals", href: "/shop?sort=newest" },
+      ],
+    },
+  ];
+
+  // Shop menu hover handlers
+  const handleShopMouseEnter = () => {
+    if (shopMenuTimeout) {
+      clearTimeout(shopMenuTimeout);
+    }
+    setIsShopMenuOpen(true);
+  };
+
+  const handleShopMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setIsShopMenuOpen(false);
+    }, 200);
+    setShopMenuTimeout(timeout);
+  };
 
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Close mobile menu on route change
@@ -32,30 +84,35 @@ export function Header() {
 
   const handleCartClick = () => {
     if (itemCount > 0) {
-      router.push('/shop/checkout');
+      router.push("/shop/checkout");
     }
   };
 
   return (
     <>
       {/* Header with NEO styling */}
-      <header 
-        className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
-          scrolled ? 'bg-white/95 backdrop-blur-md border-b border-gray-100' : 'bg-white'
+      <header
+        className={`fixed left-0 right-0 top-0 z-[100] transition-all duration-300 ${
+          scrolled
+            ? "border-b border-gray-100 bg-white/95 backdrop-blur-md"
+            : "bg-white"
         }`}
       >
         <Container>
           <div className="flex items-center justify-between py-3">
             {/* Logo - Left aligned */}
-            <Link 
-              href="/" 
-              className="flex items-center group"
+            <Link
+              href="/"
+              className="group flex items-center"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <div className="relative overflow-hidden" style={{ height: "60px" }}>
+              <div
+                className="relative overflow-hidden"
+                style={{ height: "60px" }}
+              >
                 <Image
-                  src="/Stitch Please Ish Black.png"
-                  alt="Stitch Please"
+                  src="/images/logo/MJLogo.png"
+                  alt="MJ Creative Candles"
                   width={240}
                   height={60}
                   className="object-contain transition-transform duration-300 group-hover:scale-105"
@@ -67,13 +124,97 @@ export function Header() {
             </Link>
 
             {/* Desktop Navigation - Center */}
-            <nav className="hidden lg:flex items-center gap-[32px] absolute left-1/2 transform -translate-x-1/2">
+            <nav className="absolute left-1/2 hidden -translate-x-1/2 transform items-center gap-[32px] lg:flex">
               <NavLink href="/">Home</NavLink>
-              <NavLink href="/shop">Shop</NavLink>
-              <NavLink href="/services">Services</NavLink>
-              <NavLink href="/events/stitch-sniff-holiday">Events</NavLink>
-              <NavLink href="/appointments" badge="NEW">Mobile Embroidery</NavLink>
+
+              {/* Shop with Mega Menu */}
+              <div
+                className="relative"
+                onMouseEnter={handleShopMouseEnter}
+                onMouseLeave={handleShopMouseLeave}
+              >
+                <Link
+                  href="/shop"
+                  className="group relative inline-flex items-center gap-[4px] text-[14px] font-medium leading-[130%] text-black/[0.72] transition-colors duration-300 hover:text-black"
+                >
+                  <span className="relative">
+                    Shop
+                    <span className="absolute bottom-[-4px] left-0 right-0 h-[2px] origin-center scale-x-0 bg-black/[0.72] transition-transform duration-300 group-hover:scale-x-100" />
+                  </span>
+                  <ChevronDown className="h-3 w-3" />
+                </Link>
+
+                {/* Mega Menu */}
+                {isShopMenuOpen && (
+                  <div className="absolute left-1/2 top-full z-50 mt-2 w-[800px] -translate-x-1/4 transform overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+                    <div className="flex">
+                      {/* Categories - Left Side */}
+                      <div className="grid flex-1 grid-cols-3 gap-8 p-8">
+                        {shopCategories.map((category, index) => (
+                          <div
+                            key={index}
+                            className="flex flex-col items-start"
+                          >
+                            <h3 className="mb-4 w-full text-left text-sm font-semibold uppercase tracking-wide text-gray-900">
+                              {category.title}
+                            </h3>
+                            <ul className="w-full space-y-3 text-left">
+                              {category.items.map((item, itemIndex) => (
+                                <li key={itemIndex} className="w-full">
+                                  <Link
+                                    href={item.href}
+                                    className="block w-full text-left text-sm text-gray-600 transition-colors hover:text-gray-900"
+                                  >
+                                    {item.name}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Featured Product - Right Side */}
+                      <div className="relative m-0 w-64 overflow-hidden rounded-r-2xl border-l border-gray-100 p-0">
+                        <div className="relative h-full w-full">
+                          <Image
+                            src="/images/featured/F1.png"
+                            alt="Featured Product"
+                            fill
+                            className="object-cover"
+                            style={{
+                              objectPosition: "center center",
+                              width: "100%",
+                              height: "100%",
+                            }}
+                          />
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/40 p-4">
+                            <div className="text-center text-white">
+                              <h4 className="text-sm font-semibold">
+                                Featured Collection
+                              </h4>
+                              <p className="text-xs opacity-90">
+                                Discover our signature scents
+                              </p>
+                              <Link
+                                href="/shop?featured=true"
+                                className="text-xs font-medium text-white hover:underline"
+                              >
+                                Shop Now →
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <NavLink href="/about">About</NavLink>
+              <NavLink href="/candle-care">Candle Care</NavLink>
+              <NavLink href="/faq">FAQ</NavLink>
+              <NavLink href="/contact">Contact</NavLink>
             </nav>
 
             {/* Right Section - Cart & Menu */}
@@ -81,12 +222,12 @@ export function Header() {
               {/* Cart Button - NEO Style */}
               <button
                 onClick={handleCartClick}
-                className="relative p-[8px] hover:bg-black/[0.03] rounded-full transition-all duration-300"
+                className="relative rounded-full p-[8px] transition-all duration-300 hover:bg-black/[0.03]"
                 aria-label="Shopping cart"
               >
                 <ShoppingCart className="h-[20px] w-[20px] text-black/[0.72]" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-[4px] -right-[4px] bg-[#0A5565] text-white text-[10px] font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-[6px] border-2 border-white">
+                  <span className="absolute -right-[4px] -top-[4px] flex h-[20px] min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-[#1d1d1f] px-[6px] text-[10px] font-bold text-white">
                     {itemCount}
                   </span>
                 )}
@@ -95,7 +236,7 @@ export function Header() {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-[8px] hover:bg-black/[0.03] rounded-full transition-all duration-300"
+                className="rounded-full p-[8px] transition-all duration-300 hover:bg-black/[0.03] lg:hidden"
                 aria-label="Menu"
               >
                 {mobileMenuOpen ? (
@@ -107,7 +248,7 @@ export function Header() {
 
               {/* Desktop Order Button */}
               <Link href="/shop">
-                <Button className="hidden lg:flex bg-[#0A5565] hover:bg-[#083d4a] text-white font-medium rounded-xl">
+                <Button className="hidden rounded-xl bg-[#1d1d1f] font-medium text-white hover:bg-[#0a0a0a] lg:flex">
                   Order Now
                 </Button>
               </Link>
@@ -116,46 +257,67 @@ export function Header() {
         </Container>
 
         {/* Mobile Menu - NEO Style Overlay */}
-        <div 
-          className={`lg:hidden fixed inset-0 top-[60px] bg-white z-[99] transition-all duration-300 ${
-            mobileMenuOpen 
-              ? 'opacity-100 pointer-events-auto' 
-              : 'opacity-0 pointer-events-none'
+        <div
+          className={`fixed inset-0 top-[60px] z-[99] bg-white transition-all duration-300 lg:hidden ${
+            mobileMenuOpen
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none opacity-0"
           }`}
         >
           <Container>
-            <nav className="py-[40px] flex flex-col gap-[8px]">
+            <nav className="flex flex-col gap-[8px] py-[40px]">
               <MobileNavLink href="/" onClick={() => setMobileMenuOpen(false)}>
                 Home
               </MobileNavLink>
-              <MobileNavLink href="/shop" onClick={() => setMobileMenuOpen(false)}>
+              <MobileNavLink
+                href="/shop"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 Shop
               </MobileNavLink>
-              <MobileNavLink href="/services" onClick={() => setMobileMenuOpen(false)}>
-                Services
-              </MobileNavLink>
-              <MobileNavLink href="/events/stitch-sniff-holiday" onClick={() => setMobileMenuOpen(false)}>
-                Events
-              </MobileNavLink>
-              <MobileNavLink href="/appointments" badge="NEW" onClick={() => setMobileMenuOpen(false)}>
-                Mobile Embroidery
-              </MobileNavLink>
-              <MobileNavLink href="/about" onClick={() => setMobileMenuOpen(false)}>
+              <MobileNavLink
+                href="/about"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 About
               </MobileNavLink>
-              
+              <MobileNavLink
+                href="/candle-care"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Candle Care
+              </MobileNavLink>
+              <MobileNavLink
+                href="/faq"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                FAQ
+              </MobileNavLink>
+              <MobileNavLink
+                href="/contact"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact
+              </MobileNavLink>
+
               {/* Mobile CTA Button */}
-              <div className="mt-[32px] pt-[32px] border-t border-black/[0.06]">
+              <div className="mt-[32px] border-t border-black/[0.06] pt-[32px]">
                 <Link href="/shop" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white font-medium rounded-xl">
+                  <Button className="w-full rounded-xl bg-[#1d1d1f] font-medium text-white hover:bg-[#0a0a0a]">
                     Start Shopping
                   </Button>
                 </Link>
-                
+
                 {/* Cart Summary for Mobile */}
                 {itemCount > 0 && (
-                  <Link href="/shop/checkout" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full mt-[12px] bg-[#74CADC]/10 hover:bg-[#74CADC]/20 text-black/[0.72]" variant="outline">
+                  <Link
+                    href="/shop/checkout"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Button
+                      className="mt-[12px] w-full bg-[#737373]/10 text-black/[0.72] hover:bg-[#737373]/20"
+                      variant="outline"
+                    >
                       <ShoppingCart className="h-[16px] w-[16px]" />
                       <span>View Cart ({itemCount} items)</span>
                     </Button>
@@ -174,27 +336,27 @@ export function Header() {
 }
 
 // Desktop Navigation Link Component
-function NavLink({ 
-  href, 
-  children, 
-  badge 
-}: { 
-  href: string; 
-  children: React.ReactNode; 
+function NavLink({
+  href,
+  children,
+  badge,
+}: {
+  href: string;
+  children: React.ReactNode;
   badge?: string;
 }) {
   return (
-    <Link 
+    <Link
       href={href}
-      className="relative text-[14px] leading-[130%] text-black/[0.72] hover:text-black transition-colors duration-300 font-medium group inline-flex items-center gap-[8px]"
+      className="group relative inline-flex items-center gap-[8px] text-[14px] font-medium leading-[130%] text-black/[0.72] transition-colors duration-300 hover:text-black"
     >
       <span className="relative">
         {children}
         {/* Hover underline effect */}
-        <span className="absolute bottom-[-4px] left-0 right-0 h-[2px] bg-black/[0.72] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
+        <span className="absolute bottom-[-4px] left-0 right-0 h-[2px] origin-center scale-x-0 bg-black/[0.72] transition-transform duration-300 group-hover:scale-x-100" />
       </span>
       {badge && (
-        <span className="bg-[#0A5565] text-white text-[10px] font-bold px-[8px] py-[4px] rounded-full whitespace-nowrap flex-shrink-0">
+        <span className="flex-shrink-0 whitespace-nowrap rounded-full bg-[#1d1d1f] px-[8px] py-[4px] text-[10px] font-bold text-white">
           {badge}
         </span>
       )}
@@ -203,28 +365,26 @@ function NavLink({
 }
 
 // Mobile Navigation Link Component
-function MobileNavLink({ 
-  href, 
-  children, 
+function MobileNavLink({
+  href,
+  children,
   badge,
-  onClick 
-}: { 
-  href: string; 
-  children: React.ReactNode; 
+  onClick,
+}: {
+  href: string;
+  children: React.ReactNode;
   badge?: string;
   onClick?: () => void;
 }) {
   return (
-    <Link 
+    <Link
       href={href}
       onClick={onClick}
-      className="px-[24px] py-[16px] bg-black/[0.03] hover:bg-black/[0.06] rounded-[20px] text-[16px] leading-[130%] text-black/[0.72] hover:text-black transition-all duration-300 font-medium flex items-center justify-between group"
+      className="group flex items-center justify-between rounded-[20px] bg-black/[0.03] px-[24px] py-[16px] text-[16px] font-medium leading-[130%] text-black/[0.72] transition-all duration-300 hover:bg-black/[0.06] hover:text-black"
     >
-      <span className="flex items-center gap-[12px]">
-        {children}
-      </span>
+      <span className="flex items-center gap-[12px]">{children}</span>
       {badge ? (
-        <span className="bg-[#0A5565] text-white text-[11px] font-bold px-[10px] py-[4px] rounded-full whitespace-nowrap flex-shrink-0">
+        <span className="flex-shrink-0 whitespace-nowrap rounded-full bg-[#1d1d1f] px-[10px] py-[4px] text-[11px] font-bold text-white">
           {badge}
         </span>
       ) : null}

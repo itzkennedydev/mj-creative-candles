@@ -76,7 +76,7 @@ export default function HeadwearPage() {
             <div className="text-4xl mb-4">👒</div>
             <h3 className="text-xl font-semibold mb-3">Visors & Headbands</h3>
             <p className="text-gray-600 mb-4">
-              Sporty visors and headbands with custom embroidery. Ideal for athletic 
+              Sporty visors and headbands with handcrafted candles. Ideal for athletic 
               teams and outdoor activities.
             </p>
             <ul className="text-sm text-gray-500 space-y-1">

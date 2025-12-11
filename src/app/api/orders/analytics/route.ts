@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     const region = searchParams.getAll('region');
 
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const orders = db.collection('orders');
 
     const now = new Date();

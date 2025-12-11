@@ -12,12 +12,12 @@ interface NewsletterSectionProps {
 export function NewsletterSection({ variant = "default", showPhone = false }: NewsletterSectionProps) {
 
   const sectionClassName = variant === "gradient" 
-    ? "px-[24px] lg:px-[40px] py-[80px] bg-gradient-to-br from-[#74CADC]/5 via-transparent to-[#74CADC]/10"
+    ? "px-[24px] lg:px-[40px] py-[80px] bg-gradient-to-br from-[#737373]/5 via-transparent to-[#737373]/10"
     : "px-[24px] lg:px-[40px] py-[80px]";
 
   const socialButtonClassName = variant === "gradient"
-    ? "w-[48px] h-[48px] rounded-full bg-white/80 backdrop-blur-sm hover:bg-[#74CADC] flex items-center justify-center transition-all duration-300 group border border-black/[0.06]"
-    : "w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#74CADC] flex items-center justify-center group";
+    ? "w-[48px] h-[48px] rounded-full bg-white/80 backdrop-blur-sm hover:bg-[#737373] flex items-center justify-center transition-all duration-300 group border border-black/[0.06]"
+    : "w-[48px] h-[48px] rounded-full bg-black/[0.03] hover:bg-[#737373] flex items-center justify-center group";
 
   return (
     <section className={sectionClassName}>
@@ -39,7 +39,7 @@ export function NewsletterSection({ variant = "default", showPhone = false }: Ne
             variant="ghost"
             aria-label="Facebook"
           >
-            <Facebook className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#0A5565] transition-colors" />
+            <Facebook className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#1d1d1f] transition-colors" />
           </Button>
           <Button
             onClick={() => window.open("https://www.instagram.com/stitchpleaseqc", "_blank")}
@@ -47,7 +47,7 @@ export function NewsletterSection({ variant = "default", showPhone = false }: Ne
             variant="ghost"
             aria-label="Instagram"
           >
-            <Instagram className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#0A5565] transition-colors" />
+            <Instagram className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#1d1d1f] transition-colors" />
           </Button>
           {showPhone && (
             <Button
@@ -56,7 +56,7 @@ export function NewsletterSection({ variant = "default", showPhone = false }: Ne
               variant="ghost"
               aria-label="Phone"
             >
-              <Phone className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#0A5565] transition-colors" />
+              <Phone className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-[#1d1d1f] transition-colors" />
             </Button>
           )}
         </div>

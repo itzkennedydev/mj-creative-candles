@@ -195,7 +195,7 @@ export default function DashboardSettingsPage() {
                           onCheckedChange={(checked) =>
                             setSettings({ ...settings, shippingEnabled: checked })
                           }
-                          className="radix-state-checked:bg-[#74CADC] radix-state-unchecked:bg-neutral-200 relative inline-flex h-4 w-8 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring focus-visible:ring-[#74CADC] focus-visible:ring-opacity-75"
+                          className="radix-state-checked:bg-[#737373] radix-state-unchecked:bg-neutral-200 relative inline-flex h-4 w-8 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring focus-visible:ring-[#737373] focus-visible:ring-opacity-75"
                         >
                           <Switch.Thumb className="radix-state-checked:translate-x-4 radix-state-unchecked:translate-x-0 pointer-events-none h-3 w-3 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out" />
                         </Switch.Root>
@@ -212,7 +212,7 @@ export default function DashboardSettingsPage() {
                       onCheckedChange={(checked) =>
                         setSettings({ ...settings, pickupOnly: checked })
                       }
-                      className="radix-state-checked:bg-[#74CADC] radix-state-unchecked:bg-neutral-200 relative inline-flex h-4 w-8 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring focus-visible:ring-[#74CADC] focus-visible:ring-opacity-75"
+                      className="radix-state-checked:bg-[#737373] radix-state-unchecked:bg-neutral-200 relative inline-flex h-4 w-8 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring focus-visible:ring-[#737373] focus-visible:ring-opacity-75"
                     >
                       <Switch.Thumb className="radix-state-checked:translate-x-4 radix-state-unchecked:translate-x-0 pointer-events-none h-3 w-3 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out" />
                     </Switch.Root>

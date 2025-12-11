@@ -71,7 +71,7 @@ export default function ShopPage() {
 
       {/* Promo Banner - Urgency-driven */}
       {isPromoActive && showPromoBanner && (
-        <div className="bg-[#0A5565] text-white relative">
+        <div className="bg-[#1d1d1f] text-white relative">
           <Container>
             <div className="py-3 flex items-center justify-center gap-3 sm:gap-4 text-center">
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 animate-pulse" />
@@ -131,7 +131,7 @@ export default function ShopPage() {
                   onClick={() => setActiveShop("regular-shop")}
                   className={`relative flex-1 sm:flex-none px-[16px] sm:px-[20px] py-[10px] sm:py-[12px] rounded-lg transition-all duration-200 ${
                     activeShop === 'regular-shop' 
-                      ? 'bg-[#0A5565] text-white' 
+                      ? 'bg-[#1d1d1f] text-white' 
                       : 'text-black/[0.72] hover:text-black hover:bg-black/[0.03]'
                   }`}
                 >
@@ -144,7 +144,7 @@ export default function ShopPage() {
                   onClick={() => setActiveShop("spirit-wear")}
                   className={`relative flex-1 sm:flex-none px-[16px] sm:px-[20px] py-[10px] sm:py-[12px] rounded-lg transition-all duration-200 ${
                     activeShop === 'spirit-wear' 
-                      ? 'bg-[#0A5565] text-white' 
+                      ? 'bg-[#1d1d1f] text-white' 
                       : 'text-black/[0.72] hover:text-black hover:bg-black/[0.03]'
                   }`}
                 >
@@ -165,7 +165,7 @@ export default function ShopPage() {
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-11 pr-10 py-3 bg-gray-100 rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#0A5565] transition-all"
+                  className="w-full pl-11 pr-10 py-3 bg-gray-100 rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#1d1d1f] transition-all"
                 />
                 {searchQuery && (
                   <button
@@ -252,7 +252,7 @@ export default function ShopPage() {
             <div className="flex-1">
               <div className="mb-[20px] sm:mb-[24px]">
                 <p className="text-[13px] sm:text-[14px] leading-[130%] text-black/[0.44]">
-                  Showing all products in {activeShop === 'spirit-wear' ? 'Spirit Wear' : 'Stitch Please Shop'}
+                  Showing all products in {activeShop === 'spirit-wear' ? 'Spirit Wear' : 'MJ Creative Candles Shop'}
                 </p>
               </div>
               
@@ -326,7 +326,7 @@ function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, selectedPri
               variant={selectedCategory === category ? 'default' : 'ghost'}
               className={`w-full justify-start px-[14px] sm:px-[16px] py-[10px] sm:py-[12px] rounded-[12px] text-[13px] sm:text-[14px] leading-[130%] transition-all duration-300 ${
                 selectedCategory === category
-                  ? 'bg-[#0A5565] hover:bg-[#083d4a] text-white'
+                  ? 'bg-[#1d1d1f] hover:bg-[#0a0a0a] text-white'
                   : 'bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]'
               }`}
             >
@@ -348,7 +348,7 @@ function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, selectedPri
                   type="checkbox"
                   checked={isSelected}
                   onChange={() => togglePriceRange(range)}
-                  className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] rounded-[4px] border-[2px] border-black/[0.12] checked:bg-[#74CADC] checked:border-[#74CADC] cursor-pointer"
+                  className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] rounded-[4px] border-[2px] border-black/[0.12] checked:bg-[#737373] checked:border-[#737373] cursor-pointer"
                 />
                 <span className={`text-[13px] sm:text-[14px] leading-[130%] transition-colors ${
                   isSelected ? 'text-black font-medium' : 'text-black/[0.72] group-hover:text-black'
@@ -374,7 +374,7 @@ function ShopSidebarNeo({ shopType, selectedCategory, selectedSizes, selectedPri
               variant="outline"
                 className={`px-[10px] sm:px-[12px] py-[6px] sm:py-[8px] rounded-[8px] text-[12px] sm:text-[14px] leading-[130%] transition-all duration-300 border-[2px] ${
                   isSelected
-                    ? 'bg-[#0A5565] hover:bg-[#083d4a] text-white border-[#0A5565]'
+                    ? 'bg-[#1d1d1f] hover:bg-[#0a0a0a] text-white border-[#1d1d1f]'
                     : 'bg-black/[0.03] hover:bg-black/[0.06] text-black/[0.72] hover:border-black/[0.12] border-black/[0.12]'
                 }`}
             >

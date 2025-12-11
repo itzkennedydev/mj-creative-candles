@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
 
     // Check if we've already processed this event (idempotency check)
     const eventId = event.id;

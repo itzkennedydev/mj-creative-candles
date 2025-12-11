@@ -1,11 +1,11 @@
 {
-  "name": "Stitch Please",
-  "short_name": "Stitch Please",
-  "description": "Premium custom embroidery services and apparel",
+  "name": "MJ Creative Candles",
+  "short_name": "MJ Candles",
+  "description": "Premium handcrafted candles and wax melts",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#74CADC",
+  "theme_color": "#000000",
   "orientation": "portrait-primary",
   "icons": [
     {

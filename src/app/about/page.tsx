@@ -1,195 +1,260 @@
 "use client";
 
-import React from 'react';
-import Image from "next/image";
-import { ArrowRight, Star, Award, Clock, Users } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Button } from "~/components/ui/button";
+import { useState, useEffect } from "react";
 import { Container } from "~/components/ui/container";
-import { NewsletterSection } from "~/components/sections/newsletter";
-
-const testimonials = [
-  {
-    quote: "Stitch, Please embroidered T-shirts and Polos for my church's 101st Anniversary. The owner 'Tanika' did an outstanding job, she went above and beyond to make sure I (Mt. Zion) was satisfied!",
-    author: "Ivey",
-    rating: 5
-  },
-  {
-    quote: "We walked in, we told her what we needed. We came back an hour and half later and the item was ready to go. It is perfect, exactly what I wanted. Very, very friendly!",
-    author: "Jonna",
-    rating: 5
-  },
-  {
-    quote: "She is just Amazing! Able to accommodate whatever your need may be and in an Awesome time frame! I gave her a last minute order and she not only completed it, but Exceeded expectations!",
-    author: "Beth",
-    rating: 5
-  },
-  {
-    quote: "Very creative and fast turn around time. Awesome that vinyl and embroidery are both offered!",
-    author: "Jamie",
-    rating: 5
-  }
-];
-
-const stats = [
-  { icon: Award, value: "10+", label: "Years Experience" },
-  { icon: Users, value: "500+", label: "Happy Customers" },
-  { icon: Clock, value: "24hr", label: "Quick Turnaround" },
-  { icon: Star, value: "5.0", label: "Average Rating" }
-];
+import Image from "next/image";
+import { Heart, Award, Leaf } from "lucide-react";
 
 export default function AboutPage() {
-  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time for images and content
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="h-96 animate-pulse bg-gray-100" />
+      </div>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-white pt-[20px] pb-[80px] lg:pb-0 lg:pt-[30px]">
-      {/* Hero Section - NEO Style */}
-      <section className="py-[40px] lg:py-[80px]">
+    <div className="min-h-screen bg-white">
+      {/* The Beginning Section */}
+      <section className="bg-gradient-to-br from-gray-100 to-gray-50 py-16 sm:py-20">
         <Container>
-          <div className="lg:grid lg:grid-cols-2 lg:gap-[60px] items-center">
-            {/* Left - Image */}
-            <div className="mb-[40px] lg:mb-0">
-              <div className="relative rounded-[40px] overflow-hidden bg-[#F1F1EF] group">
-                <div className="aspect-[4/3] relative">
-                  <Image
-                    src="/stitch.jpg"
-                    alt="Stitch Please Studio"
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    priority
-                  />
-                  {/* Overlay gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+            <div>
+              <h1 className="mb-6 text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
+                The Beginning
+              </h1>
+              <p className="mb-6 leading-relaxed text-gray-600">
+                When the world shut down in 2020, Marteze and Jazden found
+                themselves with extra time and a shared love for creating. What
+                started as a simple candle-making experiment in their kitchen
+                quickly became an obsession with perfecting the art of scent and
+                wax.
+              </p>
+              <p className="leading-relaxed text-gray-600">
+                After months of trial and error, countless test burns, and
+                feedback from friends and family, they realized they had created
+                something special. The candles weren&apos;t just products - they
+                were experiences that brought comfort and joy during uncertain
+                times.
+              </p>
             </div>
-
-            {/* Right - Content */}
-            <div className="lg:pl-[40px]">
-              <div className="mb-[32px]">
-                <h1 className="text-[32px] lg:text-[48px] leading-[130%] font-bold text-black/[0.72]">
-                  Our Story
-                </h1>
-                <p className="text-[16px] lg:text-[18px] leading-[150%] text-black/[0.44] mt-[16px]">
-                  From a home studio to the Quad Cities&apos; premier destination for custom embroidery and personalization services, our founder Tanika Zentic leads a passionate team dedicated to bringing your ideas to life.
-                </p>
-              </div>
-
-              {/* Stats Grid - NEO Style */}
-              <div className="grid grid-cols-2 gap-[16px] mb-[32px]">
-                {stats.map((stat, index) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div
-                      key={index}
-                      className="p-[20px] bg-black/[0.03] rounded-[20px] hover:bg-black/[0.06] transition-all duration-300 cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-[12px]">
-                        <div className="w-[40px] h-[40px] rounded-full bg-white flex items-center justify-center group-hover:bg-[#74CADC] transition-all duration-300">
-                          <Icon className="h-[20px] w-[20px] text-black/[0.72] group-hover:text-white transition-colors" />
-                        </div>
-                        <div>
-                          <p className="text-[20px] leading-[130%] font-bold text-black/[0.72]">
-                            {stat.value}
-                          </p>
-                          <p className="text-[12px] leading-[130%] text-black/[0.44]">
-                            {stat.label}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* CTA Button - NEO Style */}
-              <Button
-                onClick={() => router.push('/shop')}
-                className="w-full lg:w-auto px-8 py-4 bg-[#0A5565] hover:bg-[#083d4a] text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
-              >
-                <span className="text-[16px] leading-[130%] font-medium">Start Your Project</span>
-                <ArrowRight className="h-[20px] w-[20px] group-hover:translate-x-[4px] transition-transform" />
-              </Button>
+            <div className="relative h-80 overflow-hidden rounded-lg">
+              <Image
+                src="/images/featured/F3.png"
+                alt="Early candle making experiments"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
         </Container>
       </section>
 
-      {/* Values Section - NEO Style */}
-      <section className="py-[60px] bg-[#F7F7F7]/50">
+      {/* Process Section */}
+      <section className="bg-white py-16 sm:py-20">
         <Container>
-          <div className="text-center mb-[40px]">
-            <h2 className="text-[24px] lg:text-[32px] leading-[130%] font-bold text-black/[0.72]">
-              Our Commitment
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">
+              Our Crafting Process
             </h2>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-[24px]">
-            <div className="p-[32px] bg-white rounded-[24px] hover:shadow-lg transition-all duration-300">
-              <h3 className="text-[20px] leading-[130%] font-bold text-black/[0.72] mb-[16px]">
-                Experience & Expertise
-              </h3>
-              <p className="text-[14px] leading-[150%] text-black/[0.44]">
-                With over a decade of experience in custom embroidery and personalization, Tanika has built a reputation for excellence and innovation in the Quad Cities area. Her expertise spans from intricate monogramming to large-scale commercial projects.
-              </p>
-            </div>
-
-            <div className="p-[32px] bg-white rounded-[24px] hover:shadow-lg transition-all duration-300">
-              <h3 className="text-[20px] leading-[130%] font-bold text-black/[0.72] mb-[16px]">
-                Attention to Detail
-              </h3>
-              <p className="text-[14px] leading-[150%] text-black/[0.44]">
-                We pride ourselves on our attention to detail, quick turnaround times, and ability to handle projects of any size. Whether it&apos;s a single custom piece or a large corporate order, we approach each project with the same level of dedication.
-              </p>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* Testimonials - NEO Style */}
-      <section className="py-[60px]">
-        <Container>
-          <div className="text-center mb-[40px]">
-            <h2 className="text-[24px] lg:text-[32px] leading-[130%] font-bold text-black/[0.72]">
-              What People Are Saying
-            </h2>
-            <p className="text-[14px] lg:text-[16px] leading-[130%] text-black/[0.44] mt-[8px]">
-              Trusted by hundreds of satisfied customers
+            <p className="mx-auto max-w-3xl text-lg text-gray-600">
+              Every candle is carefully crafted through a meticulous process
+              that ensures the highest quality and most beautiful scents.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-[24px]">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="p-[32px] bg-black/[0.03] rounded-[24px] hover:bg-black/[0.06] transition-all duration-300 group"
-              >
-                {/* Rating Stars */}
-                <div className="flex gap-[4px] mb-[16px]">
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className="h-[16px] w-[16px] fill-current text-black/[0.44] group-hover:text-[#74CADC] transition-colors"
-                    />
-                  ))}
-                </div>
-                
-                <p className="text-[14px] leading-[150%] mb-[16px] text-black/[0.72]">
-                  &quot;{testimonial.quote}&quot;
-                </p>
-                
-                <p className="text-[14px] font-bold text-black/[0.72]">
-                  — {testimonial.author}
-                </p>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                <span className="text-2xl font-bold text-gray-900">1</span>
               </div>
-            ))}
+              <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                Select Premium Materials
+              </h3>
+              <p className="text-sm text-gray-600">
+                We source only the finest soy wax and premium fragrance oils
+                from trusted suppliers.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                <span className="text-2xl font-bold text-gray-900">2</span>
+              </div>
+              <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                Hand-Pour with Care
+              </h3>
+              <p className="text-sm text-gray-600">
+                Each candle is carefully hand-poured in small batches to ensure
+                perfect consistency.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                <span className="text-2xl font-bold text-gray-900">3</span>
+              </div>
+              <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                Cure for Perfection
+              </h3>
+              <p className="text-sm text-gray-600">
+                Candles are cured for 2 to 3 weeks to develop the strongest,
+                most delicious scents.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                <span className="text-2xl font-bold text-gray-900">4</span>
+              </div>
+              <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                Quality Check
+              </h3>
+              <p className="text-sm text-gray-600">
+                Every candle undergoes rigorous quality testing before being
+                packaged and shipped.
+              </p>
+            </div>
           </div>
         </Container>
       </section>
 
-      {/* Newsletter Section - NEO Style */}
-      <NewsletterSection variant="gradient" />
-    </main>
+      {/* Values Section */}
+      <section className="bg-gray-50 py-16 sm:py-20">
+        <Container>
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">
+              Our Values
+            </h2>
+            <p className="mx-auto max-w-3xl text-lg text-gray-600">
+              Everything we do is guided by our commitment to quality,
+              sustainability, and creating moments of joy.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="rounded-lg bg-white p-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                <Award className="h-8 w-8 text-gray-600" />
+              </div>
+              <h3 className="mb-3 text-xl font-semibold text-gray-900">
+                Quality First
+              </h3>
+              <p className="text-gray-600">
+                We use only the finest soy wax and premium fragrance oils to
+                ensure every candle burns cleanly and fills your space with
+                beautiful, long-lasting scents.
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-white p-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                <Heart className="h-8 w-8 text-gray-600" />
+              </div>
+              <h3 className="mb-3 text-xl font-semibold text-gray-900">
+                Handcrafted with Love
+              </h3>
+              <p className="text-gray-600">
+                Each candle is carefully hand-poured in small batches, allowing
+                us to maintain the highest standards and create unique, personal
+                touches in every piece.
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-white p-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                <Leaf className="h-8 w-8 text-gray-600" />
+              </div>
+              <h3 className="mb-3 text-xl font-semibold text-gray-900">
+                Eco-Friendly
+              </h3>
+              <p className="text-gray-600">
+                We&apos;re committed to sustainability, using natural soy wax
+                and cotton wicks that are better for you and the environment.
+              </p>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* Founders Story Section */}
+      <section className="bg-white py-16 sm:py-20">
+        <Container>
+          <div className="mx-auto max-w-4xl">
+            <div className="mb-12 text-center">
+              <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">
+                Meet the Founders
+              </h2>
+              <p className="text-lg text-gray-600">
+                The entrepreneurial siblings who turned a pandemic hobby into a
+                thriving business
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
+              <div className="text-center">
+                <div className="mx-auto mb-6 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-gray-100">
+                  <Image
+                    src="/images/owners/marteze.jpg"
+                    alt="Marteze"
+                    width={128}
+                    height={128}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <h3 className="mb-2 text-xl font-semibold text-gray-900">
+                  Marteze
+                </h3>
+                <p className="mb-4 text-gray-600">
+                  Co-Founder & Creative Director
+                </p>
+                <p className="text-sm leading-relaxed text-gray-600">
+                  The creative visionary behind our unique scent combinations
+                  and beautiful packaging designs. Marteze has an incredible
+                  nose for fragrance and spends hours perfecting each blend to
+                  create the perfect olfactory experience.
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="mx-auto mb-6 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-gray-100">
+                  <Image
+                    src="/images/owners/jazden.jpg"
+                    alt="Jazden"
+                    width={128}
+                    height={128}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <h3 className="mb-2 text-xl font-semibold text-gray-900">
+                  Jazden
+                </h3>
+                <p className="mb-4 text-gray-600">
+                  Co-Founder & Operations Manager
+                </p>
+                <p className="text-sm leading-relaxed text-gray-600">
+                  The detail-oriented perfectionist who ensures every candle
+                  meets our high standards. Jazden manages the day-to-day
+                  operations, quality control, and customer experience, making
+                  sure every order is perfect.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+    </div>
   );
 }

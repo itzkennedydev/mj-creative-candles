@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     // Retrieve the order from database
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const ordersCollection = db.collection<Order>('orders');
     
     const order = await ordersCollection.findOne({ _id: new ObjectId(orderId) });

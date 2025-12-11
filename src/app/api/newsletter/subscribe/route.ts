@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim();
     
     await client.connect();
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const collection = db.collection<NewsletterSubscription>('newsletter_subscriptions');
     
     // Check if email is already subscribed

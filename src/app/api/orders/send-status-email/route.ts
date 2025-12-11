@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const ordersCollection = db.collection<Order>('orders');
 
     // Find the order

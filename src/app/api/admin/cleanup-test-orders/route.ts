@@ -25,7 +25,7 @@ export async function DELETE(request: NextRequest) {
 
     // Clean stitch_orders database (primary)
     try {
-      const db = client.db('stitch_orders');
+      const db = client.db('mj-creative-candles');
       const ordersCollection = db.collection('orders');
       
       // Find Kennedy test orders
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
 
     // Preview stitch_orders database (primary)
     try {
-      const db = client.db('stitch_orders');
+      const db = client.db('mj-creative-candles');
       const ordersCollection = db.collection('orders');
       
       const kennedyOrders = await ordersCollection.find({

@@ -2,8 +2,8 @@ import { Container } from "~/components/ui/container";
 import { generateSEOTags } from "~/lib/seo";
 
 export const metadata = generateSEOTags({
-  title: "Privacy Policy - Stitch Please",
-  description: "Privacy policy for Stitch Please custom embroidery services. Learn how we protect and use your personal information.",
+  title: "Privacy Policy - MJ Creative Candles",
+  description: "Privacy policy for MJ Creative Candles handcrafted candles services. Learn how we protect and use your personal information.",
   url: "https://stitchpleaseqc.com/privacy"
 });
 
@@ -156,8 +156,8 @@ export default function PrivacyPage() {
               </p>
               <div className="bg-gray-100 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Stitch Please</strong><br />
-                  Email: privacy@stitchpleaseqc.com<br />
+                  <strong>MJ Creative Candles</strong><br />
+                  Email: privacy@mjcreativecandles.com<br />
                   Phone: (555) 123-4567<br />
                   Address: [Your Business Address]
                 </p>

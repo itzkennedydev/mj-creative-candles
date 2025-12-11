@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const sanitizedNotes = body.notes ? sanitizeString(body.notes, 500) : undefined;
 
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const ordersCollection = db.collection<Order>('orders');
 
     // Generate order number
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
       );
     }
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const ordersCollection = db.collection<Order>('orders');
 
     // Get query parameters

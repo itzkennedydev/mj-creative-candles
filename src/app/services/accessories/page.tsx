@@ -78,7 +78,7 @@ export default function AccessoriesPage() {
             <div className="text-4xl mb-4">🎁</div>
             <h3 className="text-xl font-semibold mb-3">Promotional Items</h3>
             <p className="text-gray-600 mb-4">
-              Small promotional items with custom embroidery. Perfect for giveaways, 
+              Small promotional items with handcrafted candles. Perfect for giveaways, 
               trade shows, and marketing campaigns.
             </p>
             <ul className="text-sm text-gray-500 space-y-1">

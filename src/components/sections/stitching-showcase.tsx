@@ -81,7 +81,7 @@ export function StitchingShowcase() {
               />
             </span>,
             <br />
-            <span className="underline decoration-[#74CADC]">we&apos;ve got the tools</span>
+            <span className="underline decoration-[#737373]">we&apos;ve got the tools</span>
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -103,7 +103,7 @@ export function StitchingShowcase() {
           >
             <Button 
               size="lg" 
-              className="w-full sm:w-auto bg-[#0A5565] text-white hover:bg-[#083d4a] font-semibold rounded-xl px-8"
+              className="w-full sm:w-auto bg-[#1d1d1f] text-white hover:bg-[#0a0a0a] font-semibold rounded-xl px-8"
               onClick={() => router.push('/shop')}
             >
               Get Started

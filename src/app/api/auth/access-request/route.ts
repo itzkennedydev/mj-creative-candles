@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim();
     
     await client.connect();
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const collection = db.collection<AccessRequest>('access_requests');
     
     // Check if there's already a pending request for this email
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     await client.connect();
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const collection = db.collection<AccessRequest>('access_requests');
     
     const requests = await collection

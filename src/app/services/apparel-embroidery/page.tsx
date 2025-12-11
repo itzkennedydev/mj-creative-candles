@@ -76,7 +76,7 @@ export default function ApparelEmbroideryPage() {
             <div className="text-4xl mb-4">🎨</div>
             <h3 className="text-xl font-semibold mb-3">Custom Designs</h3>
             <p className="text-gray-600 mb-4">
-              Unique custom embroidery designs tailored to your vision. 
+              Unique handcrafted candles designs tailored to your vision. 
               From simple graphics to complex artwork.
             </p>
             <ul className="text-sm text-gray-500 space-y-1">

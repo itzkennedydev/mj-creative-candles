@@ -1,5 +1,5 @@
 {
-  "name": "stitch_please",
+  "name": "mj-creative-candles",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -80,7 +80,6 @@
     "js-sha256": "^0.11.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.475.0",
-    "mailgun.js": "^12.1.1",
     "mongodb": "^6.20.0",
     "motion": "^12.23.24",
     "next": "^15.5.7",
@@ -88,6 +87,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
+    "resend": "^4.8.0",
     "sharp": "^0.34.4",
     "sonner": "^2.0.7",
     "stripe": "^19.2.0",

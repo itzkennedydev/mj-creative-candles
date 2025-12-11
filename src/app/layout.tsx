@@ -14,11 +14,11 @@ import { Analytics } from "@vercel/analytics/next";
 import { TooltipProvider } from "./sca-dashboard/components/ui/tooltip";
 
 export const metadata: Metadata = generateSEOTags({
-  title: "Stitch Please | Custom Embroidery & Spirit Wear | Quad Cities, IL",
-  description: "Premium custom embroidery in Moline, IL serving the Quad Cities. Custom beanies, hoodies, t-shirts, school spirit wear for Moline Maroons, Rock Island Rocks, UTHS Panthers. Fast 5-7 day turnaround. Local pickup available. Call (309) 373-6017",
-  url: "https://stitchpleaseqc.com",
+  title: "MJ Creative Candles | Handcrafted Candles & Spirit Wear | Quad Cities, IL",
+  description: "Premium handcrafted candles in Moline, IL serving the Quad Cities. Custom beanies, hoodies, t-shirts, school spirit wear for Moline Maroons, Rock Island Rocks, UTHS Panthers. Fast 5-7 day turnaround. Local pickup available. Call (309) 373-6017",
+  url: "https://mjcreativecandles.com",
   keywords: [
-    'custom embroidery Quad Cities', 'embroidery Moline IL', 'custom apparel Davenport',
+    'handcrafted candles Quad Cities', 'embroidery Moline IL', 'custom apparel Davenport',
     'spirit wear Rock Island', 'UTHS Panthers gear', 'Moline Maroons spirit wear',
     'custom beanies Illinois', 'personalized hoodies Iowa', 'team apparel Quad Cities',
     'school spirit wear', 'custom t-shirts Bettendorf', 'embroidery near me',
@@ -34,15 +34,15 @@ const websiteSchema = generateWebsiteSchema();
 // Homepage FAQ schema for rich snippets
 const homepageFaqs = [
   {
-    question: "Where is Stitch Please located in the Quad Cities?",
-    answer: "Stitch Please is located at 415 13th St, Moline, IL 61265. We're conveniently located in downtown Moline, serving customers from Rock Island, Davenport, Bettendorf, East Moline, and the entire Quad Cities area."
+    question: "Where is MJ Creative Candles located in the Quad Cities?",
+    answer: "MJ Creative Candles is located at 415 13th St, Moline, IL 61265. We're conveniently located in downtown Moline, serving customers from Rock Island, Davenport, Bettendorf, East Moline, and the entire Quad Cities area."
   },
   {
-    question: "What custom embroidery services do you offer?",
-    answer: "We offer professional custom embroidery on apparel including t-shirts, hoodies, crewnecks, polos, hats, beanies, jackets, and bags. We specialize in school spirit wear, team uniforms, corporate apparel, personalized gifts, and our signature Mama Keepsake Sweatshirts made from baby clothes."
+    question: "What handcrafted candles services do you offer?",
+    answer: "We offer professional handcrafted candles on apparel including t-shirts, hoodies, crewnecks, polos, hats, beanies, jackets, and bags. We specialize in school spirit wear, team uniforms, corporate apparel, personalized gifts, and our signature Mama Keepsake Sweatshirts made from baby clothes."
   },
   {
-    question: "How long does custom embroidery take?",
+    question: "How long does handcrafted candles take?",
     answer: "Our typical turnaround time is 5-7 business days. Rush orders may be available for an additional fee. Contact us at (309) 373-6017 to discuss your timeline."
   },
   {
@@ -58,8 +58,8 @@ const homepageFaqs = [
     answer: "We currently offer local pickup at our Moline, IL location. This allows us to ensure your order is perfect before you take it home and keeps our prices competitive."
   },
   {
-    question: "How do I contact Stitch Please?",
-    answer: "You can reach us by phone at (309) 373-6017, by email at tanika@stitchpleaseqc.com, or visit us at 415 13th St, Moline, IL 61265. Our hours are Monday, Tuesday, and Friday from 1-3 PM."
+    question: "How do I contact MJ Creative Candles?",
+    answer: "You can reach us by phone at (309) 373-6017, by email at tanika@mjcreativecandles.com, or visit us at 415 13th St, Moline, IL 61265. Our hours are Monday, Tuesday, and Friday from 1-3 PM."
   }
 ];
 const faqSchema = generateFAQSchema(homepageFaqs);
@@ -72,7 +72,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#0A5565" />
+        <meta name="theme-color" content="#1d1d1f" />
         <link rel="manifest" href="/manifest.json" />
         {/* Preconnect to external domains for faster loads */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

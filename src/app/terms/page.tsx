@@ -2,9 +2,9 @@ import { Container } from "~/components/ui/container";
 import { generateSEOTags } from "~/lib/seo";
 
 export const metadata = generateSEOTags({
-  title: "Terms of Service - Stitch Please",
-  description: "Terms of service for Stitch Please custom embroidery services. Read our terms and conditions for using our services.",
-  url: "https://stitchpleaseqc.com/terms"
+  title: "Terms of Service - MJ Creative Candles",
+  description: "Terms of service for MJ Creative Candles handcrafted candles services. Read our terms and conditions for using our services.",
+  url: "https://mjcreativecandles.com/terms"
 });
 
 export default function TermsPage() {
@@ -24,14 +24,14 @@ export default function TermsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
               <p className="text-gray-700 mb-4">
-                By accessing and using Stitch Please services, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                By accessing and using MJ Creative Candles services, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
               </p>
             </section>
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">2. Services Description</h2>
               <p className="text-gray-700 mb-4">
-                Stitch Please provides custom embroidery services including but not limited to:
+                MJ Creative Candles provides handcrafted candles services including but not limited to:
               </p>
               <ul className="list-disc pl-6 text-gray-700 mb-4">
                 <li>Custom embroidery on apparel and accessories</li>
@@ -67,7 +67,7 @@ export default function TermsPage() {
                   <strong>Design Approval:</strong> All designs must be approved by the client before production begins. Changes after approval may incur additional charges.
                 </p>
                 <p>
-                  <strong>Copyright:</strong> Clients retain ownership of their original designs. Stitch Please retains the right to use completed work for promotional purposes unless otherwise specified.
+                  <strong>Copyright:</strong> Clients retain ownership of their original designs. MJ Creative Candles retains the right to use completed work for promotional purposes unless otherwise specified.
                 </p>
               </div>
             </section>
@@ -105,7 +105,7 @@ export default function TermsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">7. Limitation of Liability</h2>
               <p className="text-gray-700 mb-4">
-                Stitch Please shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of our services.
+                MJ Creative Candles shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of our services.
               </p>
             </section>
 
@@ -130,8 +130,8 @@ export default function TermsPage() {
               </p>
               <div className="bg-gray-100 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Stitch Please</strong><br />
-                  Email: info@stitchpleaseqc.com<br />
+                  <strong>MJ Creative Candles</strong><br />
+                  Email: info@mjcreativecandles.com<br />
                   Phone: (555) 123-4567<br />
                   Address: [Your Business Address]
                 </p>

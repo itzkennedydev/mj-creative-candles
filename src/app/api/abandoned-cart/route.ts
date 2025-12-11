@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     // For now, we'll allow it to be called from cron jobs
     
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const incompleteSessionsCollection = db.collection('incomplete_checkout_sessions');
     
     const now = new Date();
@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const client = await clientPromise;
-    const db = client.db('stitch_orders');
+    const db = client.db('mj-creative-candles');
     const incompleteSessionsCollection = db.collection('incomplete_checkout_sessions');
     
     const total = await incompleteSessionsCollection.countDocuments({});

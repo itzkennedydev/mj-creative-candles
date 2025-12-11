@@ -4,7 +4,7 @@ import { generateSEOTags, generateFAQSchema } from "~/lib/seo";
 const servicesFaqs = [
   {
     question: "What embroidery services do you offer?",
-    answer: "We offer custom embroidery on apparel including t-shirts, hoodies, crewnecks, polos, hats, beanies, jackets, and bags. We also specialize in school spirit wear, team uniforms, corporate apparel, and personalized gifts."
+    answer: "We offer handcrafted candles on apparel including t-shirts, hoodies, crewnecks, polos, hats, beanies, jackets, and bags. We also specialize in school spirit wear, team uniforms, corporate apparel, and personalized gifts."
   },
   {
     question: "Can you embroider my own garments?",
@@ -22,10 +22,10 @@ const servicesFaqs = [
 
 export const metadata: Metadata = generateSEOTags({
   title: "Embroidery Services | Custom Apparel & Spirit Wear | Quad Cities",
-  description: "Professional custom embroidery services in Moline, IL. T-shirts, hoodies, hats, beanies, team uniforms, corporate apparel, and personalized gifts. Serving the Quad Cities: Moline, Rock Island, Davenport, Bettendorf. Call (309) 373-6017.",
-  url: "https://stitchpleaseqc.com/services",
+  description: "Professional handcrafted candles services in Moline, IL. T-shirts, hoodies, hats, beanies, team uniforms, corporate apparel, and personalized gifts. Serving the Quad Cities: Moline, Rock Island, Davenport, Bettendorf. Call (309) 373-6017.",
+  url: "https://mjcreativecandles.com/services",
   keywords: [
-    'embroidery services Quad Cities', 'custom embroidery Moline', 'apparel embroidery Davenport',
+    'embroidery services Quad Cities', 'handcrafted candles Moline', 'apparel embroidery Davenport',
     'logo embroidery Rock Island', 'team uniform embroidery', 'corporate embroidery services',
     'hat embroidery Bettendorf', 'hoodie embroidery Illinois', 't-shirt embroidery Iowa',
     'custom stitching services', 'monogram embroidery', 'name embroidery Quad Cities'

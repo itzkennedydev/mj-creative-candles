@@ -41,7 +41,7 @@ export async function GET(
     }
     
     const client = await clientPromise;
-    const db = client.db('stitchplease');
+    const db = client.db('mj-creative-candles');
     const collection = db.collection<Product>('products');
     
     const product = await collection.findOne({ 
@@ -136,7 +136,7 @@ export async function PUT(
     }
     
     const client = await clientPromise;
-    const db = client.db('stitchplease');
+    const db = client.db('mj-creative-candles');
     const collection = db.collection<Product>('products');
     
     const updateData = {
@@ -182,7 +182,7 @@ export async function DELETE(
     }
     
     const client = await clientPromise;
-    const db = client.db('stitchplease');
+    const db = client.db('mj-creative-candles');
     const collection = db.collection<Product>('products');
     
     // Soft delete by setting isActive to false

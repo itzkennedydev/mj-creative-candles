@@ -121,8 +121,8 @@ export function SidebarNav<T extends Record<string, unknown>>({
                 >
                   <div className="max-w-fit">
                     <Image 
-                      src="/Stitch Please Ish Black.png" 
-                      alt="Stitch Please" 
+                      src="/MJ Creative Candles Ish Black.png" 
+                      alt="MJ Creative Candles" 
                       width={120}
                       height={40}
                       className="w-auto h-7"
@@ -334,7 +334,7 @@ function NavGroupItem({
               data-hovered={hovered}
             />
             {badge && (
-              <div className="absolute right-0.5 top-0.5 flex size-3.5 items-center justify-center rounded-full bg-[#74CADC] text-[0.625rem] font-semibold text-white">
+              <div className="absolute right-0.5 top-0.5 flex size-3.5 items-center justify-center rounded-full bg-[#737373] text-[0.625rem] font-semibold text-white">
                 {badge}
               </div>
             )}
@@ -379,7 +379,7 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
           "group flex h-8 items-center justify-between rounded-lg p-2 text-sm leading-none transition-[background-color,color,font-weight] duration-75",
           "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
           isActive && !items
-            ? "bg-[#74CADC]/10 font-medium text-[#1E5A6B] hover:bg-[#74CADC]/20 active:bg-[#74CADC]/15"
+            ? "bg-[#737373]/10 font-medium text-[#1E5A6B] hover:bg-[#737373]/20 active:bg-[#737373]/15"
             : locked
               ? "cursor-not-allowed opacity-50 text-black"
               : "text-black hover:bg-bg-inverted/5 active:bg-bg-inverted/10",
@@ -408,8 +408,8 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
               className={cn(
                 "flex items-center justify-center rounded px-1.5 py-0.5 text-xs font-semibold",
                 isActive && !items
-                  ? "bg-[#74CADC] text-white"
-                  : "bg-[#74CADC]/10 text-[#74CADC]",
+                  ? "bg-[#737373] text-white"
+                  : "bg-[#737373]/10 text-[#737373]",
               )}
             >
               {item.badge}
