@@ -265,15 +265,8 @@ export function OrderSummary({
           </div>
         ) : (
           cartItems.map((item) => {
-            const itemId = `${item.product.id}-${item.selectedSize ?? "default"}-${item.selectedColor ?? "default"}-${item.customColorValue ?? "default"}`;
-            const itemPrice =
-              (getProductPrice(item.product) +
-                (item.selectedSize === "XXL"
-                  ? 3
-                  : item.selectedSize === "3XL"
-                    ? 5
-                    : 0)) *
-              item.quantity;
+            const itemId = `${item.product.id}-${item.selectedColor ?? "default"}-${item.customColorValue ?? "default"}`;
+            const itemPrice = getProductPrice(item.product) * item.quantity;
             return (
               <div key={itemId} className="group flex gap-3">
                 <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
@@ -289,9 +282,7 @@ export function OrderSummary({
                     {item.product.name}
                   </h3>
                   <p className="truncate text-xs text-gray-500">
-                    {[item.selectedSize, item.selectedColor]
-                      .filter(Boolean)
-                      .join(" • ")}
+                    {item.selectedColor}
                   </p>
                   <div className="mt-1 flex items-center gap-2">
                     <div className="flex items-center rounded-md bg-gray-100">

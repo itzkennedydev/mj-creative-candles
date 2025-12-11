@@ -7,14 +7,12 @@ import { useMemo } from "react";
 interface ProductGridProps {
   searchQuery?: string;
   selectedCategory?: string;
-  selectedSizes?: Set<string>;
   selectedPriceRanges?: Set<string>;
 }
 
 export function ProductGrid({
   searchQuery = "",
   selectedCategory = "All",
-  selectedSizes = new Set(),
   selectedPriceRanges = new Set(),
 }: ProductGridProps) {
   const { data: products = [], isLoading, error } = useProductsQuery();

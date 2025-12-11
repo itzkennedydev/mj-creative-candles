@@ -17,6 +17,8 @@ import {
   Edit,
   ListFilter,
   Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Combobox,
@@ -36,6 +38,8 @@ export default function ProductsPage() {
   const [stockFilter, setStockFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -124,6 +128,17 @@ export default function ProductsPage() {
       return matchesSearch && matchesCategory && matchesStock;
     });
   }, [products, searchQuery, categoryFilter, stockFilter]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, categoryFilter, stockFilter]);
 
   if (!isAuthenticated) {
     return (
@@ -255,150 +270,223 @@ export default function ProductsPage() {
                   <p className="text-sm text-neutral-500">No products found</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {filteredProducts.map((product, index) => (
-                    <div
-                      key={product.id || `product-${index}`}
-                      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white transition-all duration-300 ease-out hover:border-neutral-300"
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setIsModalOpen(true);
-                      }}
-                    >
-                      {/* Image Section - Apple-style clean presentation */}
-                      <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden bg-neutral-50">
-                        {product.image ? (
-                          <Image
-                            src={product.image}
-                            alt={product.name}
-                            fill
-                            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100">
-                            <Package className="h-12 w-12 text-neutral-300" />
-                          </div>
-                        )}
-                        {/* Stock Status Indicator - Minimal */}
-                        {product.inStock === false && (
-                          <div className="absolute right-3 top-3">
-                            <div className="h-2 w-2 rounded-full bg-red-500" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Content Section - Clean typography hierarchy */}
-                      <div className="flex min-h-0 flex-1 flex-col p-5">
-                        <div className="flex min-h-0 flex-1 flex-col space-y-3">
-                          {/* Category - Subtle */}
-                          {product.category && (
-                            <div className="flex-shrink-0 text-xs font-medium uppercase tracking-wider text-neutral-400">
-                              {product.category}
+                <>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {paginatedProducts.map((product, index) => (
+                      <div
+                        key={product.id || `product-${index}`}
+                        className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white transition-all duration-300 ease-out hover:border-neutral-300"
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        {/* Image Section - Apple-style clean presentation */}
+                        <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden bg-neutral-50">
+                          {product.image ? (
+                            <Image
+                              src={product.image}
+                              alt={product.name}
+                              fill
+                              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100">
+                              <Package className="h-12 w-12 text-neutral-300" />
                             </div>
                           )}
-
-                          {/* Product Name - Prominent, full text */}
-                          <h3 className="flex-shrink-0 text-base font-semibold leading-tight tracking-tight text-neutral-900">
-                            {product.name}
-                          </h3>
-
-                          {/* Description - Limited to 3 lines */}
-                          {product.description && (
-                            <p className="line-clamp-3 flex-shrink-0 text-sm leading-relaxed text-neutral-500">
-                              {product.description}
-                            </p>
+                          {/* Stock Status Indicator - Minimal */}
+                          {product.inStock === false && (
+                            <div className="absolute right-3 top-3">
+                              <div className="h-2 w-2 rounded-full bg-red-500" />
+                            </div>
                           )}
-
-                          {/* Product Details - Show all sizes and colors */}
-                          {(product.sizes && product.sizes.length > 0) ||
-                          (product.colors && product.colors.length > 0) ? (
-                            <div className="flex-shrink-0 space-y-1.5">
-                              {product.sizes && product.sizes.length > 0 && (
-                                <div className="text-xs text-neutral-400">
-                                  <span className="font-medium text-neutral-500">
-                                    Sizes:{" "}
-                                  </span>
-                                  <span>{product.sizes.join(", ")}</span>
-                                </div>
-                              )}
-                              {product.colors && product.colors.length > 0 && (
-                                <div className="text-xs text-neutral-400">
-                                  <span className="font-medium text-neutral-500">
-                                    Colors:{" "}
-                                  </span>
-                                  <span>{product.colors.join(", ")}</span>
-                                </div>
-                              )}
-                            </div>
-                          ) : null}
-
-                          {/* Additional Product Info */}
-                          <div className="flex-shrink-0 space-y-1 text-xs text-neutral-400">
-                            {product.shopType && (
-                              <div>
-                                <span className="font-medium text-neutral-500">
-                                  Shop Type:{" "}
-                                </span>
-                                <span>{product.shopType}</span>
-                              </div>
-                            )}
-                            {product.school && (
-                              <div>
-                                <span className="font-medium text-neutral-500">
-                                  School:{" "}
-                                </span>
-                                <span>{product.school}</span>
-                              </div>
-                            )}
-                            {product.requiresBabyClothes && (
-                              <div>
-                                <span className="font-medium text-neutral-500">
-                                  Baby Clothes Required:{" "}
-                                </span>
-                                <span>Yes</span>
-                                {product.babyClothesDeadlineDays && (
-                                  <span>
-                                    {" "}
-                                    ({product.babyClothesDeadlineDays} days)
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Spacer to push price to bottom */}
-                          <div className="min-h-[1rem] flex-1"></div>
-
-                          {/* Price - Clean, prominent, always at same position */}
-                          <div className="flex-shrink-0 border-t border-neutral-100 pt-2">
-                            <div className="text-xl font-semibold tracking-tight text-neutral-900">
-                              {formatCurrency(getProductPrice(product))}
-                            </div>
-                            <div className="mt-1 text-xs text-neutral-400">
-                              {product.inStock !== false
-                                ? "In Stock"
-                                : "Out of Stock"}
-                            </div>
-                          </div>
                         </div>
 
-                        {/* Edit Button - Always at bottom */}
-                        <button
-                          className="mt-4 flex w-full flex-shrink-0 items-center justify-center gap-2 rounded-xl bg-neutral-50 px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors duration-200 hover:bg-neutral-100 group-hover:bg-neutral-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedProduct(product);
-                            setIsModalOpen(true);
-                          }}
-                        >
-                          <Edit className="h-3.5 w-3.5" />
-                          <span>Edit</span>
-                        </button>
+                        {/* Content Section - Clean typography hierarchy */}
+                        <div className="flex min-h-0 flex-1 flex-col p-5">
+                          <div className="flex min-h-0 flex-1 flex-col space-y-3">
+                            {/* Category - Subtle */}
+                            {product.category && (
+                              <div className="flex-shrink-0 text-xs font-medium uppercase tracking-wider text-neutral-400">
+                                {product.category}
+                              </div>
+                            )}
+
+                            {/* Product Name - Prominent, full text */}
+                            <h3 className="flex-shrink-0 text-base font-semibold leading-tight tracking-tight text-neutral-900">
+                              {product.name}
+                            </h3>
+
+                            {/* Description - Limited to 3 lines */}
+                            {product.description && (
+                              <p className="line-clamp-3 flex-shrink-0 text-sm leading-relaxed text-neutral-500">
+                                {product.description}
+                              </p>
+                            )}
+
+                            {/* Product Details - Show colors only */}
+                            {product.colors && product.colors.length > 0 ? (
+                              <div className="flex-shrink-0 space-y-1.5">
+                                {product.colors &&
+                                  product.colors.length > 0 && (
+                                    <div className="text-xs text-neutral-400">
+                                      <span className="font-medium text-neutral-500">
+                                        Colors:{" "}
+                                      </span>
+                                      <span>{product.colors.join(", ")}</span>
+                                    </div>
+                                  )}
+                              </div>
+                            ) : null}
+
+                            {/* Additional Product Info */}
+                            <div className="flex-shrink-0 space-y-1 text-xs text-neutral-400">
+                              {product.shopType && (
+                                <div>
+                                  <span className="font-medium text-neutral-500">
+                                    Shop Type:{" "}
+                                  </span>
+                                  <span>{product.shopType}</span>
+                                </div>
+                              )}
+                              {product.school && (
+                                <div>
+                                  <span className="font-medium text-neutral-500">
+                                    School:{" "}
+                                  </span>
+                                  <span>{product.school}</span>
+                                </div>
+                              )}
+                              {product.requiresBabyClothes && (
+                                <div>
+                                  <span className="font-medium text-neutral-500">
+                                    Baby Clothes Required:{" "}
+                                  </span>
+                                  <span>Yes</span>
+                                  {product.babyClothesDeadlineDays && (
+                                    <span>
+                                      {" "}
+                                      ({product.babyClothesDeadlineDays} days)
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Spacer to push price to bottom */}
+                            <div className="min-h-[1rem] flex-1"></div>
+
+                            {/* Price - Clean, prominent, always at same position */}
+                            <div className="flex-shrink-0 border-t border-neutral-100 pt-2">
+                              <div className="text-xl font-semibold tracking-tight text-neutral-900">
+                                {formatCurrency(getProductPrice(product))}
+                              </div>
+                              <div className="mt-1 text-xs text-neutral-400">
+                                {product.inStock !== false
+                                  ? "In Stock"
+                                  : "Out of Stock"}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Edit Button - Always at bottom */}
+                          <button
+                            className="mt-4 flex w-full flex-shrink-0 items-center justify-center gap-2 rounded-xl bg-neutral-50 px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors duration-200 hover:bg-neutral-100 group-hover:bg-neutral-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedProduct(product);
+                              setIsModalOpen(true);
+                            }}
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                            <span>Edit</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between border-t border-neutral-200 pt-6">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-neutral-500">
+                          Showing {startIndex + 1}-
+                          {Math.min(endIndex, filteredProducts.length)} of{" "}
+                          {filteredProducts.length} products
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            setCurrentPage((prev) => Math.max(1, prev - 1))
+                          }
+                          disabled={currentPage === 1}
+                          text="Previous"
+                          icon={<ChevronLeft className="h-4 w-4" />}
+                          className="hover:bg-neutral-50"
+                        />
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1)
+                            .filter((page) => {
+                              // Show first page, last page, current page, and pages around current
+                              if (page === 1 || page === totalPages)
+                                return true;
+                              if (Math.abs(page - currentPage) <= 1)
+                                return true;
+                              return false;
+                            })
+                            .map((page, index, array) => {
+                              // Add ellipsis if there's a gap
+                              const showEllipsisBefore =
+                                index > 0 && array[index - 1] !== page - 1;
+                              return (
+                                <div
+                                  key={page}
+                                  className="flex items-center gap-1"
+                                >
+                                  {showEllipsisBefore && (
+                                    <span className="px-2 text-sm text-neutral-400">
+                                      ...
+                                    </span>
+                                  )}
+                                  <Button
+                                    variant={
+                                      currentPage === page
+                                        ? "primary"
+                                        : "outline"
+                                    }
+                                    onClick={() => setCurrentPage(page)}
+                                    text={page.toString()}
+                                    className={
+                                      currentPage === page
+                                        ? "bg-neutral-900 text-white hover:bg-neutral-800"
+                                        : "hover:bg-neutral-50"
+                                    }
+                                  />
+                                </div>
+                              );
+                            })}
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            setCurrentPage((prev) =>
+                              Math.min(totalPages, prev + 1),
+                            )
+                          }
+                          disabled={currentPage === totalPages}
+                          text="Next"
+                          right={<ChevronRight className="h-4 w-4" />}
+                          className="hover:bg-neutral-50"
+                        />
                       </div>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </div>
           </PageWidthWrapper>

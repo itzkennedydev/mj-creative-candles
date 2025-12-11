@@ -15,7 +15,6 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<Set<string>>(
     new Set(),
   );
@@ -193,10 +192,8 @@ export default function ShopPage() {
               <div className="sticky top-[100px]">
                 <ShopSidebarNeo
                   onCategoryChange={setSelectedCategory}
-                  onSizeChange={setSelectedSizes}
                   onPriceRangeChange={setSelectedPriceRanges}
                   selectedCategory={selectedCategory}
-                  selectedSizes={selectedSizes}
                   selectedPriceRanges={selectedPriceRanges}
                 />
               </div>
@@ -239,10 +236,8 @@ export default function ShopPage() {
                   <div className="h-[calc(100%-72px)] overflow-y-auto p-[20px] sm:h-[calc(100%-80px)] sm:p-[24px]">
                     <ShopSidebarNeo
                       onCategoryChange={setSelectedCategory}
-                      onSizeChange={setSelectedSizes}
                       onPriceRangeChange={setSelectedPriceRanges}
                       selectedCategory={selectedCategory}
-                      selectedSizes={selectedSizes}
                       selectedPriceRanges={selectedPriceRanges}
                     />
                   </div>
@@ -262,7 +257,6 @@ export default function ShopPage() {
               <ProductGrid
                 searchQuery={searchQuery}
                 selectedCategory={selectedCategory}
-                selectedSizes={selectedSizes}
                 selectedPriceRanges={selectedPriceRanges}
               />
             </div>
@@ -279,19 +273,15 @@ export default function ShopPage() {
 // NEO-styled Sidebar Component
 interface ShopSidebarNeoProps {
   selectedCategory: string;
-  selectedSizes: Set<string>;
   selectedPriceRanges: Set<string>;
   onCategoryChange: (category: string) => void;
-  onSizeChange: (sizes: Set<string>) => void;
   onPriceRangeChange: (ranges: Set<string>) => void;
 }
 
 function ShopSidebarNeo({
   selectedCategory,
-  selectedSizes,
   selectedPriceRanges,
   onCategoryChange,
-  onSizeChange,
   onPriceRangeChange,
 }: ShopSidebarNeoProps) {
   const categories = [
@@ -301,17 +291,6 @@ function ShopSidebarNeo({
     "Wax Melt Boxes",
     "Dessert Candles",
   ];
-
-  // Toggle size selection
-  const toggleSize = (size: string) => {
-    const newSet = new Set(selectedSizes);
-    if (newSet.has(size)) {
-      newSet.delete(size);
-    } else {
-      newSet.add(size);
-    }
-    onSizeChange(newSet);
-  };
 
   // Toggle price range selection
   const togglePriceRange = (range: string) => {
@@ -382,32 +361,6 @@ function ShopSidebarNeo({
               );
             },
           )}
-        </div>
-      </div>
-
-      {/* Size Filter */}
-      <div>
-        <h3 className="mb-[12px] text-[13px] font-bold leading-[130%] text-black/[0.72] sm:mb-[16px] sm:text-[14px]">
-          Size
-        </h3>
-        <div className="grid grid-cols-3 gap-[6px] sm:gap-[8px]">
-          {["XS", "S", "M", "L", "XL", "XXL"].map((size) => {
-            const isSelected = selectedSizes.has(size);
-            return (
-              <Button
-                key={size}
-                onClick={() => toggleSize(size)}
-                variant="outline"
-                className={`rounded-[8px] border-[2px] px-[10px] py-[6px] text-[12px] leading-[130%] transition-all duration-300 sm:px-[12px] sm:py-[8px] sm:text-[14px] ${
-                  isSelected
-                    ? "border-[#1d1d1f] bg-[#1d1d1f] text-white hover:bg-[#0a0a0a]"
-                    : "border-black/[0.12] bg-black/[0.03] text-black/[0.72] hover:border-black/[0.12] hover:bg-black/[0.06]"
-                }`}
-              >
-                {size}
-              </Button>
-            );
-          })}
         </div>
       </div>
     </div>

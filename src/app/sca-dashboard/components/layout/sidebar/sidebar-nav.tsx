@@ -120,13 +120,13 @@ export function SidebarNav<T extends Record<string, unknown>>({
                   className="block rounded-lg px-1 py-4 outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-black/50"
                 >
                   <div className="max-w-fit">
-                    <Image 
-                      src="/MJ Creative Candles Ish Black.png" 
-                      alt="MJ Creative Candles" 
-                      width={120}
-                      height={40}
-                      className="w-auto h-7"
-                      style={{ mixBlendMode: 'multiply' }}
+                    <Image
+                      src="/images/logo/MJLogo_optimized.png"
+                      alt="MJ Creative Candles"
+                      width={180}
+                      height={60}
+                      className="h-10 w-auto"
+                      priority
                     />
                   </div>
                 </Link>
@@ -186,7 +186,7 @@ export function SidebarNav<T extends Record<string, unknown>>({
                                   <ChevronLeft className="size-3 [&_*]:stroke-2" />
                                 </div>
                               )}
-                              <span className="text-black text-lg font-semibold">
+                              <span className="text-lg font-semibold text-black">
                                 {title}
                               </span>
                             </TitleContainer>
@@ -215,17 +215,18 @@ export function SidebarNav<T extends Record<string, unknown>>({
 
               {/* Fixed bottom sections */}
               <div className="flex flex-col gap-2">
-                {typeof data.showConversionGuides === 'boolean' && data.showConversionGuides && (
-                  <div className="px-3 pb-2">
-                    <Link
-                      href={`/${typeof data.slug === 'string' ? data.slug : ''}/settings/analytics`}
-                      className="flex items-center gap-2 rounded-lg bg-neutral-200/75 px-2.5 py-2 text-xs text-neutral-700 transition-colors hover:bg-neutral-200"
-                    >
-                      <BookOpen className="size-4" />
-                      Set up conversion tracking
-                    </Link>
-                  </div>
-                )}
+                {typeof data.showConversionGuides === "boolean" &&
+                  data.showConversionGuides && (
+                    <div className="px-3 pb-2">
+                      <Link
+                        href={`/${typeof data.slug === "string" ? data.slug : ""}/settings/analytics`}
+                        className="flex items-center gap-2 rounded-lg bg-neutral-200/75 px-2.5 py-2 text-xs text-neutral-700 transition-colors hover:bg-neutral-200"
+                      >
+                        <BookOpen className="size-4" />
+                        Set up conversion tracking
+                      </Link>
+                    </div>
+                  )}
 
                 {bottom && <div className="flex flex-col">{bottom}</div>}
               </div>
@@ -329,10 +330,7 @@ function NavGroupItem({
                 : "hover:bg-bg-inverted/5 active:bg-bg-inverted/10",
             )}
           >
-            <Icon
-              className="text-black size-5"
-              data-hovered={hovered}
-            />
+            <Icon className="size-5 text-black" data-hovered={hovered} />
             {badge && (
               <div className="absolute right-0.5 top-0.5 flex size-3.5 items-center justify-center rounded-full bg-[#737373] text-[0.625rem] font-semibold text-white">
                 {badge}
@@ -379,10 +377,10 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
           "group flex h-8 items-center justify-between rounded-lg p-2 text-sm leading-none transition-[background-color,color,font-weight] duration-75",
           "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
           isActive && !items
-            ? "bg-[#737373]/10 font-medium text-[#1E5A6B] hover:bg-[#737373]/20 active:bg-[#737373]/15"
+            ? "bg-[#737373]/10 font-medium text-black hover:bg-[#737373]/20 active:bg-[#737373]/15"
             : locked
-              ? "cursor-not-allowed opacity-50 text-black"
-              : "text-black hover:bg-bg-inverted/5 active:bg-bg-inverted/10",
+              ? "cursor-not-allowed text-black opacity-50"
+              : "hover:bg-bg-inverted/5 active:bg-bg-inverted/10 text-black",
         )}
         aria-disabled={locked}
       >
@@ -394,7 +392,7 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
               <Icon
                 className={cn(
                   "size-4",
-                  !items && "group-data-[active=true]:text-[#1E5A6B]",
+                  !items && "group-data-[active=true]:text-black",
                 )}
                 data-hovered={hovered}
               />
@@ -419,7 +417,7 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
             <ChevronDown className="size-3.5 text-black transition-transform duration-75 group-data-[active=true]:rotate-180" />
           )}
           {item.arrow && (
-            <ArrowUpRight2 className="text-black size-3.5 transition-transform duration-75 group-hover:-translate-y-px group-hover:translate-x-px" />
+            <ArrowUpRight2 className="size-3.5 text-black transition-transform duration-75 group-hover:-translate-y-px group-hover:translate-x-px" />
           )}
         </span>
       </Link>
@@ -461,7 +459,7 @@ export function Area({
       className={cn(
         "left-0 top-0 flex size-full flex-col md:transition-[opacity,transform] md:duration-300",
         visible
-          ? "opacity-100 relative"
+          ? "relative opacity-100"
           : cn(
               "pointer-events-none absolute opacity-0",
               direction === "left" ? "-translate-x-full" : "translate-x-full",

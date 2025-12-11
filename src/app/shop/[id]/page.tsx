@@ -43,7 +43,6 @@ export default function ProductDetailPage() {
   const params = useParams();
   const productId = params?.id as string;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [customColorValue, setCustomColorValue] = useState<string>("");
   const quantity = 1;
@@ -227,14 +226,11 @@ export default function ProductDetailPage() {
   // Set default selections
   useEffect(() => {
     if (product) {
-      if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-        setSelectedSize(product.sizes[0] ?? "");
-      }
       if (product.colors && product.colors.length > 1 && !selectedColor) {
         setSelectedColor(product.colors[0] ?? "");
       }
     }
-  }, [product, selectedSize, selectedColor]);
+  }, [product, selectedColor]);
 
   // Update image when color selection changes
   useEffect(() => {
@@ -258,14 +254,6 @@ export default function ProductDetailPage() {
   const handleAddToCart = async () => {
     if (!product) return;
 
-    if (product.sizes && product.sizes.length > 1 && !selectedSize) {
-      addToast({
-        title: "Size Required",
-        description: "Please select a size before adding to cart.",
-        type: "warning",
-      });
-      return;
-    }
     if (product.colors && product.colors.length > 1 && !selectedColor) {
       addToast({
         title: "Color Required",
@@ -290,7 +278,7 @@ export default function ProductDetailPage() {
     addItem(
       product,
       quantity,
-      selectedSize,
+      undefined, // No size for candles
       selectedColor,
       selectedColor === "Custom" ? customColorValue : undefined,
       isBeanie ? embroideryName : undefined,
@@ -311,8 +299,7 @@ export default function ProductDetailPage() {
   const basePrice = product
     ? (product.salePrice ?? product.price ?? product.regularPrice ?? 0)
     : 0;
-  const displayPrice =
-    basePrice + (selectedSize === "XXL" ? 3 : selectedSize === "3XL" ? 5 : 0);
+  const displayPrice = basePrice;
 
   // Handle swipe gestures for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -397,9 +384,7 @@ export default function ProductDetailPage() {
               : "We couldn't find the product you're looking for."}
           </p>
           <Link href="/shop">
-            <Button className="rounded-full bg-[#1d1d1f] px-8 py-3 text-base font-medium text-white hover:bg-[#0a0a0a]">
-              Browse All Products
-            </Button>
+            <Button className="rounded-full px-8">Browse All Products</Button>
           </Link>
         </div>
       </div>
@@ -805,37 +790,6 @@ export default function ProductDetailPage() {
                         className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#1d1d1f]"
                       />
                     )}
-                  </div>
-                )}
-
-                {/* Size Selection - Hick's Law (clear options reduce decision time) */}
-                {product.sizes && product.sizes.length > 0 && (
-                  <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-gray-900">
-                      Size:{" "}
-                      <span className="font-normal text-gray-600">
-                        {selectedSize}
-                      </span>
-                    </label>
-                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-                      {product.sizes.map((size) => {
-                        const isSelected = selectedSize === size;
-
-                        return (
-                          <button
-                            key={size}
-                            onClick={() => setSelectedSize(size)}
-                            className={`relative rounded-xl px-2 py-3 text-sm font-medium transition-colors ${
-                              isSelected
-                                ? "bg-[#1d1d1f] text-white"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            }`}
-                          >
-                            {size}
-                          </button>
-                        );
-                      })}
-                    </div>
                   </div>
                 )}
 

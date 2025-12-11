@@ -186,18 +186,15 @@ export function CheckoutForm({ appliedDiscount }: CheckoutFormProps = {}) {
 
       const total = subtotalAfterDiscount + tax + shippingCost;
 
-      // Prepare order items with XXL and 3XL surcharge
+      // Prepare order items
       const orderItems = cartItems.map((item) => {
-        const sizeSurcharge =
-          item.selectedSize === "XXL" ? 3 : item.selectedSize === "3XL" ? 5 : 0;
-        const finalPrice = getProductPrice(item.product) + sizeSurcharge;
+        const finalPrice = getProductPrice(item.product);
 
         return {
           productId: item.product.id,
           productName: item.product.name,
           productPrice: finalPrice,
           quantity: item.quantity,
-          selectedSize: item.selectedSize,
           selectedColor: item.selectedColor,
           customColorValue: item.customColorValue,
         };

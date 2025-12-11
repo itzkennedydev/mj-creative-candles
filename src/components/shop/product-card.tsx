@@ -447,11 +447,6 @@ function ProductCardComponent({ product }: ProductCardProps) {
                 {product.colors.length} colors
               </span>
             )}
-            {product.sizes && product.sizes.length > 1 && (
-              <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-500">
-                {product.sizes.length} sizes
-              </span>
-            )}
             {new Date() < new Date("2025-12-02T05:59:59Z") && (
               <span className="rounded-full bg-[#f5f5f5] px-2 py-1 text-xs font-medium text-[#1d1d1f]">
                 15% OFF
@@ -461,7 +456,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
         </div>
 
         {/* Price and CTA - Always at bottom */}
-        <div className="mt-auto border-t border-gray-100 pt-3">
+        <div className="mt-auto pt-3">
           <div className="mb-3 flex items-center justify-between">
             <span
               className="text-lg font-bold text-gray-900"
@@ -490,10 +485,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
           </div>
 
           <Link href={`/shop/${product.id}`} className="block">
-            <Button
-              disabled={!product.inStock}
-              className="w-full rounded-xl bg-[#1d1d1f] py-3 text-sm font-medium text-white transition-colors hover:bg-[#0a0a0a]"
-            >
+            <Button disabled={!product.inStock} className="w-full">
               {product.inStock ? "View Product" : "Out of Stock"}
             </Button>
           </Link>
@@ -513,8 +505,6 @@ export const ProductCard = memo(
       prevProps.product.price === nextProps.product.price &&
       prevProps.product.inStock === nextProps.product.inStock &&
       prevProps.product.image === nextProps.product.image &&
-      JSON.stringify(prevProps.product.sizes) ===
-        JSON.stringify(nextProps.product.sizes) &&
       JSON.stringify(prevProps.product.colors) ===
         JSON.stringify(nextProps.product.colors)
     );

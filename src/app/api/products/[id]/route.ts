@@ -56,7 +56,6 @@ export async function GET(
       inStock: product.inStock,
       stock: product.stock,
       visibility: product.visibility,
-      sizes: product.sizes,
       colors: product.colors,
       requiresBabyClothes: product.requiresBabyClothes,
       babyClothesDeadlineDays: product.babyClothesDeadlineDays,
@@ -135,7 +134,6 @@ export async function PUT(
     if (body.shopType !== undefined) updateData.shopType = body.shopType;
     if (body.school !== undefined) updateData.school = body.school;
     if (body.inStock !== undefined) updateData.inStock = body.inStock;
-    if (body.sizes !== undefined) updateData.sizes = body.sizes;
     if (body.colors !== undefined) updateData.colors = body.colors;
     if (body.requiresBabyClothes !== undefined)
       updateData.requiresBabyClothes = body.requiresBabyClothes;
@@ -170,7 +168,6 @@ export async function PUT(
         shopType: updatedProduct.shopType,
         school: updatedProduct.school,
         inStock: updatedProduct.inStock,
-        sizes: updatedProduct.sizes,
         colors: updatedProduct.colors,
         requiresBabyClothes: updatedProduct.requiresBabyClothes,
         babyClothesDeadlineDays: updatedProduct.babyClothesDeadlineDays,

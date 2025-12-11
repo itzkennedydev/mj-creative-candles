@@ -164,7 +164,7 @@ export function FloatingCart() {
                 ) : (
                   <div className="space-y-3 sm:space-y-4">
                     {cartItems.map((item) => {
-                      const itemId = `${item.product.id}-${item.selectedSize ?? "default"}-${item.selectedColor ?? "default"}-${item.customColorValue ?? "default"}`;
+                      const itemId = `${item.product.id}-${item.selectedColor ?? "default"}-${item.customColorValue ?? "default"}`;
                       return (
                         <div
                           key={itemId}
@@ -187,9 +187,6 @@ export function FloatingCart() {
                               {item.product.name}
                             </h3>
                             <p className="mt-0.5 text-[11px] text-gray-500 sm:text-xs">
-                              {item.selectedSize &&
-                                `Size: ${item.selectedSize}`}
-                              {item.selectedSize && item.selectedColor && " • "}
                               {item.selectedColor &&
                               item.selectedColor === "Custom" &&
                               item.customColorValue
@@ -222,13 +219,7 @@ export function FloatingCart() {
                               <span className="text-xs font-medium text-gray-900 sm:text-sm">
                                 $
                                 {(
-                                  (getProductPrice(item.product) +
-                                    (item.selectedSize === "XXL"
-                                      ? 3
-                                      : item.selectedSize === "3XL"
-                                        ? 5
-                                        : 0)) *
-                                  item.quantity
+                                  getProductPrice(item.product) * item.quantity
                                 ).toFixed(2)}
                               </span>
                             </div>

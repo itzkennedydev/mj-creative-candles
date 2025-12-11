@@ -24,7 +24,7 @@ export interface Product {
   inStock: boolean;
   stock?: number; // Stock quantity for MJ Candles
   visibility?: "visible" | "hidden"; // For MJ Candles products
-  sizes?: string[];
+  // sizes?: string[]; // Deprecated - candles don't have sizes
   colors?: string[];
   requiresBabyClothes?: boolean; // For Mama Keepsake Sweatshirt
   babyClothesDeadlineDays?: number; // Number of days to bring in baby clothes (default 5)
@@ -34,6 +34,13 @@ export interface Product {
   featured?: boolean; // Featured flag for MJ Candles
   weight?: number; // Weight for MJ Candles
   dimensions?: { length: number; width: number; height: number }; // Dimensions for MJ Candles
+
+  // Candle-specific fields
+  topNotes?: string; // Top/initial scent notes
+  middleNotes?: string; // Middle/heart scent notes
+  baseNotes?: string; // Base/lasting scent notes
+  scentFamily?: string; // Scent category (e.g., Citrus, Floral, Woody, Fresh, etc.)
+  burnTime?: string; // Estimated burn time (e.g., "40-50 hours")
 }
 
 // Helper function to get optimized image URL
@@ -59,7 +66,7 @@ export function getProductPrice(product: Product): number {
 export interface CartItem {
   product: Product;
   quantity: number;
-  selectedSize?: string;
+  // selectedSize?: string; // Deprecated - candles don't have sizes
   selectedColor?: string;
   customColorValue?: string; // For custom color requests (when selectedColor is "Custom")
   embroideryName?: string; // Optional name for embroidery

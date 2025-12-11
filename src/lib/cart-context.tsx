@@ -55,10 +55,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     embroideryName?: string,
     orderNotes?: string,
   ) => {
-    // Calculate price with size surcharge
-    const sizeSurcharge =
-      selectedSize === "XXL" ? 3 : selectedSize === "3XL" ? 5 : 0;
-    const itemPrice = getProductPrice(product) + sizeSurcharge;
+    // Get item price (no size surcharge for candles)
+    const itemPrice = getProductPrice(product);
 
     // Track analytics
     trackAddToCart(product.id ?? "", product.name, itemPrice);
@@ -67,7 +65,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existingItem = prev.find(
         (item) =>
           item.product.id === product.id &&
-          item.selectedSize === selectedSize &&
           item.selectedColor === selectedColor &&
           item.customColorValue === customColorValue,
       );
@@ -99,7 +96,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) =>
       prev.filter(
         (item) =>
-          `${item.product.id}-${item.selectedSize ?? "default"}-${item.selectedColor ?? "default"}-${item.customColorValue ?? "default"}` !==
+          `${item.product.id}-${item.selectedColor ?? "default"}-${item.customColorValue ?? "default"}` !==
           itemId,
       ),
     );
@@ -113,7 +110,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     setItems((prev) =>
       prev.map((item) => {
-        const currentItemId = `${item.product.id}-${item.selectedSize ?? "default"}-${item.selectedColor ?? "default"}-${item.customColorValue ?? "default"}`;
+        const currentItemId = `${item.product.id}-${item.selectedColor ?? "default"}-${item.customColorValue ?? "default"}`;
         return currentItemId === itemId ? { ...item, quantity } : item;
       }),
     );
@@ -129,9 +126,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const getTotalPrice = () => {
     return items.reduce((sum, item) => {
-      const sizeSurcharge =
-        item.selectedSize === "XXL" ? 3 : item.selectedSize === "3XL" ? 5 : 0;
-      const itemPrice = getProductPrice(item.product) + sizeSurcharge;
+      const itemPrice = getProductPrice(item.product);
       return sum + itemPrice * item.quantity;
     }, 0);
   };

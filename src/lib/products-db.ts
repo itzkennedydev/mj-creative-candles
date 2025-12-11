@@ -48,7 +48,6 @@ const initialProducts: Omit<Product, "id">[] = [
     shopType: "spirit-wear",
     school: "united-township",
     inStock: true,
-    sizes: ["S", "M", "L", "XL", "XXL", "3XL"],
     colors: ["Black"],
   },
   {
@@ -61,7 +60,6 @@ const initialProducts: Omit<Product, "id">[] = [
     shopType: "spirit-wear",
     school: "united-township",
     inStock: true,
-    sizes: ["S", "M", "L", "XL", "XXL", "3XL"],
     colors: ["Black"],
   },
 ];
@@ -121,7 +119,6 @@ export async function getProducts(): Promise<Product[]> {
       inStock: product.inStock,
       stock: product.stock,
       visibility: product.visibility,
-      sizes: product.sizes,
       colors: product.colors,
       requiresBabyClothes: product.requiresBabyClothes,
       babyClothesDeadlineDays: product.babyClothesDeadlineDays,
@@ -202,7 +199,6 @@ export async function updateProduct(
       shopType: updatedProduct.shopType,
       school: updatedProduct.school,
       inStock: updatedProduct.inStock,
-      sizes: updatedProduct.sizes,
       colors: updatedProduct.colors,
       requiresBabyClothes: updatedProduct.requiresBabyClothes,
       babyClothesDeadlineDays: updatedProduct.babyClothesDeadlineDays,
