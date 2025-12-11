@@ -1,11 +1,25 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/cart-context";
+import { useEffect, useState } from "react";
 
 export function HeroSlider() {
   const { openScentQuiz } = useCart();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
     <section className="relative h-[400px] overflow-hidden sm:h-[500px] lg:h-[600px]">
@@ -27,12 +41,20 @@ export function HeroSlider() {
               Discover our collection of artisanal candles made with love and
               care
             </p>
-            <Button
-              onClick={openScentQuiz}
-              className="bg-white px-6 py-2 text-sm text-black shadow-lg hover:bg-gray-100 hover:shadow-xl sm:px-8 sm:py-3 sm:text-base"
-            >
-              Discover Your Scent
-            </Button>
+            {isMobile ? (
+              <Link href="/shop">
+                <Button className="bg-white px-6 py-2 text-sm text-black shadow-lg hover:bg-gray-100 hover:shadow-xl sm:px-8 sm:py-3 sm:text-base">
+                  Discover Your Scent
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                onClick={openScentQuiz}
+                className="bg-white px-6 py-2 text-sm text-black shadow-lg hover:bg-gray-100 hover:shadow-xl sm:px-8 sm:py-3 sm:text-base"
+              >
+                Discover Your Scent
+              </Button>
+            )}
           </div>
         </div>
       </div>
