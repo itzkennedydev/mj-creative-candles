@@ -1,0 +1,1557 @@
+import Mailgun from 'mailgun.js';
+import type { Order, OrderItem } from './order-types';
+import { env } from '~/env.js';
+import { getAuthorizedEmails } from './admin-emails-db';
+
+// Initialize Mailgun
+const mailgun = new Mailgun(FormData);
+const mg = mailgun.client({
+  username: 'api',
+  key: String(env.MAILGUN_API_KEY),
+  url: 'https://api.mailgun.net'
+});
+
+export async function sendNewsletterSubscriptionEmail(email: string) {
+  try {
+    // Skip email sending during build time or if no API key
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping newsletter subscription email - no valid Mailgun API key');
+      return true;
+    }
+
+    const subscriptionEmailHtml = generateNewsletterSubscriptionTemplate();
+
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please <newsletter@stitchpleaseqc.com>',
+      to: [email],
+      subject: 'Welcome to Stitch Please Newsletter!',
+      html: subscriptionEmailHtml
+    });
+
+    // Send admin notification
+    const adminEmails = await getAuthorizedEmails();
+    const adminEmailAddresses = adminEmails.map(admin => admin.email);
+
+    if (adminEmailAddresses.length === 0) {
+      adminEmailAddresses.push('pleasestitch18@gmail.com', 'itskennedy.dev@gmail.com');
+    }
+
+    const adminNotificationHtml = generateAdminNewsletterNotificationTemplate(email);
+
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please Newsletter <newsletter@stitchpleaseqc.com>',
+      to: adminEmailAddresses,
+      subject: `New Newsletter Subscription: ${email}`,
+      html: adminNotificationHtml
+    });
+
+    console.log(`✅ Newsletter subscription emails sent for ${email}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send newsletter subscription email:', error);
+    return false;
+  }
+}
+
+function generateNewsletterSubscriptionTemplate(): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Welcome to Stitch Please Newsletter</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #74CADC; color: #0A5565; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .welcome-box { background: white; border: 2px solid #74CADC; border-radius: 8px; padding: 25px; margin: 20px 0; text-align: center; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+        .button { display: inline-block; background: #74CADC; color: #0A5565; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; font-weight: bold; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Welcome to Stitch Please!</h1>
+          <p>Thank you for subscribing to our newsletter</p>
+        </div>
+        
+        <div class="content">
+          <div class="welcome-box">
+            <h2>🎉 You&apos;re All Set!</h2>
+            <p>Thank you for joining our community! You&apos;ll now receive:</p>
+            <ul style="text-align: left; display: inline-block; margin: 20px 0;">
+              <li>Latest product updates and new arrivals</li>
+              <li>Exclusive promotions and special offers</li>
+              <li>Custom embroidery tips and inspiration</li>
+              <li>Event announcements and community news</li>
+            </ul>
+          </div>
+          
+          <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>Stay Connected</h3>
+            <p>Follow us on social media for even more updates and behind-the-scenes content:</p>
+            <p style="margin-top: 15px;">
+              <a href="https://www.facebook.com/stitchpleaseqc" class="button">Facebook</a>
+              <a href="https://www.instagram.com/stitchpleaseqc" class="button">Instagram</a>
+            </p>
+          </div>
+          
+          <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>📞 Questions?</h4>
+            <p>Have questions or need help with a custom order? Call us at <strong>(309) 373-6017</strong> or visit our website.</p>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>© 2025 Stitch Please. All rights reserved.</p>
+          <p>415 13th St, Moline, IL 61265</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateAdminNewsletterNotificationTemplate(email: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New Newsletter Subscription</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .info-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .label { font-weight: bold; color: #0A5565; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>📧 New Newsletter Subscription</h1>
+          <p>Someone just subscribed to your newsletter</p>
+        </div>
+        
+        <div class="content">
+          <div class="info-box">
+            <div style="margin-bottom: 15px;">
+              <span class="label">Email:</span><br>
+              ${email}
+            </div>
+            <div style="margin-bottom: 15px;">
+              <span class="label">Subscribed At:</span><br>
+              ${new Date().toLocaleString()}
+            </div>
+          </div>
+          
+          <p>This is an automated notification from the Stitch Please newsletter system.</p>
+        </div>
+        
+        <div class="footer">
+          <p>© 2025 Stitch Please. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export async function sendAccessRequestEmail(email: string, name: string, reason: string) {
+  try {
+    const accessRequestHtml = generateAccessRequestEmailTemplate(email, name, reason);
+
+    // Get admin emails from database
+    const adminEmails = await getAuthorizedEmails();
+    const adminEmailAddresses = adminEmails.map(admin => admin.email);
+
+    if (adminEmailAddresses.length === 0) {
+      console.warn('No admin emails found in database, using fallback');
+      adminEmailAddresses.push('itskennedy.dev@gmail.com', 'pleasestitch18@gmail.com');
+    }
+
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please Admin <admin@stitchpleaseqc.com>',
+      to: adminEmailAddresses,
+      subject: `New Admin Access Request from ${name}`,
+      html: accessRequestHtml
+    });
+
+    console.log(`✅ Access request notification sent for ${email}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send access request email:', error);
+    return false;
+  }
+}
+
+function generateAccessRequestEmailTemplate(email: string, name: string, reason: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Admin Access Request</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .info-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .label { font-weight: bold; color: #0A5565; }
+        .value { margin-bottom: 15px; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+        .button { display: inline-block; background: #0A5565; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🔐 Admin Access Request</h1>
+          <p>Someone is requesting access to the Stitch Please admin panel</p>
+        </div>
+        
+        <div class="content">
+          <div class="info-box">
+            <div class="value">
+              <span class="label">Name:</span><br>
+              ${name}
+            </div>
+            <div class="value">
+              <span class="label">Email:</span><br>
+              ${email}
+            </div>
+            <div class="value">
+              <span class="label">Reason for Access:</span><br>
+              ${reason}
+            </div>
+            <div class="value">
+              <span class="label">Requested At:</span><br>
+              ${new Date().toLocaleString()}
+            </div>
+          </div>
+          
+          <p><strong>Action Required:</strong></p>
+          <p>Please review this access request and either approve or deny access to the admin panel.</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://stitchpleaseqc.com/admin" class="button">Review in Admin Panel</a>
+          </div>
+          
+          <div class="footer">
+            <p>This is an automated notification from the Stitch Please admin system.</p>
+            <p>If you did not expect this email, please ignore it.</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export async function sendVerificationCodeEmail(email: string, code: string) {
+  try {
+    const verificationEmailHtml = generateVerificationEmailTemplate(code);
+
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please Admin <admin@stitchpleaseqc.com>',
+      to: [email],
+      subject: 'Your Stitch Please Admin Verification Code',
+      html: verificationEmailHtml
+    });
+
+    console.log(`✅ Verification code sent to ${email}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send verification email:', error);
+    // Fallback: log the code for development
+    console.log(`📧 [FALLBACK] Verification code for ${email}: ${code}`);
+    console.log(`📧 [FALLBACK] Email sending failed, but code is available above`);
+    return true; // Don't fail the request, just log the code
+  }
+}
+
+function generateVerificationEmailTemplate(code: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Verification Code</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .code-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }
+        .code { font-size: 32px; font-weight: bold; color: #0A5565; letter-spacing: 4px; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Stitch Please Admin</h1>
+          <p>Verification Code</p>
+        </div>
+        <div class="content">
+          <h2>Your Verification Code</h2>
+          <p>Use this code to sign in to your Stitch Please admin account:</p>
+          
+          <div class="code-box">
+            <div class="code">${code}</div>
+          </div>
+          
+          <p><strong>This code will expire in 10 minutes.</strong></p>
+          
+          <p>If you didn't request this code, please ignore this email.</p>
+        </div>
+        <div class="footer">
+          <p>© 2025 Stitch Please. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export async function sendOrderConfirmationEmail(order: Order) {
+  try {
+    // SECURITY: Only send confirmation emails if payment has been verified
+    // The order status must be 'paid' - this ensures the Stripe webhook has verified payment
+    // Never send customer confirmation emails for unpaid orders
+    if (order.status !== 'paid') {
+      console.warn(`[SECURITY] Attempted to send order confirmation email for order ${order.orderNumber} with status '${order.status}'. Customer emails are only sent after payment verification.`);
+      return false;
+    }
+
+    // Skip email sending during build time or if no API key
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping email sending - no valid Mailgun API key');
+      return true;
+    }
+
+    // Customer email - only sent after payment verification (status === 'paid')
+    const customerEmailHtml = generateCustomerEmailTemplate(order);
+    
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please <orders@stitchpleaseqc.com>',
+      to: [order.customer.email],
+      subject: `Order Confirmation - ${order.orderNumber}`,
+      html: customerEmailHtml
+    });
+
+    // Owner email - only sent after payment verification (status === 'paid')
+    const ownerEmailHtml = generateOwnerEmailTemplate(order);
+    
+    // Get admin emails from database
+    const adminEmails = await getAuthorizedEmails();
+    const adminEmailAddresses = adminEmails.map(admin => admin.email);
+
+    if (adminEmailAddresses.length === 0) {
+      console.warn('No admin emails found in database, using fallback');
+      adminEmailAddresses.push('pleasestitch18@gmail.com');
+    }
+    
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please Orders <orders@stitchpleaseqc.com>',
+      to: adminEmailAddresses,
+      subject: `New Order Received - ${order.orderNumber}`,
+      html: ownerEmailHtml
+    });
+
+    console.log('Email notifications sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Error sending emails via Mailgun:', error);
+    return false;
+  }
+}
+
+function generateCustomerEmailTemplate(order: Order): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Confirmation</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #74CADC; color: #0A5565; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Order Confirmation</h1>
+          <p>Thank you for your order!</p>
+        </div>
+        
+        <div class="content">
+          <h2>Hello ${order.customer.firstName}!</h2>
+          <p>Your order has been received and is being processed. We'll contact you soon to arrange pickup.</p>
+          
+          <div class="order-details">
+            <h3>Order Details</h3>
+            <p><strong>Order Number:</strong> ${order.orderNumber}</p>
+            <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+            
+            <h4>Items Ordered:</h4>
+            ${order.items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #74CADC;">
+              <p><strong>Subtotal:</strong> $${order.subtotal.toFixed(2)}</p>
+              <p><strong>Tax:</strong> $${order.tax.toFixed(2)}</p>
+              <p><strong>Pickup:</strong> Free</p>
+              <p class="total"><strong>Total:</strong> $${order.total.toFixed(2)}</p>
+            </div>
+            
+            <p><strong>Payment Method:</strong> Online Payment (Credit/Debit Card)</p>
+            ${order.notes ? `<p><strong>Notes:</strong> ${order.notes}</p>` : ''}
+          </div>
+          
+          <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>📞 Next Steps</h4>
+            <p>We'll contact you at <strong>${order.customer.phone}</strong> to arrange a convenient pickup time once your order is ready.</p>
+            <p><strong>Our Phone:</strong> (309) 373-6017</p>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Thank you for choosing Stitch Please!</p>
+          <p>Questions? Reply to this email or call us at (309) 373-6017.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateOwnerEmailTemplate(order: Order): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New Order - ${order.orderNumber}</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #0A5565; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .customer-info { background: #e8f5e8; padding: 15px; border-radius: 8px; }
+        .urgent { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🆕 New Order Received</h1>
+          <p>Order #${order.orderNumber}</p>
+        </div>
+        
+        <div class="content">
+          <div class="urgent">
+            <h3>⚠️ Action Required</h3>
+            <p>Contact customer to arrange pickup time.</p>
+          </div>
+          
+          <div class="customer-info">
+            <h3>Customer Information</h3>
+            <p><strong>Name:</strong> ${order.customer.firstName} ${order.customer.lastName}</p>
+            <p><strong>Email:</strong> ${order.customer.email}</p>
+            <p><strong>Phone:</strong> ${order.customer.phone}</p>
+          </div>
+          
+          <div class="order-details">
+            <h3>Order Details</h3>
+            <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString()} at ${new Date(order.createdAt).toLocaleTimeString()}</p>
+            <p><strong>Status:</strong> ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</p>
+            
+            <h4>Items Ordered:</h4>
+            ${order.items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #0A5565;">
+              <p><strong>Subtotal:</strong> $${order.subtotal.toFixed(2)}</p>
+              <p><strong>Tax:</strong> $${order.tax.toFixed(2)}</p>
+              <p><strong>Pickup:</strong> Free</p>
+              <p class="total"><strong>Total:</strong> $${order.total.toFixed(2)}</p>
+            </div>
+            
+            <p><strong>Payment Method:</strong> Online Payment (Credit/Debit Card)</p>
+            ${order.notes ? `<p><strong>Customer Notes:</strong> ${order.notes}</p>` : ''}
+          </div>
+          
+          <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>📋 Next Steps</h4>
+            <ol>
+              <li>Review order details</li>
+              <li>Contact customer at ${order.customer.phone}</li>
+              <li>Arrange pickup time</li>
+              <li>Update order status in admin panel</li>
+            </ol>
+          </div>
+        </div>
+        
+        <div style="text-align: center; padding: 20px; color: #666;">
+          <p>View full order details in your admin panel</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export async function sendPickupReadyEmail({
+  customerName,
+  customerEmail,
+  orderNumber,
+  pickupTime,
+  customMessage,
+  items,
+  total
+}: {
+  customerName: string;
+  customerEmail: string;
+  orderNumber: string;
+  pickupTime: Date;
+  customMessage: string;
+  items: OrderItem[];
+  total: number;
+}) {
+  try {
+    // Skip email sending during build time or if no API key
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping pickup email sending - no valid Mailgun API key');
+      return true;
+    }
+
+    const pickupEmailHtml = generatePickupReadyEmailTemplate({
+      customerName,
+      orderNumber,
+      pickupTime,
+      customMessage,
+      items,
+      total
+    });
+    
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please <orders@stitchpleaseqc.com>',
+      to: [customerEmail],
+      subject: `Your Order is Ready for Pickup - ${orderNumber}`,
+      html: pickupEmailHtml
+    });
+
+    console.log('Pickup ready email sent successfully via Mailgun');
+    return true;
+  } catch (error) {
+    console.error('Error sending pickup ready email via Mailgun:', error);
+    return false;
+  }
+}
+
+function generatePickupReadyEmailTemplate({
+  customerName,
+  orderNumber,
+  pickupTime,
+  customMessage,
+  items,
+  total
+}: {
+  customerName: string;
+  orderNumber: string;
+  pickupTime: Date;
+  customMessage: string;
+  items: OrderItem[];
+  total: number;
+}): string {
+  const formattedPickupTime = pickupTime.toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Ready for Pickup</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #74CADC; color: #0A5565; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+        .pickup-time { background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .custom-message { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .urgent { background: #ffebee; border: 2px solid #f44336; padding: 15px; border-radius: 8px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎉 Your Order is Ready!</h1>
+          <p>Time to pick up your custom items</p>
+        </div>
+        
+        <div class="content">
+          <h2>Hello ${customerName}!</h2>
+          <p>Great news! Your order has been completed and is ready for pickup.</p>
+          
+          <div class="pickup-time">
+            <h3>📅 Scheduled Pickup Time</h3>
+            <p style="font-size: 24px; font-weight: bold; color: #0A5565; margin: 10px 0;">
+              ${formattedPickupTime}
+            </p>
+            <p style="color: #666; font-size: 14px;">
+              Please arrive at the scheduled time. If you need to reschedule, please contact us as soon as possible.
+            </p>
+          </div>
+
+          ${customMessage ? `
+            <div class="custom-message">
+              <h4>📝 Special Instructions</h4>
+              <p>${customMessage}</p>
+            </div>
+          ` : ''}
+
+          <div class="urgent">
+            <h3>⚠️ Important Pickup Information</h3>
+            <ul>
+              <li><strong>Check your items</strong> - Please inspect your order before leaving</li>
+              <li><strong>Contact us</strong> - Call (309) 373-6017 if you have any questions</li>
+            </ul>
+          </div>
+          
+          <div class="order-details">
+            <h3>Order Summary</h3>
+            <p><strong>Order Number:</strong> ${orderNumber}</p>
+            
+            <h4>Items Ready for Pickup:</h4>
+            ${items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #74CADC;">
+              <p class="total"><strong>Total Paid: $${total.toFixed(2)}</strong></p>
+            </div>
+          </div>
+          
+          <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>📍 Pickup Location</h4>
+            <p><strong>Stitch Please</strong><br>
+            415 13th St<br>
+            Moline, IL 61265</p>
+            <p><strong>Phone:</strong> (309) 373-6017</p>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Thank you for choosing Stitch Please!</p>
+          <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+// Status-specific email functions
+export async function sendStatusUpdateEmail({
+  customerName,
+  customerEmail,
+  orderNumber,
+  status,
+  items,
+  total
+}: {
+  customerName: string;
+  customerEmail: string;
+  orderNumber: string;
+  status: string;
+  items: OrderItem[];
+  total: number;
+}) {
+  try {
+    // Skip email sending during build time or if no API key
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping status email sending - no valid Mailgun API key');
+      return true;
+    }
+
+    let emailHtml: string;
+    let subject: string;
+
+    console.log(`[sendStatusUpdateEmail] Processing status: "${status}" for order ${orderNumber}`);
+    console.log(`[sendStatusUpdateEmail] Status type: ${typeof status}, length: ${status?.length}`);
+
+    switch (status) {
+      case 'processing':
+        console.log(`[sendStatusUpdateEmail] Matched 'processing' case`);
+        emailHtml = generateProcessingEmailTemplate({ customerName, orderNumber, items, total });
+        subject = `Order Processing Started - ${orderNumber}`;
+        break;
+      case 'ready_for_pickup':
+        console.log(`[sendStatusUpdateEmail] ✓ Matched 'ready_for_pickup' case`);
+        emailHtml = generateReadyForPickupEmailTemplate({ customerName, orderNumber, items, total });
+        subject = `Your Order is Ready for Pickup - ${orderNumber}`;
+        console.log(`[sendStatusUpdateEmail] Generated ready_for_pickup email template`);
+        break;
+      case 'delivered':
+        console.log(`[sendStatusUpdateEmail] Matched 'delivered' case`);
+        emailHtml = generateDeliveredEmailTemplate({ customerName, orderNumber, items, total });
+        subject = `Thank You! Order Delivered - ${orderNumber}`;
+        break;
+      case 'cancelled':
+        console.log(`[sendStatusUpdateEmail] Matched 'cancelled' case`);
+        emailHtml = generateCancelledEmailTemplate({ customerName, orderNumber, items, total });
+        subject = `Order Cancelled - ${orderNumber}`;
+        break;
+      default:
+        console.log(`[sendStatusUpdateEmail] ✗ No match for status: "${status}" (type: ${typeof status})`);
+        console.log(`[sendStatusUpdateEmail] Available cases: processing, ready_for_pickup, delivered, cancelled`);
+        return true; // No email for other statuses
+    }
+
+    console.log(`[sendStatusUpdateEmail] About to send email to ${customerEmail} with subject: ${subject}`);
+    console.log(`[sendStatusUpdateEmail] Customer name: ${customerName}`);
+    console.log(`[sendStatusUpdateEmail] Order number: ${orderNumber}`);
+
+    try {
+      const mailgunResponse = await mg.messages.create('stitchpleaseqc.com', {
+        from: 'Stitch Please <orders@stitchpleaseqc.com>',
+        to: [customerEmail],
+        subject,
+        html: emailHtml
+      });
+
+      console.log(`[sendStatusUpdateEmail] ✓ Mailgun API response:`, JSON.stringify(mailgunResponse, null, 2));
+      console.log(`[sendStatusUpdateEmail] ✓ Email successfully sent to ${customerEmail} via Mailgun`);
+
+      // Send admin notification email
+      try {
+        const adminEmailHtml = generateAdminStatusUpdateTemplate({
+          customerName,
+          orderNumber,
+          status,
+          items,
+          total
+        });
+        
+        const adminSubject = `Order Status Updated: ${statusDisplayName(status)} - ${orderNumber}`;
+        
+        // Get admin emails from database
+        const adminEmails = await getAuthorizedEmails();
+        const adminEmailAddresses = adminEmails.map(admin => admin.email);
+
+        if (adminEmailAddresses.length === 0) {
+          console.warn('No admin emails found in database, using fallback');
+          adminEmailAddresses.push('pleasestitch18@gmail.com', 'itskennedy.dev@gmail.com');
+        }
+        
+        await mg.messages.create('stitchpleaseqc.com', {
+          from: 'Stitch Please Orders <orders@stitchpleaseqc.com>',
+          to: adminEmailAddresses,
+          subject: adminSubject,
+          html: adminEmailHtml
+        });
+        
+        console.log(`[sendStatusUpdateEmail] ✓ Admin notification sent successfully to ${adminEmailAddresses.length} admin(s)`);
+      } catch (adminEmailError) {
+        console.error(`[sendStatusUpdateEmail] ✗ Failed to send admin notification:`, adminEmailError);
+        // Don't fail the whole operation if admin email fails
+      }
+
+      return true;
+    } catch (mailgunError: unknown) {
+      console.error(`[sendStatusUpdateEmail] ✗ Mailgun API error:`, mailgunError);
+      const errorMessage = mailgunError instanceof Error ? mailgunError.message : 'Unknown error';
+      const errorDetails = (mailgunError as { response?: { body?: unknown } })?.response?.body || mailgunError;
+      console.error(`[sendStatusUpdateEmail] ✗ Error message:`, errorMessage);
+      console.error(`[sendStatusUpdateEmail] ✗ Error details:`, errorDetails);
+      throw mailgunError; // Re-throw to be caught by outer try-catch
+    }
+  } catch (error) {
+    console.error(`Error sending ${status} email via Mailgun:`, error);
+    return false;
+  }
+}
+
+function statusDisplayName(status: string): string {
+  switch (status) {
+    case 'processing':
+      return 'Processing';
+    case 'ready_for_pickup':
+      return 'Ready for Pickup';
+    case 'delivered':
+      return 'Delivered';
+    case 'cancelled':
+      return 'Cancelled';
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
+  }
+}
+
+function generateAdminStatusUpdateTemplate({
+  customerName,
+  orderNumber,
+  status,
+  items,
+  total
+}: {
+  customerName: string;
+  orderNumber: string;
+  status: string;
+  items: OrderItem[];
+  total: number;
+}): string {
+  const statusName = statusDisplayName(status);
+  const statusEmoji = status === 'ready_for_pickup' ? '✅' : status === 'delivered' ? '🎉' : status === 'cancelled' ? '❌' : '🔄';
+  
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Status Updated - ${orderNumber}</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #0A5565; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .status-badge { background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>${statusEmoji} Order Status Updated</h1>
+          <p>Order #${orderNumber}</p>
+        </div>
+        
+        <div class="content">
+          <div class="status-badge">
+            <h2>Status: ${statusName}</h2>
+            <p>The order status has been updated to <strong>${statusName}</strong></p>
+          </div>
+          
+          <div class="order-details">
+            <h3>Order Details</h3>
+            <p><strong>Order Number:</strong> ${orderNumber}</p>
+            <p><strong>Customer:</strong> ${customerName}</p>
+            
+            <h4>Items:</h4>
+            ${items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #0A5565;">
+              <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
+            </div>
+          </div>
+          
+          <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>📋 Next Steps</h4>
+            <p>Review the order status update in your admin panel and take any necessary actions.</p>
+          </div>
+        </div>
+        
+        <div style="text-align: center; padding: 20px; color: #666;">
+          <p>View full order details in your admin panel</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateProcessingEmailTemplate({
+  customerName,
+  orderNumber,
+  items,
+  total
+}: {
+  customerName: string;
+  orderNumber: string;
+  items: OrderItem[];
+  total: number;
+}): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Processing</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #2196F3; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #2196F3; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+        .processing { background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Order Processing Started</h1>
+          <p>Your order is now being worked on</p>
+        </div>
+        
+        <div class="content">
+          <h2>Hello ${customerName}!</h2>
+          <p>Great news! We've started working on your order and it's now in our production queue.</p>
+          
+          <div class="processing">
+            <h3>What's Happening Now</h3>
+            <p>Our team is carefully crafting your custom items. We'll keep you updated on the progress and contact you as soon as everything is ready for pickup.</p>
+          </div>
+          
+          <div class="order-details">
+            <h3>Order Summary</h3>
+            <p><strong>Order Number:</strong> ${orderNumber}</p>
+            
+            <h4>Items Being Processed:</h4>
+            ${items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #2196F3;">
+              <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
+            </div>
+          </div>
+          
+          <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>Questions?</h4>
+            <p>If you have any questions about your order, feel free to contact us at <strong>(309) 373-6017</strong> or reply to this email.</p>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Thank you for choosing Stitch Please!</p>
+          <p>We'll be in touch soon with pickup details.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateDeliveredEmailTemplate({
+  customerName,
+  orderNumber,
+  items,
+  total
+}: {
+  customerName: string;
+  orderNumber: string;
+  items: OrderItem[];
+  total: number;
+}): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Delivered - Thank You!</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #4CAF50; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #4CAF50; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+        .thank-you { background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .review { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎉 Thank You!</h1>
+          <p>Your order has been successfully delivered</p>
+        </div>
+        
+        <div class="content">
+          <h2>Hello ${customerName}!</h2>
+          <p>We hope you're absolutely thrilled with your custom items! It was our pleasure to create something special just for you.</p>
+          
+          <div class="thank-you">
+            <h3>🙏 Thank You for Your Business!</h3>
+            <p>We truly appreciate you choosing Stitch Please for your custom clothing needs. Your support means the world to us!</p>
+          </div>
+          
+          <div class="order-details">
+            <h3>Order Summary</h3>
+            <p><strong>Order Number:</strong> ${orderNumber}</p>
+            
+            <h4>Items Delivered:</h4>
+            ${items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #4CAF50;">
+              <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
+            </div>
+          </div>
+          
+          <div class="review">
+            <h4>⭐ We'd Love Your Feedback!</h4>
+            <p>If you're happy with your order, we'd be incredibly grateful if you could share your experience with others. Word-of-mouth referrals are the best compliment we can receive!</p>
+            <p>Feel free to tag us on social media or tell your friends about Stitch Please!</p>
+          </div>
+          
+          <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>🔄 Need More Custom Items?</h4>
+            <p>We'd love to work with you again! Visit our website or give us a call at <strong>(309) 373-6017</strong> for your next custom project.</p>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Thank you for choosing Stitch Please!</p>
+          <p>We look forward to creating more amazing pieces for you in the future.</p>
+          <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateReadyForPickupEmailTemplate({
+  customerName,
+  orderNumber,
+  items,
+  total
+}: {
+  customerName: string;
+  orderNumber: string;
+  items: OrderItem[];
+  total: number;
+}): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Ready for Pickup</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #4CAF50; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #4CAF50; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+        .ready { background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .pickup-info { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎉 Your Order is Ready!</h1>
+          <p>Time to pick up your custom items</p>
+        </div>
+        
+        <div class="content">
+          <h2>Hello ${customerName}!</h2>
+          <p>Great news! Your order has been completed and is ready for pickup.</p>
+          
+          <div class="ready">
+            <h3>✅ Order Complete</h3>
+            <p>Your custom items have been finished and are waiting for you. We'll contact you soon to arrange a convenient pickup time.</p>
+          </div>
+          
+          <div class="pickup-info">
+            <h4>📍 Pickup Location</h4>
+            <p><strong>Stitch Please</strong><br>
+            415 13th St<br>
+            Moline, IL 61265</p>
+            <p><strong>Phone:</strong> (309) 373-6017</p>
+            <p style="margin-top: 10px;">Please call us to schedule your pickup time, or we'll contact you shortly.</p>
+          </div>
+          
+          <div class="order-details">
+            <h3>Order Summary</h3>
+            <p><strong>Order Number:</strong> ${orderNumber}</p>
+            
+            <h4>Items Ready for Pickup:</h4>
+            ${items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #4CAF50;">
+              <p class="total"><strong>Total Paid: $${total.toFixed(2)}</strong></p>
+            </div>
+          </div>
+          
+          <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>⚠️ Important Pickup Information</h4>
+            <ul>
+              <li><strong>Check your items</strong> - Please inspect your order before leaving</li>
+              <li><strong>Contact us</strong> - Call (309) 373-6017 if you have any questions</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Thank you for choosing Stitch Please!</p>
+          <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateCancelledEmailTemplate({
+  customerName,
+  orderNumber,
+  items,
+  total
+}: {
+  customerName: string;
+  orderNumber: string;
+  items: OrderItem[];
+  total: number;
+}): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Cancelled</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #f44336; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #f44336; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+        .cancelled { background: #ffebee; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .refund { background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>❌ Order Cancelled</h1>
+          <p>We're sorry to see you go</p>
+        </div>
+        
+        <div class="content">
+          <h2>Hello ${customerName}!</h2>
+          <p>We're sorry to inform you that your order has been cancelled. We understand this may be disappointing.</p>
+          
+          <div class="cancelled">
+            <h3>📋 Order Cancellation Details</h3>
+            <p>Your order has been cancelled and will not be processed. If you have any questions about this cancellation, please don't hesitate to contact us.</p>
+          </div>
+          
+          <div class="order-details">
+            <h3>Cancelled Order Summary</h3>
+            <p><strong>Order Number:</strong> ${orderNumber}</p>
+            
+            <h4>Items That Were Cancelled:</h4>
+            ${items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #f44336;">
+              <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
+            </div>
+          </div>
+          
+          <div class="refund">
+            <h4>💳 Refund Information</h4>
+            <p>If payment was processed, a full refund will be issued to your original payment method within 3-5 business days. You should see the refund appear on your statement shortly.</p>
+          </div>
+          
+          <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>🔄 We'd Love to Work With You Again</h4>
+            <p>If you change your mind or have any questions about our services, please don't hesitate to reach out. We're here to help and would love the opportunity to create something amazing for you in the future.</p>
+            <p>Contact us at <strong>(309) 373-6017</strong> or reply to this email.</p>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Thank you for considering Stitch Please!</p>
+          <p>We hope to work with you again soon.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export async function sendBugReportEmail({
+  subject,
+  description,
+  deviceInfo,
+  appVersion,
+  userEmail,
+}: {
+  subject: string;
+  description: string;
+  deviceInfo?: string;
+  appVersion?: string;
+  userEmail?: string;
+}): Promise<boolean> {
+  try {
+    // Skip email sending during build time or if no API key
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping bug report email - no valid Mailgun API key');
+      return true;
+    }
+
+    const bugReportHtml = generateBugReportEmailTemplate({
+      subject,
+      description,
+      deviceInfo,
+      appVersion,
+      userEmail,
+    });
+
+    // Send to specified email address
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please Bug Reports <bugs@stitchpleaseqc.com>',
+      to: ['itskennedy.dev@gmail.com'],
+      subject: `Bug Report: ${subject}`,
+      html: bugReportHtml,
+      replyTo: userEmail ?? 'noreply@stitchpleaseqc.com',
+    });
+
+    console.log('✅ Bug report email sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Failed to send bug report email:', error);
+    return false;
+  }
+}
+
+function generateBugReportEmailTemplate({
+  subject,
+  description,
+  deviceInfo,
+  appVersion,
+  userEmail,
+}: {
+  subject: string;
+  description: string;
+  deviceInfo?: string;
+  appVersion?: string;
+  userEmail?: string;
+}): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Bug Report</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #0A5565; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .bug-box { background: white; border: 2px solid #f44336; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .info-box { background: white; border: 2px solid #0A5565; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .label { font-weight: bold; color: #0A5565; margin-bottom: 5px; display: block; }
+        .value { margin-bottom: 15px; white-space: pre-wrap; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🐛 Bug Report</h1>
+          <p>New bug report from Stitch Please iOS app</p>
+        </div>
+        
+        <div class="content">
+          <div class="bug-box">
+            <h2 style="color: #f44336; margin-top: 0;">${subject}</h2>
+            <div class="value">${description.replace(/\n/g, '<br>')}</div>
+          </div>
+          
+          <div class="info-box">
+            <h3 style="color: #0A5565; margin-top: 0;">Report Details</h3>
+            ${userEmail ? `<div><span class="label">Reporter Email:</span><div class="value">${userEmail}</div></div>` : ''}
+            ${appVersion ? `<div><span class="label">App Version:</span><div class="value">${appVersion}</div></div>` : ''}
+            ${deviceInfo ? `<div><span class="label">Device Info:</span><div class="value">${deviceInfo}</div></div>` : ''}
+            <div><span class="label">Reported At:</span><div class="value">${new Date().toLocaleString()}</div></div>
+          </div>
+          
+          <p style="color: #666; font-size: 14px;">
+            This bug report was submitted through the Stitch Please iOS app.${userEmail ? ` You can reply directly to this email to contact the reporter.` : ''}
+          </p>
+        </div>
+        
+        <div class="footer">
+          <p>© 2025 Stitch Please. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export async function sendAbandonedCartEmail({
+  customerEmail,
+  customerName,
+  checkoutUrl,
+  items,
+  total,
+  emailNumber,
+}: {
+  customerEmail: string;
+  customerName?: string;
+  checkoutUrl: string;
+  items: Array<{
+    productName: string;
+    quantity: number;
+    productPrice: number;
+    selectedSize?: string;
+    selectedColor?: string;
+  }>;
+  total: number;
+  emailNumber: number; // 1, 2, or 3
+}) {
+  try {
+    // Skip email sending during build time or if no API key
+    if (!env.MAILGUN_API_KEY || env.MAILGUN_API_KEY === 'dummy-key-for-build') {
+      console.log('Skipping abandoned cart email - no valid Mailgun API key');
+      return true;
+    }
+
+    const abandonedCartHtml = generateAbandonedCartEmailTemplate({
+      customerName: customerName || 'there',
+      checkoutUrl,
+      items,
+      total,
+      emailNumber,
+    });
+
+    const subjects = [
+      "Don't forget your items! Complete your checkout",
+      "Your items are still waiting - Complete your purchase",
+      "Last chance! Your items are ready to checkout",
+    ];
+
+    await mg.messages.create('stitchpleaseqc.com', {
+      from: 'Stitch Please <orders@stitchpleaseqc.com>',
+      to: [customerEmail],
+      subject: subjects[emailNumber - 1] || subjects[0],
+      html: abandonedCartHtml,
+    });
+
+    console.log(`✅ Abandoned cart email #${emailNumber} sent to ${customerEmail}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send abandoned cart email:', error);
+    return false;
+  }
+}
+
+function generateAbandonedCartEmailTemplate({
+  customerName,
+  checkoutUrl,
+  items,
+  total,
+  emailNumber,
+}: {
+  customerName: string;
+  checkoutUrl: string;
+  items: Array<{
+    productName: string;
+    quantity: number;
+    productPrice: number;
+    selectedSize?: string;
+    selectedColor?: string;
+  }>;
+  total: number;
+  emailNumber: number;
+}): string {
+  const urgencyMessages = [
+    "We noticed you started checking out but didn't complete your purchase. Your items are still waiting for you!",
+    "Your items are still in your cart! Don't miss out on these custom pieces.",
+    "This is your last chance! Your items are ready to checkout. Complete your purchase now.",
+  ];
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Complete Your Purchase</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #74CADC; color: #0A5565; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .total { font-weight: bold; font-size: 18px; color: #0A5565; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+        .cta-button { display: inline-block; background: #74CADC; color: #0A5565; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; font-size: 16px; }
+        .urgency { background: ${emailNumber === 3 ? '#fff3cd' : '#e3f2fd'}; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .checkout-link { background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Don't Forget Your Items!</h1>
+          <p>Complete your checkout to secure your order</p>
+        </div>
+        
+        <div class="content">
+          <h2>Hello ${customerName}!</h2>
+          <p>${urgencyMessages[emailNumber - 1] || urgencyMessages[0]}</p>
+          
+          <div class="urgency">
+            <h3>${emailNumber === 3 ? '⚠️ Last Chance!' : '🛒 Your Items Are Waiting'}</h3>
+            <p>Your checkout link is still active. Click below to complete your purchase!</p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${checkoutUrl}" class="cta-button">Complete Your Purchase →</a>
+          </div>
+
+          <div class="checkout-link">
+            <p style="margin: 0; font-size: 12px; color: #666;">
+              <strong>Or copy this link:</strong><br>
+              <a href="${checkoutUrl}" style="color: #74CADC; word-break: break-all;">${checkoutUrl}</a>
+            </p>
+          </div>
+          
+          <div class="order-details">
+            <h3>Your Items</h3>
+            ${items.map(item => `
+              <div class="item">
+                <strong>${item.productName}</strong>
+                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ''}
+                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ''}
+                <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
+              </div>
+            `).join('')}
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #74CADC;">
+              <p class="total"><strong>Total: $${total.toFixed(2)}</strong></p>
+            </div>
+          </div>
+          
+          <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4>💡 Why Complete Your Purchase?</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>Secure your custom items before they're gone</li>
+              <li>Your checkout link is valid for a limited time</li>
+              <li>Fast and secure checkout process</li>
+              <li>Questions? Call us at (309) 373-6017</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Thank you for considering Stitch Please!</p>
+          <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
+          <p style="font-size: 12px; color: #999; margin-top: 15px;">
+            This is email #${emailNumber} of 3. If you've already completed your purchase, you can safely ignore this email.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
