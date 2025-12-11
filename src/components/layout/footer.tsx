@@ -38,15 +38,15 @@ export function Footer() {
             <div className="space-y-4">
               <Link href="/" className="block">
                 <Image
-                  src="/Stitch Please Ish Black.png"
-                  alt="Stitch Please Logo"
+                  src="/MJ Creative Candles Ish Black.png"
+                  alt="MJ Creative Candles Logo"
                   width={100}
                   height={33}
                   className="h-auto w-auto dark:hidden"
                 />
                 <Image
-                  src="/Feeling Stitch Please Ish White.png"
-                  alt="Stitch Please Logo"
+                  src="/Feeling MJ Creative Candles Ish White.png"
+                  alt="MJ Creative Candles Logo"
                   width={100}
                   height={33}
                   className="h-auto w-auto hidden dark:block"
@@ -119,7 +119,7 @@ export function Footer() {
           {/* Copyright */}
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
             <p>
-              © {new Date().getFullYear()} Stitch Please. All rights reserved. Created with ❤️ by{" "}
+              © {new Date().getFullYear()} MJ Creative Candles. All rights reserved. Created with ❤️ by{" "}
               <a 
                 href="https://www.sovereigncreative.agency"
                 target="_blank"

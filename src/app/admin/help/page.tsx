@@ -397,7 +397,7 @@ function HelpPageContent() {
               <div className="bg-neutral-50 rounded-lg border border-neutral-200 p-6">
                 <p className="text-neutral-700">
                   If you need additional assistance or have questions not covered in this guide, please contact support at{" "}
-                  <a href="mailto:support@stitchplease.com" className="underline font-semibold text-neutral-900">support@stitchplease.com</a>
+                  <a href="mailto:mjcreativecandles@gmail.com" className="underline font-semibold text-neutral-900">mjcreativecandles@gmail.com</a>
                 </p>
               </div>
             </section>

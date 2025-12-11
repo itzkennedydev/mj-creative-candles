@@ -28,7 +28,7 @@ export function CtaContent() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          At Stitch Please, we redefine the standard for fast and quality service. 
+          At MJ Creative Candles, we redefine the standard for fast and quality service. 
           Our commitment to speed doesn&apos;t compromise the impeccable craftsmanship that sets us apart.
         </motion.p>
         <motion.div 

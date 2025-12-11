@@ -54,8 +54,8 @@ export function Header() {
             >
               <div className="relative overflow-hidden" style={{ height: "60px" }}>
                 <Image
-                  src="/Stitch Please Ish Black.png"
-                  alt="Stitch Please"
+                  src="/MJ Creative Candles Ish Black.png"
+                  alt="MJ Creative Candles"
                   width={240}
                   height={60}
                   className="object-contain transition-transform duration-300 group-hover:scale-105"

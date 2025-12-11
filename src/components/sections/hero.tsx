@@ -25,7 +25,7 @@ export function Hero() {
   {/* Mobile - Better line breaks */}
   <span className="md:hidden">
     Bring Your <span className="text-[#0A5565]">Ideas</span> to Life<br />
-    at <span className="text-[#0A5565] bg-[#74CADC]/40 px-2">Stitch Please</span>
+    at <span className="text-[#0A5565] bg-[#74CADC]/40 px-2">MJ Creative Candles</span>
   </span>
   
   {/* Desktop version with two lines */}
@@ -34,7 +34,7 @@ export function Hero() {
     <span className="block mt-2">
       at
       <span className="relative inline-block ml-4">
-        <span className="relative text-[#0A5565] z-10 px-2">Stitch Please</span>
+        <span className="relative text-[#0A5565] z-10 px-2">MJ Creative Candles</span>
         <span className="absolute inset-0 -left-2 -right-2 bg-[#74CADC]/40 z-0"></span>
       </span>
     </span>
@@ -103,7 +103,7 @@ export function Hero() {
             <div className="relative h-[20rem] sm:h-[24rem] md:h-[28rem] lg:h-[32rem] rounded-xl sm:rounded-2xl overflow-hidden shadow-xl sm:shadow-2xl rotate-1 transition-all duration-300 hover:shadow-xl hover:rotate-0">
               <Image
                 src="/Van.jpg"
-                alt="Stitch Please storefront"
+                alt="MJ Creative Candles storefront"
                 fill
                 priority
                 className="object-cover"

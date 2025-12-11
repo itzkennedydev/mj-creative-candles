@@ -121,8 +121,8 @@ export function SidebarNav<T extends Record<string, unknown>>({
                 >
                   <div className="max-w-fit">
                     <Image 
-                      src="/Stitch Please Ish Black.png" 
-                      alt="Stitch Please" 
+                      src="/MJ Creative Candles Ish Black.png" 
+                      alt="MJ Creative Candles" 
                       width={120}
                       height={40}
                       className="w-auto h-7"

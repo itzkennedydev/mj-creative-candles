@@ -58,7 +58,7 @@ function generateNewsletterSubscriptionTemplate(): string {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to Stitch Please Newsletter</title>
+      <title>Welcome to MJ Creative Candles Newsletter</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -72,7 +72,7 @@ function generateNewsletterSubscriptionTemplate(): string {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Welcome to Stitch Please!</h1>
+          <h1>Welcome to MJ Creative Candles!</h1>
           <p>Thank you for subscribing to our newsletter</p>
         </div>
         
@@ -104,7 +104,7 @@ function generateNewsletterSubscriptionTemplate(): string {
         </div>
         
         <div class="footer">
-          <p>© 2025 Stitch Please. All rights reserved.</p>
+          <p>© 2025 MJ Creative Candles. All rights reserved.</p>
           <p>415 13th St, Moline, IL 61265</p>
         </div>
       </div>
@@ -150,11 +150,11 @@ function generateAdminNewsletterNotificationTemplate(email: string): string {
             </div>
           </div>
           
-          <p>This is an automated notification from the Stitch Please newsletter system.</p>
+          <p>This is an automated notification from the MJ Creative Candles newsletter system.</p>
         </div>
         
         <div class="footer">
-          <p>© 2025 Stitch Please. All rights reserved.</p>
+          <p>© 2025 MJ Creative Candles. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -235,7 +235,7 @@ function generateAccessRequestEmailTemplate(
       <div class="container">
         <div class="header">
           <h1>🔐 Admin Access Request</h1>
-          <p>Someone is requesting access to the Stitch Please admin panel</p>
+          <p>Someone is requesting access to the MJ Creative Candles admin panel</p>
         </div>
         
         <div class="content">
@@ -266,7 +266,7 @@ function generateAccessRequestEmailTemplate(
           </div>
           
           <div class="footer">
-            <p>This is an automated notification from the Stitch Please admin system.</p>
+            <p>This is an automated notification from the MJ Creative Candles admin system.</p>
             <p>If you did not expect this email, please ignore it.</p>
           </div>
         </div>
@@ -327,12 +327,12 @@ function generateVerificationEmailTemplate(code: string): string {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Stitch Please Admin</h1>
+          <h1>MJ Creative Candles Admin</h1>
           <p>Verification Code</p>
         </div>
         <div class="content">
           <h2>Your Verification Code</h2>
-          <p>Use this code to sign in to your Stitch Please admin account:</p>
+          <p>Use this code to sign in to your MJ Creative Candles admin account:</p>
           
           <div class="code-box">
             <div class="code">${code}</div>
@@ -343,7 +343,7 @@ function generateVerificationEmailTemplate(code: string): string {
           <p>If you didn't request this code, please ignore this email.</p>
         </div>
         <div class="footer">
-          <p>© 2025 Stitch Please. All rights reserved.</p>
+          <p>© 2025 MJ Creative Candles. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -447,8 +447,6 @@ function generateCustomerEmailTemplate(order: Order): string {
                 (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
             `,
@@ -474,7 +472,7 @@ function generateCustomerEmailTemplate(order: Order): string {
         </div>
         
         <div class="footer">
-          <p>Thank you for choosing Stitch Please!</p>
+          <p>Thank you for choosing MJ Creative Candles!</p>
           <p>Questions? Reply to this email or call us at (309) 373-6017.</p>
         </div>
       </div>
@@ -534,8 +532,6 @@ function generateOwnerEmailTemplate(order: Order): string {
                 (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
             `,
@@ -717,8 +713,6 @@ function generatePickupReadyEmailTemplate({
                 (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
             `,
@@ -732,7 +726,7 @@ function generatePickupReadyEmailTemplate({
           
           <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <h4>📍 Pickup Location</h4>
-            <p><strong>Stitch Please</strong><br>
+            <p><strong>MJ Creative Candles</strong><br>
             415 13th St<br>
             Moline, IL 61265</p>
             <p><strong>Phone:</strong> (309) 373-6017</p>
@@ -740,7 +734,7 @@ function generatePickupReadyEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for choosing Stitch Please!</p>
+          <p>Thank you for choosing MJ Creative Candles!</p>
           <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
         </div>
       </div>
@@ -1002,8 +996,6 @@ function generateAdminStatusUpdateTemplate({
                 (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
             `,
@@ -1086,8 +1078,6 @@ function generateProcessingEmailTemplate({
                 (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
             `,
@@ -1106,7 +1096,7 @@ function generateProcessingEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for choosing Stitch Please!</p>
+          <p>Thank you for choosing MJ Creative Candles!</p>
           <p>We'll be in touch soon with pickup details.</p>
         </div>
       </div>
@@ -1159,7 +1149,7 @@ function generateDeliveredEmailTemplate({
           
           <div class="thank-you">
             <h3>🙏 Thank You for Your Business!</h3>
-            <p>We truly appreciate you choosing Stitch Please for your custom clothing needs. Your support means the world to us!</p>
+            <p>We truly appreciate you choosing MJ Creative Candles for your custom clothing needs. Your support means the world to us!</p>
           </div>
           
           <div class="order-details">
@@ -1172,8 +1162,6 @@ function generateDeliveredEmailTemplate({
                 (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
             `,
@@ -1188,7 +1176,7 @@ function generateDeliveredEmailTemplate({
           <div class="review">
             <h4>⭐ We'd Love Your Feedback!</h4>
             <p>If you're happy with your order, we'd be incredibly grateful if you could share your experience with others. Word-of-mouth referrals are the best compliment we can receive!</p>
-            <p>Feel free to tag us on social media or tell your friends about Stitch Please!</p>
+            <p>Feel free to tag us on social media or tell your friends about MJ Creative Candles!</p>
           </div>
           
           <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
@@ -1198,7 +1186,7 @@ function generateDeliveredEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for choosing Stitch Please!</p>
+          <p>Thank you for choosing MJ Creative Candles!</p>
           <p>We look forward to creating more amazing pieces for you in the future.</p>
           <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
         </div>
@@ -1257,7 +1245,7 @@ function generateReadyForPickupEmailTemplate({
           
           <div class="pickup-info">
             <h4>📍 Pickup Location</h4>
-            <p><strong>Stitch Please</strong><br>
+            <p><strong>MJ Creative Candles</strong><br>
             415 13th St<br>
             Moline, IL 61265</p>
             <p><strong>Phone:</strong> (309) 373-6017</p>
@@ -1274,8 +1262,6 @@ function generateReadyForPickupEmailTemplate({
                 (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
             `,
@@ -1297,7 +1283,7 @@ function generateReadyForPickupEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for choosing Stitch Please!</p>
+          <p>Thank you for choosing MJ Creative Candles!</p>
           <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
         </div>
       </div>
@@ -1363,8 +1349,6 @@ function generateCancelledEmailTemplate({
                 (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
             `,
@@ -1389,7 +1373,7 @@ function generateCancelledEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for considering Stitch Please!</p>
+          <p>Thank you for considering MJ Creative Candles!</p>
           <p>We hope to work with you again soon.</p>
         </div>
       </div>
@@ -1479,7 +1463,7 @@ function generateBugReportEmailTemplate({
       <div class="container">
         <div class="header">
           <h1>🐛 Bug Report</h1>
-          <p>New bug report from Stitch Please iOS app</p>
+          <p>New bug report from MJ Creative Candles iOS app</p>
         </div>
         
         <div class="content">
@@ -1497,12 +1481,12 @@ function generateBugReportEmailTemplate({
           </div>
           
           <p style="color: #666; font-size: 14px;">
-            This bug report was submitted through the Stitch Please iOS app.${userEmail ? ` You can reply directly to this email to contact the reporter.` : ""}
+            This bug report was submitted through the MJ Creative Candles iOS app.${userEmail ? ` You can reply directly to this email to contact the reporter.` : ""}
           </p>
         </div>
         
         <div class="footer">
-          <p>© 2025 Stitch Please. All rights reserved.</p>
+          <p>© 2025 MJ Creative Candles. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -1525,8 +1509,6 @@ export async function sendAbandonedCartEmail({
     productName: string;
     quantity: number;
     productPrice: number;
-    selectedSize?: string;
-    selectedColor?: string;
   }>;
   total: number;
   emailNumber: number; // 1, 2, or 3
@@ -1584,8 +1566,6 @@ function generateAbandonedCartEmailTemplate({
     productName: string;
     quantity: number;
     productPrice: number;
-    selectedSize?: string;
-    selectedColor?: string;
   }>;
   total: number;
   emailNumber: number;
@@ -1651,8 +1631,6 @@ function generateAbandonedCartEmailTemplate({
                 (item) => `
               <div class="item">
                 <strong>${item.productName}</strong>
-                ${item.selectedSize ? ` - Size: ${item.selectedSize}` : ""}
-                ${item.selectedColor ? ` - Color: ${item.selectedColor}` : ""}
                 <br>Quantity: ${item.quantity} × $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}
               </div>
             `,
@@ -1676,7 +1654,7 @@ function generateAbandonedCartEmailTemplate({
         </div>
         
         <div class="footer">
-          <p>Thank you for considering Stitch Please!</p>
+          <p>Thank you for considering MJ Creative Candles!</p>
           <p>Questions? Call us at (309) 373-6017 or reply to this email.</p>
           <p style="font-size: 12px; color: #999; margin-top: 15px;">
             This is email #${emailNumber} of 3. If you've already completed your purchase, you can safely ignore this email.

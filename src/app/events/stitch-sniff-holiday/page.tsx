@@ -217,7 +217,7 @@ export default function StitchSniffHolidayEvent() {
                               Hosted by
                             </p>
                             <p className="text-[14px] leading-[130%] text-black/[0.72] font-bold">
-                              Stitch Please Custom
+                              MJ Creative Candles Custom
                             </p>
                           </div>
                           <div className="w-[40px] h-[40px] rounded-full bg-[#74CADC]/20 flex items-center justify-center">

@@ -3,9 +3,6 @@ export interface OrderItem {
   productName: string;
   productPrice: number;
   quantity: number;
-  selectedSize?: string;
-  selectedColor?: string;
-  customColorValue?: string; // For custom color requests
 }
 
 export interface CustomerInfo {
@@ -23,7 +20,7 @@ export interface ShippingAddress {
   country: string;
 }
 
-import type { ObjectId } from 'mongodb';
+import type { ObjectId } from "mongodb";
 
 export interface Order {
   _id?: ObjectId | string;
@@ -37,8 +34,16 @@ export interface Order {
   discountCode?: string;
   discountAmount?: number;
   total: number;
-  status: 'pending' | 'processing' | 'ready_for_pickup' | 'shipped' | 'delivered' | 'cancelled' | 'paid' | 'payment_failed';
-  paymentMethod: 'card';
+  status:
+    | "pending"
+    | "processing"
+    | "ready_for_pickup"
+    | "shipped"
+    | "delivered"
+    | "cancelled"
+    | "paid"
+    | "payment_failed";
+  paymentMethod: "card";
   paymentIntentId?: string;
   stripeSessionId?: string; // Stripe checkout session ID
   stripeSubtotal?: number; // Amount from Stripe metadata
@@ -68,6 +73,6 @@ export interface CreateOrderRequest {
   discountCode?: string;
   discountAmount?: number;
   total: number;
-  paymentMethod: 'card';
+  paymentMethod: "card";
   notes?: string;
 }

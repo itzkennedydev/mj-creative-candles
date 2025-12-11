@@ -40,7 +40,7 @@ export function WhyChoose() {
           >
             Why choose
             <span className="block mt-1">
-              Stitch Please?
+              MJ Creative Candles?
             </span>
           </motion.h2>
 

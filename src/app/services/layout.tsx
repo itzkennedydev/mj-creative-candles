@@ -23,7 +23,7 @@ const servicesFaqs = [
 export const metadata: Metadata = generateSEOTags({
   title: "Embroidery Services | Custom Apparel & Spirit Wear | Quad Cities",
   description: "Professional custom embroidery services in Moline, IL. T-shirts, hoodies, hats, beanies, team uniforms, corporate apparel, and personalized gifts. Serving the Quad Cities: Moline, Rock Island, Davenport, Bettendorf. Call (309) 373-6017.",
-  url: "https://stitchpleaseqc.com/services",
+  url: "https://mjcreativecandles.com/services",
   keywords: [
     'embroidery services Quad Cities', 'custom embroidery Moline', 'apparel embroidery Davenport',
     'logo embroidery Rock Island', 'team uniform embroidery', 'corporate embroidery services',

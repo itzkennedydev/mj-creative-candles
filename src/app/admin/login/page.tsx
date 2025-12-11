@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 const greetingMessages = [
-  "Have a stitch please ish day today",
-  "Make it a stitch please kind of day",
-  "Stitch please vibes only",
-  "Today's the day to stitch please",
-  "Keep it stitch please",
-  "Spread some stitch please energy",
+  "Have a creative day today",
+  "Make it a creative kind of day",
+  "Creative vibes only",
+  "Today's the day to create",
+  "Keep it creative",
+  "Spread some creative energy",
 ];
 
 export default function LoginPage() {
@@ -21,7 +21,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(0);
-  const [currentGreeting, setCurrentGreeting] = useState<string>(greetingMessages[0] ?? "Have a stitch please ish day today");
+  const [currentGreeting, setCurrentGreeting] = useState<string>(
+    greetingMessages[0] ?? "Have a creative day today",
+  );
 
   useEffect(() => {
     // Check if already authenticated
@@ -34,17 +36,20 @@ export default function LoginPage() {
   useEffect(() => {
     // Get today's date string
     const today = new Date().toDateString();
-    
+
     // Check if we have a stored date and greeting
     const storedDate = localStorage.getItem("greetingDate");
     const storedGreeting = localStorage.getItem("greetingMessage");
-    
+
     // If it's a new day or no stored greeting, pick a new one
     if (storedDate !== today || !storedGreeting) {
       // Pick a random greeting for today
       const randomIndex = Math.floor(Math.random() * greetingMessages.length);
-      const selectedGreeting: string = greetingMessages[randomIndex] ?? greetingMessages[0] ?? "Have a stitch please ish day today";
-      
+      const selectedGreeting: string =
+        greetingMessages[randomIndex] ??
+        greetingMessages[0] ??
+        "Have a creative day today";
+
       // Store today's date and selected greeting
       localStorage.setItem("greetingDate", today);
       localStorage.setItem("greetingMessage", selectedGreeting);
@@ -80,7 +85,9 @@ export default function LoginPage() {
         setStep("code");
         setCountdown(600); // 10 minutes
       } else {
-        setError(data.message || data.error || "Failed to send verification code");
+        setError(
+          data.message || data.error || "Failed to send verification code",
+        );
       }
     } catch (err) {
       setError("Network error. Please try again.");
@@ -131,40 +138,46 @@ export default function LoginPage() {
   return (
     <div className="flex h-screen bg-white">
       {/* Left Panel - Login Form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8">
-        <div className="max-w-md w-full">
+      <div className="flex w-full items-center justify-center p-8 md:w-1/2">
+        <div className="w-full max-w-md">
           <div className="mb-16">
-            <Image 
-              src="/Stitch Please Ish Black.png" 
-              alt="Stitch Please Logo" 
-              width={360}
-              height={120}
-              className="h-32 w-auto mb-16"
+            <Image
+              src="/Logo.png"
+              alt="MJ Creative Candles Logo"
+              width={200}
+              height={80}
+              className="mb-16 h-20 w-auto"
             />
           </div>
 
-          <h1 className="text-3xl font-bold mb-2 text-black">
-            {step === "code" ? "Enter verification code" : "Sign in to your account"}
+          <h1 className="mb-2 text-3xl font-bold text-black">
+            {step === "code"
+              ? "Enter verification code"
+              : "Sign in to your account"}
           </h1>
-          <p className="text-gray-600 mb-8">
-            {step === "code" 
-              ? "Enter the verification code sent to your email" 
+          <p className="mb-8 text-gray-600">
+            {step === "code"
+              ? "Enter the verification code sent to your email"
               : "Welcome back! Please enter your details."}
           </p>
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg mb-6">
-              <p className="text-sm text-red-600 font-medium">{error}</p>
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm font-medium text-red-600">{error}</p>
             </div>
           )}
 
           {step === "email" ? (
-            <form onSubmit={handleSendCode} className="space-y-4" suppressHydrationWarning>
+            <form
+              onSubmit={handleSendCode}
+              className="space-y-4"
+              suppressHydrationWarning
+            >
               <div>
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="w-full p-3 border border-gray-300 rounded-lg text-black"
+                  className="w-full rounded-lg border border-gray-300 p-3 text-black"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -175,31 +188,37 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full bg-[#0A5565] hover:bg-[#083d4a] text-white p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="w-full rounded-xl bg-[#0A5565] p-3 font-semibold text-white transition-colors duration-200 hover:bg-[#083d4a] disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={loading || !email}
               >
                 {loading ? "Processing..." : "Sign In"}
               </button>
             </form>
           ) : (
-            <form onSubmit={handleVerifyCode} className="space-y-4" suppressHydrationWarning>
+            <form
+              onSubmit={handleVerifyCode}
+              className="space-y-4"
+              suppressHydrationWarning
+            >
               <div>
                 <input
                   type="text"
                   placeholder="Enter verification code"
-                  className="w-full p-3 border border-gray-300 rounded-lg text-black text-center text-2xl tracking-widest"
+                  className="w-full rounded-lg border border-gray-300 p-3 text-center text-2xl tracking-widest text-black"
                   value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) =>
+                    setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
                   maxLength={6}
                   required
                   disabled={loading}
                   suppressHydrationWarning
                 />
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="mt-2 text-sm text-gray-600">
                   Code sent to {email}
                 </p>
                 {countdown > 0 && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="mt-1 text-sm text-gray-600">
                     Code expires in {formatTime(countdown)}
                   </p>
                 )}
@@ -213,14 +232,14 @@ export default function LoginPage() {
                     setCode("");
                     setError("");
                   }}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-950 p-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 rounded-lg bg-gray-100 p-3 font-medium text-gray-950 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={loading}
                 >
                   Back
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-[#0A5565] hover:bg-[#083d4a] text-white p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  className="flex-1 rounded-xl bg-[#0A5565] p-3 font-semibold text-white transition-colors duration-200 hover:bg-[#083d4a] disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={loading || code.length !== 6}
                 >
                   {loading ? "Verifying..." : "Verify Code"}
@@ -232,29 +251,31 @@ export default function LoginPage() {
       </div>
 
       {/* Right Panel - Image */}
-      <div className="hidden md:block md:w-1/2 p-4">
-        <div className="h-full rounded-lg overflow-hidden relative">
+      <div className="hidden p-4 md:block md:w-1/2">
+        <div className="relative h-full overflow-hidden rounded-lg">
           <Image
             src="/_DSC0250.jpg"
-            alt="Stitch Please"
+            alt="MJ Creative Candles"
             fill
-            className="object-cover rounded-lg"
+            className="rounded-lg object-cover"
             priority
             sizes="50vw"
           />
           {/* Overlay gradient for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent via-30% to-transparent rounded-lg pointer-events-none" />
+          <div className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-t from-black/90 via-transparent via-30% to-transparent" />
 
           {/* Greeting message at bottom left */}
-          <div className="absolute bottom-8 left-8 z-10 pointer-events-none">
-            <p className="text-white text-2xl md:text-3xl font-medium leading-tight transition-opacity duration-500 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] [text-shadow:_0_2px_8px_rgba(0,0,0,0.8)]">
-              {currentGreeting?.split(/(stitch please[^\s]*)/i).map((part, index) => 
-                /stitch please/i.test(part) ? (
-                  <span key={index} className="font-bold">{part}</span>
+          <div className="pointer-events-none absolute bottom-8 left-8 z-10">
+            <p className="text-2xl font-medium leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] transition-opacity duration-500 [text-shadow:_0_2px_8px_rgba(0,0,0,0.8)] md:text-3xl">
+              {currentGreeting?.split(/(creative)/i).map((part, index) =>
+                /creative/i.test(part) ? (
+                  <span key={index} className="font-bold">
+                    {part}
+                  </span>
                 ) : (
                   part
-                )
-              ) ?? "Have a stitch please ish day today"}
+                ),
+              ) ?? "Have a creative day today"}
             </p>
           </div>
         </div>
@@ -262,4 +283,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

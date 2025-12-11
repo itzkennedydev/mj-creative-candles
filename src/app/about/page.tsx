@@ -53,7 +53,7 @@ export default function AboutPage() {
                 <div className="aspect-[4/3] relative">
                   <Image
                     src="/stitch.jpg"
-                    alt="Stitch Please Studio"
+                    alt="MJ Creative Candles Studio"
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 1024px) 100vw, 50vw"

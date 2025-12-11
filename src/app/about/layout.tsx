@@ -3,7 +3,7 @@ import { generateSEOTags, generateFAQSchema } from "~/lib/seo";
 
 const faqs = [
   {
-    question: "Where is Stitch Please located?",
+    question: "Where is MJ Creative Candles located?",
     answer: "We are located at 415 13th St, Moline, IL 61265 in the heart of the Quad Cities. We serve customers from Moline, Rock Island, Davenport, Bettendorf, East Moline, and surrounding areas."
   },
   {
@@ -22,10 +22,10 @@ const faqs = [
 
 export const metadata: Metadata = generateSEOTags({
   title: "About Us | Custom Embroidery Shop in Moline, IL",
-  description: "Learn about Stitch Please, the Quad Cities' premier custom embroidery shop. Owner Tanika Zentic brings 10+ years of experience creating personalized apparel, spirit wear, and keepsake items. Located at 415 13th St, Moline, IL.",
-  url: "https://stitchpleaseqc.com/about",
+  description: "Learn about MJ Creative Candles, the Quad Cities' premier custom embroidery shop. Owner Tanika Zentic brings 10+ years of experience creating personalized apparel, spirit wear, and keepsake items. Located at 415 13th St, Moline, IL.",
+  url: "https://mjcreativecandles.com/about",
   keywords: [
-    'about Stitch Please', 'Moline embroidery shop', 'Tanika Zentic', 'Quad Cities embroidery',
+    'about MJ Creative Candles', 'Moline embroidery shop', 'Tanika Zentic', 'Quad Cities embroidery',
     'custom apparel business', 'local embroidery shop', 'women-owned business Quad Cities',
     'embroidery services Moline IL', 'custom stitching Quad Cities', 'personalized gifts shop'
   ],

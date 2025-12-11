@@ -6,6 +6,19 @@ export interface ProductImage {
   filename: string;
 }
 
+export interface Review {
+  id: string;
+  productId: string;
+  customerName: string;
+  email: string;
+  rating: number; // 1-5 stars
+  title: string;
+  comment: string;
+  verified: boolean; // True if customer purchased the product
+  createdAt: Date;
+  helpfulCount?: number; // Number of users who found this review helpful
+}
+
 export interface Product {
   id: string; // Changed from number to string for MongoDB ObjectId
   name: string;
@@ -15,17 +28,22 @@ export interface Product {
   imageId?: string; // Optional MongoDB image document ID for primary image
   images?: ProductImage[]; // Array of additional images
   category: string;
-  shopType?: 'spirit-wear' | 'regular-shop'; // Type of shop: spirit-wear (UTHS) or regular-shop (Stitch Please)
-  school?: 'moline' | 'united-township' | 'rock-island' | 'north'; // For spirit-wear: Moline High School (Maroons), United Township High School (Panthers), Rock Island High School (Rocks), or Davenport North High School (Wildcats)
+  shopType?: "spirit-wear" | "regular-shop"; // Type of shop: spirit-wear (UTHS) or regular-shop (MJ Creative Candles)
+  school?: "moline" | "united-township" | "rock-island" | "north"; // For spirit-wear: Moline High School (Maroons), United Township High School (Panthers), Rock Island High School (Rocks), or Davenport North High School (Wildcats)
   inStock: boolean;
-  sizes?: string[];
-  colors?: string[];
   requiresBabyClothes?: boolean; // For Mama Keepsake Sweatshirt
   babyClothesDeadlineDays?: number; // Number of days to bring in baby clothes (default 5)
+  recommendedProducts?: string[]; // Array of product IDs
+  averageRating?: number; // Average rating from reviews
+  reviewCount?: number; // Total number of reviews
 }
 
 // Helper function to get optimized image URL
-export function getOptimizedImageUrl(imageId: string, dataUri: string, width: number = 800): string {
+export function getOptimizedImageUrl(
+  imageId: string,
+  dataUri: string,
+  width: number = 800,
+): string {
   // If we have a valid ObjectId length, use the new images route with width param
   if (imageId && imageId.length === 24) {
     const safeWidth = Math.max(64, Math.min(2000, Math.floor(width)));
@@ -38,10 +56,6 @@ export function getOptimizedImageUrl(imageId: string, dataUri: string, width: nu
 export interface CartItem {
   product: Product;
   quantity: number;
-  selectedSize?: string;
-  selectedColor?: string;
-  customColorValue?: string; // For custom color requests (when selectedColor is "Custom")
-  embroideryName?: string; // Optional name for embroidery
   orderNotes?: string; // Optional notes for the order
 }
 
@@ -69,6 +83,6 @@ export interface Order {
   tax: number;
   shippingCost: number;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered';
+  status: "pending" | "processing" | "shipped" | "delivered";
   createdAt: Date;
 }
