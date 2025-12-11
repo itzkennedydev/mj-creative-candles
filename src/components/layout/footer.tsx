@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
 import { Container } from "~/components/ui/container";
+import { IMAGE_URLS } from "~/lib/image-config";
 
 export function Footer() {
   const [storeInfo, setStoreInfo] = useState({
@@ -60,7 +61,7 @@ export function Footer() {
             <div className="lg:col-span-1">
               <div className="mb-6 flex items-center">
                 <Image
-                  src="/images/logo/MJLogo.png"
+                  src={IMAGE_URLS.logo.main}
                   alt="MJ Creative Candles"
                   width={50}
                   height={50}

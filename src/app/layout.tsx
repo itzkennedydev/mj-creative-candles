@@ -9,21 +9,40 @@ import { ToastContainer } from "~/components/ui/toast";
 import QueryProvider from "~/lib/query-client";
 import Script from "next/script";
 import { ConditionalLayout } from "../components/layout/conditional-layout";
-import { generateSEOTags, generateLocalBusinessSchema, generateWebsiteSchema, generateFAQSchema } from "~/lib/seo";
+import {
+  generateSEOTags,
+  generateLocalBusinessSchema,
+  generateWebsiteSchema,
+  generateFAQSchema,
+} from "~/lib/seo";
 import { Analytics } from "@vercel/analytics/next";
 import { TooltipProvider } from "./sca-dashboard/components/ui/tooltip";
 
 export const metadata: Metadata = generateSEOTags({
-  title: "MJ Creative Candles | Handcrafted Candles & Spirit Wear | Quad Cities, IL",
-  description: "Premium handcrafted candles in Moline, IL serving the Quad Cities. Custom beanies, hoodies, t-shirts, school spirit wear for Moline Maroons, Rock Island Rocks, UTHS Panthers. Fast 5-7 day turnaround. Local pickup available. Call (309) 373-6017",
+  title:
+    "MJ Creative Candles | Handcrafted Candles & Custom Scents | Quad Cities, IL",
+  description:
+    "Premium handcrafted candles in Moline, IL serving the Quad Cities. Custom scents, personalized labels, and unique candle designs. Fast turnaround. Local pickup available. Call (309) 373-6017",
   url: "https://mjcreativecandles.com",
   keywords: [
-    'handcrafted candles Quad Cities', 'embroidery Moline IL', 'custom apparel Davenport',
-    'spirit wear Rock Island', 'UTHS Panthers gear', 'Moline Maroons spirit wear',
-    'custom beanies Illinois', 'personalized hoodies Iowa', 'team apparel Quad Cities',
-    'school spirit wear', 'custom t-shirts Bettendorf', 'embroidery near me',
-    'mama keepsake sweatshirt', 'baby clothes keepsake', 'Elite Volleyball apparel',
-    'Wildcats spirit wear', 'corporate embroidery', 'business logos embroidery'
+    "handcrafted candles Quad Cities",
+    "candle shop Moline IL",
+    "custom candles Davenport",
+    "scented candles Rock Island",
+    "soy candles Illinois",
+    "candle making Moline",
+    "custom scents Quad Cities",
+    "personalized candles Iowa",
+    "artisan candles Bettendorf",
+    "candle gifts",
+    "custom candle labels",
+    "handmade candles near me",
+    "gift candles",
+    "home fragrance",
+    "candle shop Quad Cities",
+    "natural candles",
+    "candle accessories",
+    "candle care",
   ],
 });
 
@@ -35,32 +54,39 @@ const websiteSchema = generateWebsiteSchema();
 const homepageFaqs = [
   {
     question: "Where is MJ Creative Candles located in the Quad Cities?",
-    answer: "MJ Creative Candles is located at 415 13th St, Moline, IL 61265. We're conveniently located in downtown Moline, serving customers from Rock Island, Davenport, Bettendorf, East Moline, and the entire Quad Cities area."
+    answer:
+      "MJ Creative Candles is located at 415 13th St, Moline, IL 61265. We're conveniently located in downtown Moline, serving customers from Rock Island, Davenport, Bettendorf, East Moline, and the entire Quad Cities area.",
   },
   {
     question: "What handcrafted candles services do you offer?",
-    answer: "We offer professional handcrafted candles on apparel including t-shirts, hoodies, crewnecks, polos, hats, beanies, jackets, and bags. We specialize in school spirit wear, team uniforms, corporate apparel, personalized gifts, and our signature Mama Keepsake Sweatshirts made from baby clothes."
+    answer:
+      "We offer professional handcrafted candles on apparel including t-shirts, hoodies, crewnecks, polos, hats, beanies, jackets, and bags. We specialize in school spirit wear, team uniforms, corporate apparel, personalized gifts, and our signature Mama Keepsake Sweatshirts made from baby clothes.",
   },
   {
     question: "How long does handcrafted candles take?",
-    answer: "Our typical turnaround time is 5-7 business days. Rush orders may be available for an additional fee. Contact us at (309) 373-6017 to discuss your timeline."
+    answer:
+      "Our typical turnaround time is 5-7 business days. Rush orders may be available for an additional fee. Contact us at (309) 373-6017 to discuss your timeline.",
   },
   {
     question: "Do you create spirit wear for local schools?",
-    answer: "Yes! We create custom spirit wear for Quad Cities schools including Moline Maroons, Rock Island Rocks, UTHS Panthers (United Township), Davenport North Wildcats, and many more. We can create custom designs for any school, team, or organization."
+    answer:
+      "Yes! We create custom spirit wear for Quad Cities schools including Moline Maroons, Rock Island Rocks, UTHS Panthers (United Township), Davenport North Wildcats, and many more. We can create custom designs for any school, team, or organization.",
   },
   {
     question: "What is a Mama Keepsake Sweatshirt?",
-    answer: "Our Mama Keepsake Sweatshirt transforms your baby's clothes into a beautiful, wearable memory. Bring in your baby's onesies, sleepers, or favorite outfits, and we'll create a custom MAMA appliqué sweatshirt using the fabric from those precious items."
+    answer:
+      "Our Mama Keepsake Sweatshirt transforms your baby's clothes into a beautiful, wearable memory. Bring in your baby's onesies, sleepers, or favorite outfits, and we'll create a custom MAMA appliqué sweatshirt using the fabric from those precious items.",
   },
   {
     question: "Do you offer pickup or shipping?",
-    answer: "We currently offer local pickup at our Moline, IL location. This allows us to ensure your order is perfect before you take it home and keeps our prices competitive."
+    answer:
+      "We currently offer local pickup at our Moline, IL location. This allows us to ensure your order is perfect before you take it home and keeps our prices competitive.",
   },
   {
     question: "How do I contact MJ Creative Candles?",
-    answer: "You can reach us by phone at (309) 373-6017, by email at tanika@mjcreativecandles.com, or visit us at 415 13th St, Moline, IL 61265. Our hours are Monday, Tuesday, and Friday from 1-3 PM."
-  }
+    answer:
+      "You can reach us by phone at (309) 373-6017, by email at tanika@mjcreativecandles.com, or visit us at 415 13th St, Moline, IL 61265. Our hours are Monday, Tuesday, and Friday from 1-3 PM.",
+  },
 ];
 const faqSchema = generateFAQSchema(homepageFaqs);
 
@@ -70,22 +96,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} scroll-smooth`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${GeistSans.variable} scroll-smooth`}
+      suppressHydrationWarning
+    >
       <head>
         <meta name="theme-color" content="#1d1d1f" />
         <link rel="manifest" href="/manifest.json" />
         {/* Preconnect to external domains for faster loads */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         {/* Prefetch critical pages */}
         <link rel="prefetch" href="/shop" as="document" />
-        
+
         {/* Local Business Structured Data for SEO */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(localBusinessSchema),
+          }}
         />
         <script
           type="application/ld+json"
@@ -95,7 +131,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
-        
+
         {/* Google Analytics - load after page is interactive */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
@@ -116,16 +152,17 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className="antialiased min-h-screen flex flex-col overflow-x-hidden" suppressHydrationWarning>
+      <body
+        className="flex min-h-screen flex-col overflow-x-hidden antialiased"
+        suppressHydrationWarning
+      >
         <QueryProvider>
           <ProductsProvider>
             <CartProvider>
               <ToastProvider>
                 <TooltipProvider>
-                <ConditionalLayout>
-                  {children}
-                </ConditionalLayout>
-                <ToastContainer />
+                  <ConditionalLayout>{children}</ConditionalLayout>
+                  <ToastContainer />
                 </TooltipProvider>
               </ToastProvider>
             </CartProvider>

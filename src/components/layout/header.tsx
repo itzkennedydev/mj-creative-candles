@@ -8,6 +8,7 @@ import { useCart } from "~/lib/cart-context";
 import { useState, useEffect } from "react";
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
+import { IMAGE_URLS } from "~/lib/image-config";
 
 export function Header() {
   const { getTotalItems } = useCart();
@@ -111,7 +112,7 @@ export function Header() {
                 style={{ height: "60px" }}
               >
                 <Image
-                  src="/images/logo/MJLogo.png"
+                  src={IMAGE_URLS.logo.main}
                   alt="MJ Creative Candles"
                   width={240}
                   height={60}

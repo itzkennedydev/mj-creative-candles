@@ -11,12 +11,16 @@ export function NotificationBar() {
   if (!isVisible) return null;
 
   return (
-    <div className="bg-gray-100 text-gray-600 py-2.5">
+    <div className="bg-gray-100 py-2.5 text-gray-600">
       <Container>
         <div className="flex items-center justify-center gap-x-4">
           <p className="text-sm font-semibold">
-            <span className="px-1.5 py-0.5 mx-0.5">mobile embroidery services!</span>
-            <span className="hidden md:inline">Perfect for sports teams, schools & private events</span>
+            <span className="mx-0.5 px-1.5 py-0.5">
+              handcrafted candles & custom scents!
+            </span>
+            <span className="hidden md:inline">
+              Perfect for gifts, events & home decor
+            </span>
           </p>
           <Button
             variant="ghost"
@@ -31,4 +35,4 @@ export function NotificationBar() {
       </Container>
     </div>
   );
-} 
+}
