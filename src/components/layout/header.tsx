@@ -173,7 +173,7 @@ export function Header() {
                         {shopCategories.map((category, index) => (
                           <div
                             key={index}
-                            className={`flex w-fit flex-col items-start ${index === 0 ? 'pr-4' : ''}`}
+                            className={`flex w-fit flex-col items-start ${index === 0 ? 'pr-0.5' : ''}`}
                           >
                             <h3 className="mb-4 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wide text-gray-900">
                               {category.title}
