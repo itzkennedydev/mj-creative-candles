@@ -4,7 +4,7 @@ import clientPromise from "~/lib/mongodb";
 import { ObjectId } from "mongodb";
 import type { Product } from "~/lib/types";
 import { authenticateRequest } from "~/lib/auth";
-import { getCacheHeaders, memoryCache } from "~/lib/cache";
+import { getCacheHeaders, memoryCache, cacheInvalidation } from "~/lib/cache";
 
 // Cache configuration
 export const revalidate = 600; // Revalidate every 10 minutes
@@ -183,6 +183,9 @@ export async function PUT(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
+    // Invalidate caches for this product
+    cacheInvalidation.product(productId);
+
     // Fetch updated product
     const updatedProduct = await productsCollection.findOne({
       _id: new ObjectId(productId),
@@ -265,6 +268,9 @@ export async function DELETE(
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
+
+    // Invalidate caches for this product
+    cacheInvalidation.product(productId);
 
     return NextResponse.json({ message: "Product deleted successfully" });
   } catch (error) {

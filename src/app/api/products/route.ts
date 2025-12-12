@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import clientPromise from "~/lib/mongodb";
 import type { Product } from "~/lib/types";
 import { authenticateRequest } from "~/lib/auth";
-import { getCacheHeaders, memoryCache } from "~/lib/cache";
+import { getCacheHeaders, memoryCache, cacheInvalidation } from "~/lib/cache";
 
 // Cache configuration
 export const revalidate = 300; // Revalidate every 5 minutes
@@ -164,6 +164,9 @@ export async function POST(request: NextRequest) {
     const result = await productsCollection.insertOne(product);
 
     if (result.insertedId) {
+      // Invalidate products list cache
+      cacheInvalidation.products();
+
       // Return immediately to avoid an extra database query
       const newProduct: Product = {
         id: result.insertedId.toString(),

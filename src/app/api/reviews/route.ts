@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import clientPromise from "~/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { getCacheHeaders } from "~/lib/cache";
+import { cacheInvalidation } from "~/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -131,6 +131,9 @@ export async function POST(request: NextRequest) {
     const result = await reviewsCollection.insertOne(review);
 
     if (result.insertedId) {
+      // Invalidate reviews cache for this product
+      cacheInvalidation.reviews(productId);
+
       return NextResponse.json(
         {
           success: true,

@@ -5,6 +5,7 @@ import type { Order } from "~/lib/order-types";
 import { ObjectId } from "mongodb";
 import { authenticateRequest } from "~/lib/auth";
 import { sendOrderConfirmationEmail } from "~/lib/email-service";
+import { cacheInvalidation } from "~/lib/cache";
 
 export async function GET(
   request: NextRequest,
@@ -284,6 +285,9 @@ export async function PUT(
       `[PUT /api/orders/${id}] Successfully updated order - Modified: ${result.modifiedCount > 0}`,
     );
 
+    // Invalidate order caches
+    cacheInvalidation.orders();
+
     // If status was changed to 'paid', send confirmation emails (same as Stripe webhook)
     if (status === "paid" && existingOrder.status !== "paid") {
       // Fetch the updated order to send emails
@@ -377,6 +381,9 @@ export async function DELETE(
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
+
+    // Invalidate order caches
+    cacheInvalidation.orders();
 
     return NextResponse.json({
       success: true,

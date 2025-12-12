@@ -138,6 +138,22 @@ class MemoryCache {
     return entry.data;
   }
 
+  // Delete a specific cache entry
+  delete(key: string) {
+    this.cache.delete(key);
+  }
+
+  // Delete all cache entries matching a pattern
+  invalidatePattern(pattern: string) {
+    const regex = new RegExp(pattern);
+    for (const key of this.cache.keys()) {
+      if (regex.test(key)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  // Clear all cache entries
   clear() {
     this.cache.clear();
   }
@@ -150,6 +166,14 @@ class MemoryCache {
         this.cache.delete(key);
       }
     }
+  }
+
+  // Get cache stats
+  getStats() {
+    return {
+      size: this.cache.size,
+      entries: Array.from(this.cache.keys()),
+    };
   }
 }
 
@@ -181,5 +205,56 @@ export const queryCache = {
   analytics: {
     staleTime: 5 * 60 * 1000, // 5 minutes fresh
     gcTime: 30 * 60 * 1000, // 30 minutes in cache
+  },
+};
+
+// Cache invalidation helpers
+export const cacheInvalidation = {
+  // Invalidate all product caches
+  products: () => {
+    memoryCache.invalidatePattern("^products:");
+    console.log("[Cache] Invalidated all product caches");
+  },
+
+  // Invalidate a specific product
+  product: (productId: string) => {
+    memoryCache.delete(`products:${productId}`);
+    memoryCache.invalidatePattern("^products:list"); // Also invalidate lists
+    console.log(`[Cache] Invalidated product ${productId}`);
+  },
+
+  // Invalidate reviews for a product
+  reviews: (productId?: string) => {
+    if (productId) {
+      memoryCache.delete(`reviews:${productId}`);
+      console.log(`[Cache] Invalidated reviews for product ${productId}`);
+    } else {
+      memoryCache.invalidatePattern("^reviews:");
+      console.log("[Cache] Invalidated all reviews caches");
+    }
+  },
+
+  // Invalidate order caches
+  orders: () => {
+    memoryCache.invalidatePattern("^orders:");
+    console.log("[Cache] Invalidated all order caches");
+  },
+
+  // Invalidate analytics
+  analytics: () => {
+    memoryCache.invalidatePattern("^analytics:");
+    console.log("[Cache] Invalidated analytics cache");
+  },
+
+  // Invalidate settings
+  settings: () => {
+    memoryCache.delete("settings");
+    console.log("[Cache] Invalidated settings cache");
+  },
+
+  // Clear everything (use sparingly)
+  all: () => {
+    memoryCache.clear();
+    console.log("[Cache] Cleared all caches");
   },
 };
