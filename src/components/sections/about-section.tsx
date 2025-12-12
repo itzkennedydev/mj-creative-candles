@@ -74,22 +74,22 @@ export function AboutSection() {
 
           {/* Owner Images - Right Side, Side by Side with Vertical Stagger */}
           <div className="grid grid-cols-2 gap-4 sm:gap-6">
-            {/* J.png - Left Side, Higher */}
+            {/* J.jpg - Left Side, Higher */}
             <div className="relative mt-4 h-80 overflow-hidden rounded-sm bg-white sm:mt-6 sm:h-96 lg:h-[28rem]">
               <Image
                 src="/images/owners/J_optimized.jpg"
-                alt="Jazden - Co-founder of MJ Creative Candles"
+                alt="Marteze - Co-founder of MJ Creative Candles"
                 fill
                 className="object-cover"
                 style={{ objectPosition: "center 30%" }}
               />
             </div>
 
-            {/* M.jpg - Right Side, Lower */}
+            {/* M.png - Right Side, Lower */}
             <div className="relative mt-8 h-80 overflow-hidden rounded-sm bg-white sm:mt-12 sm:h-96 lg:h-[28rem]">
               <Image
                 src="/images/owners/M_optimized.jpg"
-                alt="Marteze - Co-founder of MJ Creative Candles"
+                alt="Jazden - Co-founder of MJ Creative Candles"
                 fill
                 className="object-cover"
                 style={{ objectPosition: "center 30%" }}

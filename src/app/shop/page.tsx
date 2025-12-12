@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Search, Filter, X, Clock, Sparkles } from "lucide-react";
 import { usePrefetchProducts } from "~/lib/hooks/use-products";
 import { ProductGrid } from "~/components/shop/product-grid";
@@ -11,19 +12,58 @@ import { Button } from "~/components/ui/button";
 // Discount code expiration: Dec 1st 11:59 PM CST = Dec 2nd 05:59:59 UTC
 const PROMO_EXPIRES = new Date("2025-12-02T05:59:59Z");
 
-export default function ShopPage() {
+function ShopPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedScent, setSelectedScent] = useState<string | null>(null);
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<Set<string>>(
     new Set(),
   );
+  const [showFeatured, setShowFeatured] = useState(false);
+  const [showSale, setShowSale] = useState(false);
+  const [sortBy, setSortBy] = useState<string | null>(null);
   const [showPromoBanner, setShowPromoBanner] = useState(true);
   const [timeLeft, setTimeLeft] = useState<string>("");
   const prefetchProducts = usePrefetchProducts();
 
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const category = searchParams.get("category");
+    const scent = searchParams.get("scent");
+    const featured = searchParams.get("featured");
+    const sale = searchParams.get("sale");
+    const sort = searchParams.get("sort");
+
+    if (category) setSelectedCategory(category);
+    if (scent) setSelectedScent(scent);
+    if (featured === "true") setShowFeatured(true);
+    if (sale === "true") setShowSale(true);
+    if (sort) setSortBy(sort);
+  }, [searchParams]);
+
   // Check if promo is still active
   const isPromoActive = new Date() < PROMO_EXPIRES;
+
+  // Update URL when filters change
+  const updateURL = (params: Record<string, string | null>) => {
+    const newParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        newParams.set(key, value);
+      }
+    });
+
+    const newURL = newParams.toString()
+      ? `/shop?${newParams.toString()}`
+      : "/shop";
+
+    router.push(newURL, { scroll: false });
+  };
 
   // Prefetch products as soon as component mounts
   useEffect(() => {
@@ -192,8 +232,10 @@ export default function ShopPage() {
               <div className="sticky top-[100px]">
                 <ShopSidebarNeo
                   onCategoryChange={setSelectedCategory}
+                  onScentChange={setSelectedScent}
                   onPriceRangeChange={setSelectedPriceRanges}
                   selectedCategory={selectedCategory}
+                  selectedScent={selectedScent}
                   selectedPriceRanges={selectedPriceRanges}
                 />
               </div>
@@ -236,8 +278,10 @@ export default function ShopPage() {
                   <div className="h-[calc(100%-72px)] overflow-y-auto p-[20px] sm:h-[calc(100%-80px)] sm:p-[24px]">
                     <ShopSidebarNeo
                       onCategoryChange={setSelectedCategory}
+                      onScentChange={setSelectedScent}
                       onPriceRangeChange={setSelectedPriceRanges}
                       selectedCategory={selectedCategory}
+                      selectedScent={selectedScent}
                       selectedPriceRanges={selectedPriceRanges}
                     />
                   </div>
@@ -258,6 +302,10 @@ export default function ShopPage() {
                 searchQuery={searchQuery}
                 selectedCategory={selectedCategory}
                 selectedPriceRanges={selectedPriceRanges}
+                selectedScent={selectedScent}
+                showFeatured={showFeatured}
+                showSale={showSale}
+                sortBy={sortBy}
               />
             </div>
           </div>
@@ -273,15 +321,19 @@ export default function ShopPage() {
 // NEO-styled Sidebar Component
 interface ShopSidebarNeoProps {
   selectedCategory: string;
+  selectedScent: string | null;
   selectedPriceRanges: Set<string>;
   onCategoryChange: (category: string) => void;
+  onScentChange: (scent: string | null) => void;
   onPriceRangeChange: (ranges: Set<string>) => void;
 }
 
 function ShopSidebarNeo({
   selectedCategory,
+  selectedScent,
   selectedPriceRanges,
   onCategoryChange,
+  onScentChange,
   onPriceRangeChange,
 }: ShopSidebarNeoProps) {
   const categories = [
@@ -290,6 +342,15 @@ function ShopSidebarNeo({
     "Jar Candles",
     "Wax Melt Boxes",
     "Dessert Candles",
+  ];
+
+  const scentTypes = [
+    { value: "citrus", label: "Citrus" },
+    { value: "bakery", label: "Bakery" },
+    { value: "berry", label: "Berry" },
+    { value: "fresh", label: "Fresh" },
+    { value: "sweet", label: "Sweet" },
+    { value: "warm", label: "Warm" },
   ];
 
   // Toggle price range selection
@@ -328,6 +389,40 @@ function ShopSidebarNeo({
         </div>
       </div>
 
+      {/* Scent Type */}
+      <div>
+        <h3 className="mb-[12px] text-[13px] font-bold leading-[130%] text-black/[0.72] sm:mb-[16px] sm:text-[14px]">
+          Scent Type
+        </h3>
+        <div className="space-y-[6px] sm:space-y-[8px]">
+          <Button
+            onClick={() => onScentChange(null)}
+            variant={selectedScent === null ? "default" : "ghost"}
+            className={`w-full justify-start rounded-[12px] px-[14px] py-[10px] text-[13px] leading-[130%] transition-all duration-300 sm:px-[16px] sm:py-[12px] sm:text-[14px] ${
+              selectedScent === null
+                ? "bg-[#1d1d1f] text-white hover:bg-[#0a0a0a]"
+                : "bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]"
+            }`}
+          >
+            All Scents
+          </Button>
+          {scentTypes.map((scent) => (
+            <Button
+              key={scent.value}
+              onClick={() => onScentChange(scent.value)}
+              variant={selectedScent === scent.value ? "default" : "ghost"}
+              className={`w-full justify-start rounded-[12px] px-[14px] py-[10px] text-[13px] leading-[130%] transition-all duration-300 sm:px-[16px] sm:py-[12px] sm:text-[14px] ${
+                selectedScent === scent.value
+                  ? "bg-[#1d1d1f] text-white hover:bg-[#0a0a0a]"
+                  : "bg-black/[0.03] text-black/[0.72] hover:bg-black/[0.06]"
+              }`}
+            >
+              {scent.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+
       {/* Price Range */}
       <div>
         <h3 className="mb-[12px] text-[13px] font-bold leading-[130%] text-black/[0.72] sm:mb-[16px] sm:text-[14px]">
@@ -346,7 +441,7 @@ function ShopSidebarNeo({
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => togglePriceRange(range)}
-                    className="h-[16px] w-[16px] cursor-pointer rounded-[4px] border-[2px] border-black/[0.12] checked:border-[#737373] checked:bg-[#737373] sm:h-[18px] sm:w-[18px]"
+                    className="h-[16px] w-[16px] cursor-pointer appearance-none rounded-[4px] border-[2px] border-black/[0.12] checked:border-black/[0.72] checked:bg-white checked:bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20d%3D%22M10%203L4.5%208.5%202%206%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.5%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] checked:bg-center checked:bg-no-repeat sm:h-[18px] sm:w-[18px]"
                   />
                   <span
                     className={`text-[13px] leading-[130%] transition-colors sm:text-[14px] ${
@@ -364,5 +459,13 @@ function ShopSidebarNeo({
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ShopPageContent />
+    </Suspense>
   );
 }

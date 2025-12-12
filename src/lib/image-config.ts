@@ -49,7 +49,7 @@ export const IMAGE_URLS = {
 
   // Owner Images
   owners: {
-    owner1: "/images/owners/J.png",
-    owner2: "/images/owners/M.jpg",
+    owner1: "/images/owners/J_optimized.jpg",
+    owner2: "/images/owners/M_optimized.jpg",
   },
 } as const;

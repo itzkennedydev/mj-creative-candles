@@ -65,6 +65,12 @@ export async function GET(
       featured: product.featured,
       weight: product.weight,
       dimensions: product.dimensions,
+      // Scent notes
+      topNotes: product.topNotes,
+      middleNotes: product.middleNotes,
+      baseNotes: product.baseNotes,
+      scentFamily: product.scentFamily,
+      burnTime: product.burnTime,
     };
 
     // Generate ETag for caching
@@ -139,6 +145,14 @@ export async function PUT(
       updateData.requiresBabyClothes = body.requiresBabyClothes;
     if (body.babyClothesDeadlineDays !== undefined)
       updateData.babyClothesDeadlineDays = body.babyClothesDeadlineDays;
+    // Scent notes
+    if (body.topNotes !== undefined) updateData.topNotes = body.topNotes;
+    if (body.middleNotes !== undefined)
+      updateData.middleNotes = body.middleNotes;
+    if (body.baseNotes !== undefined) updateData.baseNotes = body.baseNotes;
+    if (body.scentFamily !== undefined)
+      updateData.scentFamily = body.scentFamily;
+    if (body.burnTime !== undefined) updateData.burnTime = body.burnTime;
 
     // Update product in database
     const result = await productsCollection.updateOne(
@@ -171,6 +185,11 @@ export async function PUT(
         colors: updatedProduct.colors,
         requiresBabyClothes: updatedProduct.requiresBabyClothes,
         babyClothesDeadlineDays: updatedProduct.babyClothesDeadlineDays,
+        topNotes: updatedProduct.topNotes,
+        middleNotes: updatedProduct.middleNotes,
+        baseNotes: updatedProduct.baseNotes,
+        scentFamily: updatedProduct.scentFamily,
+        burnTime: updatedProduct.burnTime,
       };
 
       return NextResponse.json(product);

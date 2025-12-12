@@ -249,7 +249,7 @@ export function Header() {
 
               {/* Desktop Order Button */}
               <Link href="/shop">
-                <Button className="hidden rounded-xl bg-[#1d1d1f] font-medium text-white hover:bg-[#0a0a0a] lg:flex">
+                <Button variant="primary" className="hidden lg:flex">
                   Order Now
                 </Button>
               </Link>

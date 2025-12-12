@@ -48,6 +48,12 @@ export async function GET(request: NextRequest) {
       featured: product.featured,
       weight: product.weight,
       dimensions: product.dimensions,
+      // Scent notes
+      topNotes: product.topNotes,
+      middleNotes: product.middleNotes,
+      baseNotes: product.baseNotes,
+      scentFamily: product.scentFamily,
+      burnTime: product.burnTime,
     }));
 
     // Check for ETag/If-None-Match for client-side caching
@@ -121,6 +127,12 @@ export async function POST(request: NextRequest) {
       colors: body.colors ?? [],
       requiresBabyClothes: body.requiresBabyClothes ?? false,
       babyClothesDeadlineDays: body.babyClothesDeadlineDays,
+      // Scent notes
+      topNotes: body.topNotes,
+      middleNotes: body.middleNotes,
+      baseNotes: body.baseNotes,
+      scentFamily: body.scentFamily,
+      burnTime: body.burnTime,
     };
 
     // Insert product into database
@@ -142,6 +154,11 @@ export async function POST(request: NextRequest) {
         colors: product.colors ?? [],
         requiresBabyClothes: product.requiresBabyClothes,
         babyClothesDeadlineDays: product.babyClothesDeadlineDays,
+        topNotes: product.topNotes,
+        middleNotes: product.middleNotes,
+        baseNotes: product.baseNotes,
+        scentFamily: product.scentFamily,
+        burnTime: product.burnTime,
       };
 
       return NextResponse.json(newProduct, { status: 201 });

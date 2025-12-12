@@ -207,7 +207,7 @@ export default function AboutPage() {
               <div className="text-center">
                 <div className="mx-auto mb-6 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-gray-100">
                   <Image
-                    src="/images/owners/marteze.jpg"
+                    src="/images/owners/J_optimized.jpg"
                     alt="Marteze"
                     width={128}
                     height={128}
@@ -231,7 +231,7 @@ export default function AboutPage() {
               <div className="text-center">
                 <div className="mx-auto mb-6 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-gray-100">
                   <Image
-                    src="/images/owners/jazden.jpg"
+                    src="/images/owners/M_optimized.jpg"
                     alt="Jazden"
                     width={128}
                     height={128}

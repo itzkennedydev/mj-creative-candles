@@ -1,13 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { Heart, ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Container } from "~/components/ui/container";
 import { useCart } from "~/lib/cart-context";
 import { useProductsQuery } from "~/lib/hooks/use-products";
-import { getProductPrice } from "~/lib/types";
+import { ProductCard } from "~/components/shop/product-card";
 import { useState, useEffect } from "react";
 
 export function FeaturedProducts() {
@@ -45,7 +44,8 @@ export function FeaturedProducts() {
         <Container>
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-              Featured Products
+              <span className="sm:hidden">Featured Product</span>
+              <span className="hidden sm:inline">Featured Products</span>
             </h2>
             <p className="mt-2 text-gray-600">
               Hand-picked favorites from our collection
@@ -85,20 +85,14 @@ export function FeaturedProducts() {
     currentIndex + itemsPerView,
   );
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
   return (
     <section className="mb-[90px] bg-white py-12 sm:py-16">
       <Container>
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-              Featured Products
+              <span className="sm:hidden">Featured Product</span>
+              <span className="hidden sm:inline">Featured Products</span>
             </h2>
             <p className="mt-2 text-gray-600">
               Hand-picked favorites from our collection
@@ -125,83 +119,23 @@ export function FeaturedProducts() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-          {visibleProducts.map((product) => {
-            const price = getProductPrice(product);
-            const isOnSale =
-              product.salePrice &&
-              product.salePrice < (product.regularPrice || 0);
-
-            return (
-              <div
-                key={product.id}
-                className="group overflow-hidden rounded-sm border border-gray-200 bg-white transition-all duration-300 hover:shadow-lg"
-              >
-                <Link
-                  href={`/shop/${product.id}`}
-                  className="relative block aspect-square overflow-hidden bg-gray-100"
-                >
-                  <Image
-                    src={
-                      product.productImages?.[0] ||
-                      product.image ||
-                      "/images/placeholder.jpg"
-                    }
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  />
-
-                  {isOnSale && (
-                    <div className="absolute left-4 top-4">
-                      <span className="rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">
-                        SALE
-                      </span>
-                    </div>
-                  )}
-                </Link>
-
-                <div className="p-4">
-                  <Link href={`/shop/${product.id}`}>
-                    <h3 className="mb-1 font-semibold text-gray-900 transition-colors hover:text-gray-600">
-                      {product.name}
-                    </h3>
-                  </Link>
-
-                  {product.shortDescription && (
-                    <p className="mb-2 line-clamp-1 text-sm text-gray-500">
-                      {product.shortDescription}
-                    </p>
-                  )}
-
-                  <div className="mb-3 flex items-center gap-2">
-                    <span className="text-lg font-bold text-gray-900">
-                      {formatCurrency(price)}
-                    </span>
-                    {isOnSale && product.regularPrice && (
-                      <span className="text-sm text-gray-500 line-through">
-                        {formatCurrency(product.regularPrice)}
-                      </span>
-                    )}
-                  </div>
-
-                  <Button
-                    onClick={() => addItem(product, 1)}
-                    className="w-full bg-black text-white transition-colors hover:bg-gray-800"
-                  >
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    Add to Cart
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+        <div className="grid auto-rows-fr grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-6 md:gap-8 lg:grid-cols-4">
+          {visibleProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              showAddToCart={true}
+              onAddToCart={(product) => addItem(product, 1)}
+            />
+          ))}
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-4 text-center">
           <Link href="/shop">
-            <Button className="bg-black px-8 py-3 text-white hover:bg-gray-800">
+            <Button
+              variant="primary"
+              className="w-full sm:w-auto sm:px-8 sm:py-3"
+            >
               View All Products
             </Button>
           </Link>

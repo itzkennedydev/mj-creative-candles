@@ -11,9 +11,15 @@ import { generateProductStructuredData } from "~/lib/seo";
 
 interface ProductCardProps {
   product: Product;
+  showAddToCart?: boolean;
+  onAddToCart?: (product: Product) => void;
 }
 
-function ProductCardComponent({ product }: ProductCardProps) {
+function ProductCardComponent({
+  product,
+  showAddToCart = false,
+  onAddToCart,
+}: ProductCardProps) {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
@@ -225,7 +231,7 @@ function ProductCardComponent({ product }: ProductCardProps) {
 
   return (
     <article
-      className="flex h-full flex-col bg-white"
+      className="flex h-full flex-col border-0 bg-white shadow-none"
       itemScope
       itemType="https://schema.org/Product"
     >
@@ -433,6 +439,14 @@ function ProductCardComponent({ product }: ProductCardProps) {
               {product.name}
             </h3>
           </Link>
+
+          {/* Top Notes - Scent preview */}
+          {product.topNotes && (
+            <p className="mb-2 text-xs italic text-gray-500">
+              {product.topNotes}
+            </p>
+          )}
+
           <p
             className="mb-3 line-clamp-2 text-sm text-gray-500"
             itemProp="description"
@@ -484,11 +498,26 @@ function ProductCardComponent({ product }: ProductCardProps) {
             )}
           </div>
 
-          <Link href={`/shop/${product.id}`} className="block">
-            <Button disabled={!product.inStock} className="w-full">
-              {product.inStock ? "View Product" : "Out of Stock"}
+          {showAddToCart && onAddToCart ? (
+            <Button
+              onClick={() => onAddToCart(product)}
+              disabled={!product.inStock}
+              variant="primary"
+              className="w-full"
+            >
+              {product.inStock ? "Add to Cart" : "Out of Stock"}
             </Button>
-          </Link>
+          ) : (
+            <Link href={`/shop/${product.id}`} className="block">
+              <Button
+                disabled={!product.inStock}
+                variant="primary"
+                className="w-full"
+              >
+                {product.inStock ? "View Product" : "Out of Stock"}
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </article>
@@ -505,6 +534,8 @@ export const ProductCard = memo(
       prevProps.product.price === nextProps.product.price &&
       prevProps.product.inStock === nextProps.product.inStock &&
       prevProps.product.image === nextProps.product.image &&
+      prevProps.showAddToCart === nextProps.showAddToCart &&
+      prevProps.onAddToCart === nextProps.onAddToCart &&
       JSON.stringify(prevProps.product.colors) ===
         JSON.stringify(nextProps.product.colors)
     );

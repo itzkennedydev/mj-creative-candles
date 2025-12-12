@@ -15,7 +15,6 @@ import {
   Truck,
   Clock,
   Star,
-  Leaf,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Container } from "~/components/ui/container";
@@ -651,28 +650,9 @@ export default function ProductDetailPage() {
                 )}
 
                 {/* Description - Cognitive Load (concise info) */}
-                <div className="space-y-4">
-                  <p className="leading-relaxed text-gray-600">
-                    {product.description}
-                  </p>
-
-                  {/* Scent Notes Component */}
-                  {(product.topNotes ||
-                    product.middleNotes ||
-                    product.baseNotes) && (
-                    <div className="mt-6">
-                      <ScentNotes
-                        notes={{
-                          top: product.topNotes,
-                          middle: product.middleNotes,
-                          bottom: product.baseNotes,
-                        }}
-                        scentFamily={product.scentFamily}
-                        burnTime={product.burnTime}
-                      />
-                    </div>
-                  )}
-                </div>
+                <p className="leading-relaxed text-gray-600">
+                  {product.description}
+                </p>
 
                 {/* Color Selection - Law of Similarity (grouped options) */}
                 {product.colors && product.colors.length > 1 && (
@@ -821,6 +801,12 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
+                {/* Delivery Timeframe - Subtle */}
+                <p className="flex items-center gap-2 text-sm text-gray-500">
+                  <Clock className="h-4 w-4" />
+                  5-7 business days (may vary if materials need to be ordered)
+                </p>
+
                 {/* CTA Section - Fitts's Law (large button), Peak-End Rule (satisfying action) */}
                 <div className="space-y-4 pt-2">
                   <Button
@@ -890,85 +876,6 @@ export default function ProductDetailPage() {
   );
 }
 
-// Scent Notes Component
-function ScentNotes({
-  notes,
-  scentFamily,
-  burnTime,
-}: {
-  notes: { top?: string; middle?: string; bottom?: string };
-  scentFamily?: string;
-  burnTime?: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
-      <h3 className="mb-3 text-sm font-semibold text-gray-900 sm:mb-4 sm:text-base">
-        Scent Profile
-      </h3>
-
-      {/* Scent Family & Burn Time */}
-      {(scentFamily || burnTime) && (
-        <div className="mb-4 flex flex-wrap gap-2 sm:gap-3">
-          {scentFamily && (
-            <div className="rounded-full bg-[#1d1d1f] px-2.5 py-1 text-xs font-medium text-white sm:px-3">
-              {scentFamily}
-            </div>
-          )}
-          {burnTime && (
-            <div className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 sm:px-3">
-              <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              {burnTime}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Scent Notes - Row Layout */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {notes.top && (
-          <div>
-            <div className="mb-1.5 flex items-center gap-2">
-              <Leaf className="h-4 w-4 text-gray-400" />
-              <div className="text-xs font-semibold text-gray-900 sm:text-sm">
-                Top Notes
-              </div>
-            </div>
-            <div className="text-xs leading-relaxed text-gray-600 sm:text-sm">
-              {notes.top}
-            </div>
-          </div>
-        )}
-        {notes.middle && (
-          <div>
-            <div className="mb-1.5 flex items-center gap-2">
-              <Leaf className="h-4 w-4 text-gray-400" />
-              <div className="text-xs font-semibold text-gray-900 sm:text-sm">
-                Middle Notes
-              </div>
-            </div>
-            <div className="text-xs leading-relaxed text-gray-600 sm:text-sm">
-              {notes.middle}
-            </div>
-          </div>
-        )}
-        {notes.bottom && (
-          <div>
-            <div className="mb-1.5 flex items-center gap-2">
-              <Leaf className="h-4 w-4 text-gray-400" />
-              <div className="text-xs font-semibold text-gray-900 sm:text-sm">
-                Base Notes
-              </div>
-            </div>
-            <div className="text-xs leading-relaxed text-gray-600 sm:text-sm">
-              {notes.bottom}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // Reviews Section Component
 interface Review {
   id: string;
@@ -986,303 +893,127 @@ function ReviewsSection({
   productId: string;
   productName: string;
 }) {
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    author: "",
-    email: "",
-    rating: 5,
-    comment: "",
-  });
-  const { addToast } = useToast();
-
-  // Fetch reviews from API
-  const {
-    data: reviewsData,
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ["reviews", productId],
-    queryFn: async () => {
-      const response = await fetch(`/api/reviews?productId=${productId}`);
-      if (!response.ok) throw new Error("Failed to fetch reviews");
-      return response.json() as Promise<{ reviews: Review[] }>;
+  // Mock reviews data - in production, fetch from API
+  const reviews: Review[] = [
+    {
+      id: "1",
+      author: "Sarah M.",
+      rating: 5,
+      date: "2024-11-15",
+      comment:
+        "Absolutely love this candle! The scent fills the entire room without being overwhelming. Burns evenly and lasts a long time.",
+      verified: true,
     },
-    staleTime: 60 * 1000, // 1 minute
-  });
+    {
+      id: "2",
+      author: "Michael T.",
+      rating: 5,
+      date: "2024-11-10",
+      comment:
+        "Best wax melts I've ever bought! The scent throw is amazing and they last for hours. Will definitely be ordering more.",
+      verified: true,
+    },
+    {
+      id: "3",
+      author: "Jennifer L.",
+      rating: 4,
+      date: "2024-11-05",
+      comment:
+        "Great quality and beautiful packaging. Would give 5 stars if the scent lasted a bit longer, but still very happy with my purchase!",
+      verified: true,
+    },
+  ];
 
-  const reviews = reviewsData?.reviews ?? [];
   const averageRating =
-    reviews.length > 0
-      ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
-      : 0;
-
-  const handleSubmitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch("/api/reviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId,
-          ...formData,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to submit review");
-      }
-
-      addToast({
-        title: "Review Submitted!",
-        description: data.review.verified
-          ? "Your review has been posted as a verified purchase."
-          : "Your review has been posted. Thank you for your feedback!",
-        type: "success",
-      });
-
-      // Reset form and close
-      setFormData({ author: "", email: "", rating: 5, comment: "" });
-      setShowReviewForm(false);
-
-      // Refetch reviews
-      await refetch();
-    } catch (error) {
-      addToast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to submit review",
-        type: "error",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <section className="border-t border-gray-200 bg-white py-12 md:py-16">
-        <Container>
-          <div className="text-center">
-            <p className="text-gray-500">Loading reviews...</p>
-          </div>
-        </Container>
-      </section>
-    );
-  }
+    reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length;
 
   return (
-    <section className="border-t border-gray-200 bg-white py-12 md:py-16">
+    <section className="border-t border-gray-100 bg-gray-50 py-12 md:py-16">
       <Container>
-        <div>
+        <div className="mx-auto max-w-4xl">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-8 text-center">
             <h2 className="mb-3 text-2xl font-bold text-gray-900 sm:text-3xl">
               Customer Reviews
             </h2>
-            {reviews.length > 0 ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${
-                        i < Math.floor(averageRating)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-lg font-semibold text-gray-900">
-                  {averageRating.toFixed(1)}
-                </span>
-                <span className="text-sm text-gray-500">
-                  ({reviews.length}{" "}
-                  {reviews.length === 1 ? "review" : "reviews"})
-                </span>
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-5 w-5 ${
+                      i < Math.floor(averageRating)
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
               </div>
-            ) : (
-              <p className="text-gray-600">No reviews yet. Be the first!</p>
-            )}
+              <span className="text-lg font-semibold text-gray-900">
+                {averageRating.toFixed(1)}
+              </span>
+              <span className="text-sm text-gray-500">
+                ({reviews.length} reviews)
+              </span>
+            </div>
           </div>
 
-          {/* Review Form */}
-          {showReviewForm ? (
-            <form
-              onSubmit={handleSubmitReview}
-              className="mb-8 rounded-2xl border border-gray-200 bg-white p-6"
-            >
-              <h3 className="mb-4 text-lg font-semibold text-gray-900">
-                Write a Review
-              </h3>
-
-              <div className="space-y-4">
-                {/* Name */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.author}
-                    onChange={(e) =>
-                      setFormData({ ...formData, author: e.target.value })
-                    }
-                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 transition-colors focus:border-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#1d1d1f]/20"
-                    placeholder="Your name"
-                  />
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 transition-colors focus:border-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#1d1d1f]/20"
-                    placeholder="your@email.com"
-                  />
-                  <p className="mt-1.5 text-xs text-gray-500">
-                    We'll check if you've purchased this product to mark your
-                    review as verified
-                  </p>
-                </div>
-
-                {/* Rating */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Rating <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <button
-                        key={rating}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, rating })}
-                        className="transition-transform hover:scale-110"
-                      >
-                        <Star
-                          className={`h-8 w-8 ${
-                            rating <= formData.rating
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Comment */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-900">
-                    Review <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    required
-                    value={formData.comment}
-                    onChange={(e) =>
-                      setFormData({ ...formData, comment: e.target.value })
-                    }
-                    rows={4}
-                    className="w-full resize-none rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 transition-colors focus:border-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#1d1d1f]/20"
-                    placeholder="Share your experience with this product..."
-                  />
-                </div>
-
-                {/* Buttons */}
-                <div className="flex gap-3">
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 rounded-xl bg-[#1d1d1f] px-6 py-3 font-medium text-white transition-colors hover:bg-[#0a0a0a] disabled:opacity-50"
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit Review"}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => setShowReviewForm(false)}
-                    variant="outline"
-                    className="rounded-xl border-gray-300 px-6 py-3 transition-colors hover:bg-gray-50"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </form>
-          ) : (
-            <div className="mb-8">
-              <Button
-                onClick={() => setShowReviewForm(true)}
-                className="rounded-xl bg-[#1d1d1f] px-6 py-3 font-medium text-white transition-colors hover:bg-[#0a0a0a]"
-              >
-                Write a Review
-              </Button>
-            </div>
-          )}
-
           {/* Reviews List */}
-          {reviews.length > 0 && (
-            <div className="space-y-4">
-              {reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="rounded-2xl border border-gray-200 bg-white p-6"
-                >
-                  <div className="mb-3 flex items-start justify-between">
-                    <div>
-                      <div className="mb-1 flex items-center gap-2">
-                        <span className="font-semibold text-gray-900">
-                          {review.author}
+          <div className="space-y-6">
+            {reviews.map((review) => (
+              <div
+                key={review.id}
+                className="rounded-2xl bg-white p-6 shadow-sm"
+              >
+                <div className="mb-3 flex items-start justify-between">
+                  <div>
+                    <div className="mb-1 flex items-center gap-2">
+                      <span className="font-semibold text-gray-900">
+                        {review.author}
+                      </span>
+                      {review.verified && (
+                        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                          Verified Purchase
                         </span>
-                        {review.verified && (
-                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                            Verified Purchase
-                          </span>
-                        )}
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 ${
+                              i < review.rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-0.5">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < review.rating
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-gray-300"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-500">
-                          {new Date(review.date).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
+                      <span className="text-sm text-gray-500">
+                        {new Date(review.date).toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </span>
                     </div>
                   </div>
-                  <p className="leading-relaxed text-gray-700">
-                    {review.comment}
-                  </p>
                 </div>
-              ))}
-            </div>
-          )}
+                <p className="leading-relaxed text-gray-700">
+                  {review.comment}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA to leave a review */}
+          <div className="mt-8 text-center">
+            <p className="mb-4 text-gray-600">Have you tried {productName}?</p>
+            <Button className="rounded-xl bg-[#1d1d1f] px-6 py-3 font-medium text-white hover:bg-[#0a0a0a]">
+              Write a Review
+            </Button>
+          </div>
         </div>
       </Container>
     </section>
