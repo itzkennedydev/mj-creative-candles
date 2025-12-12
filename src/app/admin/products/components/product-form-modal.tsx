@@ -21,18 +21,6 @@ interface ProductFormModalProps {
 
 const CATEGORIES = ["Apparel", "Accessories", "Elite Volleyball"];
 
-const SHOP_TYPES: ComboboxOption[] = [
-  { label: "Regular Shop", value: "regular-shop" },
-  { label: "Spirit Wear", value: "spirit-wear" },
-];
-
-const SCHOOLS: ComboboxOption[] = [
-  { label: "Moline", value: "moline" },
-  { label: "United Township", value: "united-township" },
-  { label: "Rock Island", value: "rock-island" },
-  { label: "North", value: "north" },
-];
-
 export function ProductFormModal({
   open,
   onOpenChange,
@@ -48,8 +36,6 @@ export function ProductFormModal({
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState<string>("");
-  const [shopType, setShopType] = useState<ComboboxOption | null>(null);
-  const [school, setSchool] = useState<ComboboxOption | null>(null);
   const [inStock, setInStock] = useState(true);
   const [colors, setColors] = useState<string>("");
 
@@ -76,16 +62,6 @@ export function ProductFormModal({
         setDescription(product.description || "");
         setPrice(product.price?.toString() || "");
         setCategory(product.category || "");
-        setShopType(
-          product.shopType
-            ? SHOP_TYPES.find((s) => s.value === product.shopType) || null
-            : null,
-        );
-        setSchool(
-          product.school
-            ? SCHOOLS.find((s) => s.value === product.school) || null
-            : null,
-        );
         setInStock(product.inStock !== false);
         setColors(product.colors?.join(", ") || "");
         setTopNotes(product.topNotes || "");
@@ -106,8 +82,6 @@ export function ProductFormModal({
         setDescription("");
         setPrice("");
         setCategory("");
-        setShopType(null);
-        setSchool(null);
         setInStock(true);
         setColors("");
         setTopNotes("");
@@ -260,13 +234,6 @@ export function ProductFormModal({
         price: parseFloat(price),
         image: primaryImage,
         category: category || "Apparel",
-        shopType: shopType?.value as "spirit-wear" | "regular-shop" | undefined,
-        school: school?.value as
-          | "moline"
-          | "united-township"
-          | "rock-island"
-          | "north"
-          | undefined,
         inStock,
         colors: colors
           ? colors
@@ -421,36 +388,6 @@ export function ProductFormModal({
                       buttonProps={{ className: "w-full" }}
                     />
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                      Shop Type
-                    </label>
-                    <Combobox
-                      options={SHOP_TYPES}
-                      selected={shopType}
-                      setSelected={setShopType}
-                      placeholder="Select shop type"
-                      buttonProps={{ className: "w-full" }}
-                    />
-                  </div>
-
-                  {shopType?.value === "spirit-wear" && (
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                        School
-                      </label>
-                      <Combobox
-                        options={SCHOOLS}
-                        selected={school}
-                        setSelected={setSchool}
-                        placeholder="Select school"
-                        buttonProps={{ className: "w-full" }}
-                      />
-                    </div>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">

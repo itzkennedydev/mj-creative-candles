@@ -66,8 +66,6 @@ export default function ProductsPage() {
             imageId: p.imageId,
             images: p.images || [],
             category: p.category || "Apparel",
-            shopType: p.shopType,
-            school: p.school,
             inStock: p.inStock !== false,
             sizes: p.sizes || [],
             colors: p.colors || [],
@@ -343,22 +341,6 @@ export default function ProductsPage() {
 
                             {/* Additional Product Info */}
                             <div className="flex-shrink-0 space-y-1 text-xs text-neutral-400">
-                              {product.shopType && (
-                                <div>
-                                  <span className="font-medium text-neutral-500">
-                                    Shop Type:{" "}
-                                  </span>
-                                  <span>{product.shopType}</span>
-                                </div>
-                              )}
-                              {product.school && (
-                                <div>
-                                  <span className="font-medium text-neutral-500">
-                                    School:{" "}
-                                  </span>
-                                  <span>{product.school}</span>
-                                </div>
-                              )}
                               {product.requiresBabyClothes && (
                                 <div>
                                   <span className="font-medium text-neutral-500">
