@@ -212,6 +212,7 @@ export function Header() {
                 )}
               </div>
 
+              <NavLink href="/track-order">Track Order</NavLink>
               <NavLink href="/about">About</NavLink>
               <NavLink href="/candle-care">Candle Care</NavLink>
               <NavLink href="/faq">FAQ</NavLink>
@@ -275,6 +276,12 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Shop
+              </MobileNavLink>
+              <MobileNavLink
+                href="/track-order"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Track Order
               </MobileNavLink>
               <MobileNavLink
                 href="/about"

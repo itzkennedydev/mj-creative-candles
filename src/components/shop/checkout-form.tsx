@@ -8,7 +8,7 @@ import { useToast } from "~/lib/toast-context";
 import type { CustomerInfo } from "~/lib/types";
 import type { CreateOrderRequest } from "~/lib/order-types";
 import { api, handleApiError } from "~/lib/api-client";
-import { Lock, Shield, CheckCircle } from "lucide-react";
+import { Lock, Shield } from "lucide-react";
 
 interface Settings {
   taxRate: number;
@@ -478,20 +478,6 @@ export function CheckoutForm({ appliedDiscount }: CheckoutFormProps = {}) {
                   {getFieldError("phone")}
                 </p>
               )}
-            </div>
-          </div>
-        </div>
-
-        {/* Pickup - Simplified with clear value proposition */}
-        <div className="rounded-xl border border-green-100 bg-green-50 p-4">
-          <div className="flex items-start gap-3">
-            <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
-            <div>
-              <h4 className="font-medium text-green-800">Free Local Pickup</h4>
-              <p className="mt-1 text-sm text-green-700">
-                {settings?.pickupInstructions ||
-                  "We'll contact you when your order is ready for pickup."}
-              </p>
             </div>
           </div>
         </div>

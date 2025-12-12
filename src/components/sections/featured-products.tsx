@@ -99,23 +99,30 @@ export function FeaturedProducts() {
             </p>
           </div>
 
-          <div className="hidden gap-2 sm:flex">
-            <button
-              onClick={handlePrev}
-              disabled={currentIndex === 0}
-              className="rounded-full border border-gray-300 p-2 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Previous products"
-            >
-              <ChevronLeft className="h-5 w-5 text-gray-600" />
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={currentIndex + itemsPerView >= products.length}
-              className="rounded-full border border-gray-300 p-2 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Next products"
-            >
-              <ChevronRight className="h-5 w-5 text-gray-600" />
-            </button>
+          <div className="hidden items-center gap-3 sm:flex">
+            <Link href="/shop">
+              <Button variant="secondary" className="px-6">
+                View All Products
+              </Button>
+            </Link>
+            <div className="flex gap-2">
+              <button
+                onClick={handlePrev}
+                disabled={currentIndex === 0}
+                className="rounded-full border border-gray-300 p-2 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Previous products"
+              >
+                <ChevronLeft className="h-5 w-5 text-gray-600" />
+              </button>
+              <button
+                onClick={handleNext}
+                disabled={currentIndex + itemsPerView >= products.length}
+                className="rounded-full border border-gray-300 p-2 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Next products"
+              >
+                <ChevronRight className="h-5 w-5 text-gray-600" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -130,12 +137,10 @@ export function FeaturedProducts() {
           ))}
         </div>
 
-        <div className="mt-4 text-center">
+        {/* Mobile only: centered button below products */}
+        <div className="mt-6 text-center sm:hidden">
           <Link href="/shop">
-            <Button
-              variant="primary"
-              className="w-full sm:w-auto sm:px-8 sm:py-3"
-            >
+            <Button variant="secondary" className="w-full px-8 py-3">
               View All Products
             </Button>
           </Link>
