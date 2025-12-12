@@ -119,6 +119,6 @@
     "initVersion": "7.38.1"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": "22.x"
   }
 }
