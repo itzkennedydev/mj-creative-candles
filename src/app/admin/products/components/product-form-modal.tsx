@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, Upload, Loader2 } from "lucide-react";
+import { X, Upload, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "../../../sca-dashboard/components/ui/button";
 import { Input } from "../../../sca-dashboard/components/ui/input";
 import {
@@ -11,6 +11,7 @@ import {
 } from "../../../sca-dashboard/components/ui/combobox";
 import Image from "next/image";
 import type { Product } from "~/lib/types";
+import { ImageLibraryModal } from "./image-library-modal";
 
 interface ProductFormModalProps {
   open: boolean;
@@ -30,6 +31,7 @@ export function ProductFormModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string>("");
+  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
 
   // Form fields
   const [name, setName] = useState("");
@@ -534,17 +536,27 @@ export function ProductFormModal({
                         <X className="h-4 w-4" />
                       </button>
                       <div className="absolute bottom-3 left-3 right-3">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            document
-                              .getElementById("primary-image-input")
-                              ?.click()
-                          }
-                          className="w-full rounded-lg border border-neutral-200 bg-white/90 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-white"
-                        >
-                          Change Image
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              document
+                                .getElementById("primary-image-input")
+                                ?.click()
+                            }
+                            className="flex-1 rounded-lg border border-neutral-200 bg-white/90 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-white"
+                          >
+                            Change Image
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsLibraryModalOpen(true)}
+                            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white/90 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-white"
+                          >
+                            <ImageIcon className="h-4 w-4" />
+                            Library
+                          </button>
+                        </div>
                         <input
                           id="primary-image-input"
                           type="file"
@@ -556,35 +568,52 @@ export function ProductFormModal({
                       </div>
                     </div>
                   ) : (
-                    <label className="group flex aspect-square w-full max-w-sm cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 transition-all hover:border-[#737373] hover:bg-[#737373]/5">
-                      {isUploading ? (
-                        <>
-                          <Loader2 className="mb-3 h-10 w-10 animate-spin text-[#737373]" />
-                          <span className="text-sm font-medium text-neutral-700">
-                            Uploading...
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <div className="mb-4 rounded-full bg-[#737373]/10 p-4 transition-colors group-hover:bg-[#737373]/20">
-                            <Upload className="h-8 w-8 text-[#737373]" />
-                          </div>
-                          <span className="mb-1 text-sm font-medium text-neutral-700">
-                            Click to upload
-                          </span>
-                          <span className="text-xs text-neutral-500">
-                            PNG, JPG, GIF up to 25MB
-                          </span>
-                        </>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePrimaryImageUpload}
-                        className="hidden"
-                        disabled={isUploading}
-                      />
-                    </label>
+                    <div className="space-y-3">
+                      <label className="group flex aspect-square w-full max-w-sm cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 transition-all hover:border-[#737373] hover:bg-[#737373]/5">
+                        {isUploading ? (
+                          <>
+                            <Loader2 className="mb-3 h-10 w-10 animate-spin text-[#737373]" />
+                            <span className="text-sm font-medium text-neutral-700">
+                              Uploading...
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="mb-4 rounded-full bg-[#737373]/10 p-4 transition-colors group-hover:bg-[#737373]/20">
+                              <Upload className="h-8 w-8 text-[#737373]" />
+                            </div>
+                            <span className="mb-1 text-sm font-medium text-neutral-700">
+                              Click to upload
+                            </span>
+                            <span className="text-xs text-neutral-500">
+                              PNG, JPG, GIF up to 25MB
+                            </span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePrimaryImageUpload}
+                          className="hidden"
+                          disabled={isUploading}
+                        />
+                      </label>
+
+                      <div className="flex items-center gap-3">
+                        <div className="h-px flex-1 bg-neutral-200"></div>
+                        <span className="text-xs text-neutral-500">or</span>
+                        <div className="h-px flex-1 bg-neutral-200"></div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsLibraryModalOpen(true)}
+                        className="flex w-full max-w-sm items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                        Select from Image Library
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -673,6 +702,16 @@ export function ProductFormModal({
               />
             </div>
           </form>
+
+          {/* Image Library Modal */}
+          <ImageLibraryModal
+            isOpen={isLibraryModalOpen}
+            onClose={() => setIsLibraryModalOpen(false)}
+            onSelect={(imageUri) => {
+              setPrimaryImage(imageUri);
+              setIsLibraryModalOpen(false);
+            }}
+          />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

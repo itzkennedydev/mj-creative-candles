@@ -8,6 +8,7 @@ import {
   Users,
   BarChart3,
   Store,
+  Image,
 } from "lucide-react";
 import { useParams, usePathname } from "next/navigation";
 import { ReactNode, useMemo } from "react";
@@ -22,6 +23,7 @@ const AnimatedPackage = createAnimatedIcon(Package, "rotate");
 const AnimatedUsers = createAnimatedIcon(Users, "rotate");
 const AnimatedBarChart3 = createAnimatedIcon(BarChart3, "rotate");
 const AnimatedStore = createAnimatedIcon(Store, "rotate");
+const AnimatedImage = createAnimatedIcon(Image, "rotate");
 type SidebarNavData = {
   pathname: string;
   queryString: string;
@@ -29,27 +31,25 @@ type SidebarNavData = {
 
 const FIVE_YEARS_SECONDS = 60 * 60 * 24 * 365 * 5;
 
-const NAV_GROUPS: SidebarNavGroups<SidebarNavData> = ({
-  pathname,
-}) => [
+const NAV_GROUPS: SidebarNavGroups<SidebarNavData> = ({ pathname }) => [
   {
     name: "Overview & Insights",
-    description:
-      "Analytics, customers, and insights.",
+    description: "Analytics, customers, and insights.",
     icon: Compass,
     href: `/admin`,
-    active: pathname === `/admin` || 
-            pathname?.startsWith(`/admin/analytics`) ||
-            pathname?.startsWith(`/admin/customers`),
+    active:
+      pathname === `/admin` ||
+      pathname?.startsWith(`/admin/analytics`) ||
+      pathname?.startsWith(`/admin/customers`),
   },
   {
     name: "Marketplace",
-    description:
-      "Manage orders and products.",
+    description: "Manage orders and products.",
     icon: AnimatedStore,
     href: `/admin/orders`,
-    active: pathname?.startsWith(`/admin/orders`) ||
-            pathname?.startsWith(`/admin/products`),
+    active:
+      pathname?.startsWith(`/admin/orders`) ||
+      pathname?.startsWith(`/admin/products`),
   },
 ];
 
@@ -104,38 +104,47 @@ const NAV_AREAS: SidebarNavAreas<SidebarNavData> = {
             href: `/admin/products`,
             exact: true,
           },
+          {
+            name: "Image Library",
+            icon: AnimatedImage,
+            href: `/admin/image-library`,
+            exact: true,
+          },
         ],
       },
     ],
   }),
 };
 
-export function AppSidebarNav({
-  toolContent,
-}: {
-  toolContent?: ReactNode;
-}) {
+export function AppSidebarNav({ toolContent }: { toolContent?: ReactNode }) {
   const pathname = usePathname();
   const { getQueryString } = useRouterStuff();
-  
+
   // Static mode - no auth or data fetching
   const plan = "free";
 
   const currentArea = useMemo(() => {
     // Don't show secondary sidebar for help and settings pages
-    if (pathname?.startsWith(`/admin/help`) ||
-        pathname?.startsWith(`/admin/settings`)) {
+    if (
+      pathname?.startsWith(`/admin/help`) ||
+      pathname?.startsWith(`/admin/settings`)
+    ) {
       return null;
     }
     // Show marketplace area for orders and products
-    if (pathname?.startsWith(`/admin/orders`) ||
-        pathname?.startsWith(`/admin/products`)) {
+    if (
+      pathname?.startsWith(`/admin/orders`) ||
+      pathname?.startsWith(`/admin/products`) ||
+      pathname?.startsWith(`/admin/image-library`)
+    ) {
       return "marketplace";
     }
     // Show dashboard area for admin pages (analytics, customers, overview)
-    if (pathname === `/admin` || 
-        pathname?.startsWith(`/admin/analytics`) ||
-        pathname?.startsWith(`/admin/customers`)) {
+    if (
+      pathname === `/admin` ||
+      pathname?.startsWith(`/admin/analytics`) ||
+      pathname?.startsWith(`/admin/customers`)
+    ) {
       return "dashboard";
     }
     // Default to dashboard

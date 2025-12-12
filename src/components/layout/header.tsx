@@ -169,13 +169,13 @@ export function Header() {
                   <div className="absolute left-1/2 top-full z-50 mt-2 w-[800px] -translate-x-1/4 transform overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
                     <div className="flex">
                       {/* Categories - Left Side */}
-                      <div className="grid flex-1 grid-cols-3 gap-8 p-8">
+                      <div className="grid flex-1 grid-cols-[auto_1fr_1fr] gap-16 p-8">
                         {shopCategories.map((category, index) => (
                           <div
                             key={index}
-                            className="flex flex-col items-start"
+                            className={`flex w-fit flex-col items-start ${index === 0 ? 'pr-4' : ''}`}
                           >
-                            <h3 className="mb-4 w-full whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wide text-gray-900">
+                            <h3 className="mb-4 whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wide text-gray-900">
                               {category.title}
                             </h3>
                             <ul className="w-full space-y-3 text-left">
