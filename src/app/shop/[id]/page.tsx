@@ -933,8 +933,13 @@ function ScentNotes({
                 Top Notes
               </div>
             </div>
-            <div className="text-xs leading-relaxed text-gray-600 sm:text-sm">
-              {notes.top}
+            <div className="flex flex-wrap gap-x-1 text-xs leading-relaxed text-gray-600 sm:text-sm">
+              {notes.top.split(",").map((note, idx, arr) => (
+                <span key={idx}>
+                  {note.trim()}
+                  {idx < arr.length - 1 && ","}
+                </span>
+              ))}
             </div>
           </div>
         )}
@@ -946,8 +951,13 @@ function ScentNotes({
                 Middle Notes
               </div>
             </div>
-            <div className="text-xs leading-relaxed text-gray-600 sm:text-sm">
-              {notes.middle}
+            <div className="flex flex-wrap gap-x-1 text-xs leading-relaxed text-gray-600 sm:text-sm">
+              {notes.middle.split(",").map((note, idx, arr) => (
+                <span key={idx}>
+                  {note.trim()}
+                  {idx < arr.length - 1 && ","}
+                </span>
+              ))}
             </div>
           </div>
         )}
@@ -959,8 +969,13 @@ function ScentNotes({
                 Base Notes
               </div>
             </div>
-            <div className="text-xs leading-relaxed text-gray-600 sm:text-sm">
-              {notes.bottom}
+            <div className="flex flex-wrap gap-x-1 text-xs leading-relaxed text-gray-600 sm:text-sm">
+              {notes.bottom.split(",").map((note, idx, arr) => (
+                <span key={idx}>
+                  {note.trim()}
+                  {idx < arr.length - 1 && ","}
+                </span>
+              ))}
             </div>
           </div>
         )}
