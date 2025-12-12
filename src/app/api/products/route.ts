@@ -3,14 +3,35 @@ import { NextResponse } from "next/server";
 import clientPromise from "~/lib/mongodb";
 import type { Product } from "~/lib/types";
 import { authenticateRequest } from "~/lib/auth";
+import { getCacheHeaders, memoryCache } from "~/lib/cache";
 
 // Cache configuration
-export const revalidate = 60; // Revalidate every 60 seconds
+export const revalidate = 300; // Revalidate every 5 minutes
 export const dynamic = "force-dynamic"; // Allow dynamic rendering but with caching
 
 // GET /api/products - Fetch all products (PUBLIC - for customer store)
 export async function GET(request: NextRequest) {
   try {
+    // Check memory cache first
+    const cacheKey = "all-products";
+    const cachedData = memoryCache.get(cacheKey);
+
+    if (cachedData) {
+      return NextResponse.json(
+        {
+          success: true,
+          products: cachedData,
+        },
+        {
+          headers: {
+            ...getCacheHeaders("products"),
+            "X-Cache": "HIT",
+            "X-Content-Type-Options": "nosniff",
+          },
+        },
+      );
+    }
+
     const client = await clientPromise;
     const db = client.db("mj-creative-candles");
     const productsCollection = db.collection<any>("products");
@@ -56,6 +77,9 @@ export async function GET(request: NextRequest) {
       burnTime: product.burnTime,
     }));
 
+    // Store in memory cache for 5 minutes
+    memoryCache.set(cacheKey, mappedProducts, 5 * 60 * 1000);
+
     // Check for ETag/If-None-Match for client-side caching
     const etag = `"${products.length}-${Date.now()}"`;
     const ifNoneMatch = request.headers.get("if-none-match");
@@ -70,8 +94,9 @@ export async function GET(request: NextRequest) {
       },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+          ...getCacheHeaders("products"),
           ETag: etag,
+          "X-Cache": "MISS",
           "X-Content-Type-Options": "nosniff",
         },
       },

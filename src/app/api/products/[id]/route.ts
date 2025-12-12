@@ -4,9 +4,10 @@ import clientPromise from "~/lib/mongodb";
 import { ObjectId } from "mongodb";
 import type { Product } from "~/lib/types";
 import { authenticateRequest } from "~/lib/auth";
+import { getCacheHeaders, memoryCache } from "~/lib/cache";
 
 // Cache configuration
-export const revalidate = 60; // Revalidate every 60 seconds
+export const revalidate = 600; // Revalidate every 10 minutes
 export const dynamic = "force-dynamic";
 
 // GET /api/products/[id] - Get a single product (PUBLIC)
@@ -23,6 +24,20 @@ export async function GET(
         { error: "Invalid product ID" },
         { status: 400 },
       );
+    }
+
+    // Check memory cache first
+    const cacheKey = `product-${productId}`;
+    const cachedData = memoryCache.get(cacheKey);
+
+    if (cachedData) {
+      return NextResponse.json(cachedData, {
+        headers: {
+          ...getCacheHeaders("productDetail"),
+          "X-Cache": "HIT",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
     }
 
     const client = await clientPromise;
@@ -73,6 +88,9 @@ export async function GET(
       burnTime: product.burnTime,
     };
 
+    // Store in memory cache for 10 minutes
+    memoryCache.set(cacheKey, mappedProduct, 10 * 60 * 1000);
+
     // Generate ETag for caching
     const etag = `"${productId}-${product._id.toString()}"`;
     const ifNoneMatch = request.headers.get("if-none-match");
@@ -82,8 +100,9 @@ export async function GET(
 
     return NextResponse.json(mappedProduct, {
       headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        ...getCacheHeaders("productDetail"),
         ETag: etag,
+        "X-Cache": "MISS",
         "X-Content-Type-Options": "nosniff",
       },
     });

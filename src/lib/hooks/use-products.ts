@@ -1,5 +1,6 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Product } from '~/lib/types';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Product } from "~/lib/types";
+import { queryCache } from "~/lib/cache";
 
 interface ProductsResponse {
   success?: boolean;
@@ -8,17 +9,17 @@ interface ProductsResponse {
 }
 
 async function fetchProducts(): Promise<Product[]> {
-  const response = await fetch('/api/products', {
+  const response = await fetch("/api/products", {
     // Use cache for faster subsequent loads
-    cache: 'force-cache',
+    cache: "force-cache",
     next: { revalidate: 300 }, // Revalidate every 5 minutes
   });
 
   if (!response.ok) {
-    throw new Error('Failed to fetch products');
+    throw new Error("Failed to fetch products");
   }
 
-  const data = await response.json() as unknown;
+  const data = (await response.json()) as unknown;
   if (Array.isArray(data)) {
     return data as Product[];
   }
@@ -31,9 +32,9 @@ async function fetchProducts(): Promise<Product[]> {
 
 export function useProductsQuery() {
   return useQuery({
-    queryKey: ['products'],
+    queryKey: ["products"],
     queryFn: fetchProducts,
-    staleTime: 10 * 60 * 1000, // 10 minutes fresh
+    staleTime: 5 * 60 * 1000, // 5 minutes fresh (matches cache config)
     gcTime: 60 * 60 * 1000, // 1 hour cache
     retry: 1,
     refetchOnWindowFocus: false,
@@ -46,13 +47,12 @@ export function useProductsQuery() {
 // Hook to prefetch products - call early for faster loads
 export function usePrefetchProducts() {
   const queryClient = useQueryClient();
-  
+
   return () => {
     void queryClient.prefetchQuery({
-      queryKey: ['products'],
+      queryKey: ["products"],
       queryFn: fetchProducts,
-      staleTime: 10 * 60 * 1000,
+      staleTime: 5 * 60 * 1000, // 5 minutes (matches useProductsQuery)
     });
   };
 }
-

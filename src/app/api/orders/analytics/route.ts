@@ -1,7 +1,7 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import clientPromise from '~/lib/mongodb';
-import { authenticateRequest } from '~/lib/auth';
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import clientPromise from "~/lib/mongodb";
+import { authenticateRequest } from "~/lib/auth";
 
 // Type definitions for aggregation results
 interface ProductBreakdownResult {
@@ -60,37 +60,37 @@ interface SizeColorItem {
 
 // Cache configuration for analytics
 export const revalidate = 30; // Revalidate every 30 seconds
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await authenticateRequest(request);
-    
+
     if (!auth.isAuthenticated || !auth.isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') ?? 'all'; // week, month, year, all
-    const groupBy = searchParams.get('groupBy') ?? 'day'; // hour, day, week, month
+    const period = searchParams.get("period") ?? "all"; // week, month, year, all
+    const groupBy = searchParams.get("groupBy") ?? "day"; // hour, day, week, month
 
     // Get explicit date range parameters (preferred over period)
-    const fromParam = searchParams.get('from');
-    const toParam = searchParams.get('to');
+    const fromParam = searchParams.get("from");
+    const toParam = searchParams.get("to");
 
     // Get filter parameters
-    const orderStatus = searchParams.getAll('orderStatus');
-    const product = searchParams.getAll('product');
-    const category = searchParams.getAll('category');
-    const customer = searchParams.getAll('customer');
-    const paymentMethod = searchParams.getAll('paymentMethod');
-    const country = searchParams.getAll('country');
-    const city = searchParams.getAll('city');
-    const region = searchParams.getAll('region');
+    const orderStatus = searchParams.getAll("orderStatus");
+    const product = searchParams.getAll("product");
+    const category = searchParams.getAll("category");
+    const customer = searchParams.getAll("customer");
+    const paymentMethod = searchParams.getAll("paymentMethod");
+    const country = searchParams.getAll("country");
+    const city = searchParams.getAll("city");
+    const region = searchParams.getAll("region");
 
     const client = await clientPromise;
-    const db = client.db('mj-creative-candles');
-    const orders = db.collection('orders');
+    const db = client.db("mj-creative-candles");
+    const orders = db.collection("orders");
 
     const now = new Date();
     let startDate: Date;
@@ -114,27 +114,40 @@ export async function GET(request: NextRequest) {
 
     // Set date ranges based on period if explicit dates not provided
     if (!fromParam && !toParam) {
-    switch (period) {
-      case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case 'month':
-        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        break;
-      case 'year':
-        startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-        break;
+      switch (period) {
+        case "week":
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case "month":
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case "year":
+          startDate = new Date(
+            now.getFullYear() - 1,
+            now.getMonth(),
+            now.getDate(),
+          );
+          break;
       }
     }
 
     // Build match conditions for filters
     const matchConditions: Record<string, any> = {
-      createdAt: { 
+      createdAt: {
         $gte: startDate,
-        $lte: endDate
+        $lte: endDate,
       },
       // Include all order statuses except cancelled and payment_failed for analytics
-      status: { $in: ['pending', 'paid', 'delivered', 'ready_for_pickup', 'processing', 'shipped'] }
+      status: {
+        $in: [
+          "pending",
+          "paid",
+          "delivered",
+          "ready_for_pickup",
+          "processing",
+          "shipped",
+        ],
+      },
     };
 
     // Apply filters
@@ -142,32 +155,32 @@ export async function GET(request: NextRequest) {
       matchConditions.status = { $in: orderStatus };
     }
     if (product.length > 0) {
-      matchConditions['items.productName'] = { $in: product };
+      matchConditions["items.productName"] = { $in: product };
     }
     if (category.length > 0) {
-      matchConditions['items.category'] = { $in: category };
+      matchConditions["items.category"] = { $in: category };
     }
     if (customer.length > 0) {
-      matchConditions['customer.email'] = { $in: customer };
+      matchConditions["customer.email"] = { $in: customer };
     }
     if (paymentMethod.length > 0) {
       matchConditions.paymentMethod = { $in: paymentMethod };
     }
     if (country.length > 0) {
-      matchConditions['shipping.country'] = { $in: country };
+      matchConditions["shipping.country"] = { $in: country };
     }
     if (city.length > 0) {
-      matchConditions['shipping.city'] = { $in: city };
+      matchConditions["shipping.city"] = { $in: city };
     }
     if (region.length > 0) {
-      matchConditions['shipping.state'] = { $in: region };
+      matchConditions["shipping.state"] = { $in: region };
     }
 
     // Build aggregation pipeline
     const pipeline: Array<Record<string, unknown>> = [
       // Filter by date range, status, and other filters
       {
-        $match: matchConditions
+        $match: matchConditions,
       },
       // Add computed fields for grouping
       {
@@ -177,9 +190,9 @@ export async function GET(request: NextRequest) {
           dayOfMonth: { $dayOfMonth: "$createdAt" },
           week: { $week: "$createdAt" },
           month: { $month: "$createdAt" },
-          year: { $year: "$createdAt" }
-        }
-      }
+          year: { $year: "$createdAt" },
+        },
+      },
     ];
 
     // Get time-based revenue breakdown
@@ -191,10 +204,10 @@ export async function GET(request: NextRequest) {
           _id: timeGrouping,
           revenue: { $sum: "$total" },
           orderCount: { $sum: 1 },
-          avgOrderValue: { $avg: "$total" }
-        }
+          avgOrderValue: { $avg: "$total" },
+        },
       },
-      { $sort: { "_id": 1 } }
+      { $sort: { _id: 1 } },
     ];
 
     // Get product breakdown
@@ -204,10 +217,10 @@ export async function GET(request: NextRequest) {
       {
         $group: {
           _id: "$items.productName",
-          revenue: { 
-            $sum: { 
-              $multiply: ["$items.productPrice", "$items.quantity"] 
-            } 
+          revenue: {
+            $sum: {
+              $multiply: ["$items.productPrice", "$items.quantity"],
+            },
           },
           unitsSold: { $sum: "$items.quantity" },
           orderCount: { $sum: 1 },
@@ -216,20 +229,20 @@ export async function GET(request: NextRequest) {
           sizes: {
             $push: {
               size: "$items.selectedSize",
-              quantity: "$items.quantity"
-            }
+              quantity: "$items.quantity",
+            },
           },
           // Track color distribution
           colors: {
             $push: {
               color: "$items.selectedColor",
-              quantity: "$items.quantity"
-            }
-          }
-        }
+              quantity: "$items.quantity",
+            },
+          },
+        },
       },
       { $sort: { revenue: -1 } },
-      { $limit: 10 } // Top 10 products
+      { $limit: 10 }, // Top 10 products
     ];
 
     // Get hourly pattern (for all time periods)
@@ -239,10 +252,10 @@ export async function GET(request: NextRequest) {
         $group: {
           _id: "$hour",
           revenue: { $sum: "$total" },
-          orderCount: { $sum: 1 }
-        }
+          orderCount: { $sum: 1 },
+        },
       },
-      { $sort: { "_id": 1 } }
+      { $sort: { _id: 1 } },
     ];
 
     // Get day of week pattern
@@ -253,10 +266,10 @@ export async function GET(request: NextRequest) {
           _id: "$dayOfWeek",
           revenue: { $sum: "$total" },
           orderCount: { $sum: 1 },
-          avgOrderValue: { $avg: "$total" }
-        }
+          avgOrderValue: { $avg: "$total" },
+        },
       },
-      { $sort: { "_id": 1 } }
+      { $sort: { _id: 1 } },
     ];
 
     // Get customer insights
@@ -269,11 +282,11 @@ export async function GET(request: NextRequest) {
           orderCount: { $sum: 1 },
           avgOrderValue: { $avg: "$total" },
           firstOrder: { $min: "$createdAt" },
-          lastOrder: { $max: "$createdAt" }
-        }
+          lastOrder: { $max: "$createdAt" },
+        },
       },
       { $sort: { totalSpent: -1 } },
-      { $limit: 10 } // Top 10 customers
+      { $limit: 10 }, // Top 10 customers
     ];
 
     // Get available filter values (unique countries, cities, states, payment methods, order statuses)
@@ -287,9 +300,9 @@ export async function GET(request: NextRequest) {
           states: { $addToSet: "$shipping.state" },
           paymentMethods: { $addToSet: "$paymentMethod" },
           orderStatuses: { $addToSet: "$status" },
-          customers: { $addToSet: "$customer.email" }
-        }
-      }
+          customers: { $addToSet: "$customer.email" },
+        },
+      },
     ];
 
     // Get recent orders (limit to 50 most recent)
@@ -304,7 +317,7 @@ export async function GET(request: NextRequest) {
           customer: {
             firstName: 1,
             lastName: 1,
-            email: 1
+            email: 1,
           },
           total: 1,
           status: 1,
@@ -318,12 +331,12 @@ export async function GET(request: NextRequest) {
                 quantity: "$$item.quantity",
                 productPrice: "$$item.productPrice",
                 selectedSize: "$$item.selectedSize",
-                selectedColor: "$$item.selectedColor"
-              }
-            }
-          }
-        }
-      }
+                selectedColor: "$$item.selectedColor",
+              },
+            },
+          },
+        },
+      },
     ];
 
     // Execute all pipelines in parallel
@@ -335,7 +348,7 @@ export async function GET(request: NextRequest) {
       topCustomers,
       summaryStats,
       filterValues,
-      recentOrders
+      recentOrders,
     ] = await Promise.all([
       orders.aggregate(timePipeline).toArray(),
       orders.aggregate(productPipeline).toArray(),
@@ -343,25 +356,29 @@ export async function GET(request: NextRequest) {
       orders.aggregate(dayOfWeekPipeline).toArray(),
       orders.aggregate(customerPipeline).toArray(),
       // Get summary statistics
-      orders.aggregate([
-        ...pipeline,
-        {
-          $group: {
-            _id: null,
-            totalRevenue: { $sum: "$total" },
-            totalOrders: { $sum: 1 },
-            avgOrderValue: { $avg: "$total" },
-            maxOrderValue: { $max: "$total" },
-            minOrderValue: { $min: "$total" }
-          }
-        }
-      ]).toArray(),
+      orders
+        .aggregate([
+          ...pipeline,
+          {
+            $group: {
+              _id: null,
+              totalRevenue: { $sum: "$total" },
+              totalOrders: { $sum: 1 },
+              avgOrderValue: { $avg: "$total" },
+              maxOrderValue: { $max: "$total" },
+              minOrderValue: { $min: "$total" },
+            },
+          },
+        ])
+        .toArray(),
       orders.aggregate(filterValuesPipeline).toArray(),
-      orders.aggregate(recentOrdersPipeline).toArray()
+      orders.aggregate(recentOrdersPipeline).toArray(),
     ]);
 
     // Process product data to get size and color insights
-    const processedProducts = (productBreakdown as ProductBreakdownResult[]).map((product) => {
+    const processedProducts = (
+      productBreakdown as ProductBreakdownResult[]
+    ).map((product) => {
       // Aggregate size data
       const sizeMap = new Map<string, number>();
       (product.sizes || []).forEach((item: SizeColorItem) => {
@@ -374,7 +391,10 @@ export async function GET(request: NextRequest) {
       const colorMap = new Map<string, number>();
       (product.colors || []).forEach((item: SizeColorItem) => {
         if (item.color) {
-          colorMap.set(item.color, (colorMap.get(item.color) ?? 0) + item.quantity);
+          colorMap.set(
+            item.color,
+            (colorMap.get(item.color) ?? 0) + item.quantity,
+          );
         }
       });
 
@@ -391,141 +411,183 @@ export async function GET(request: NextRequest) {
         popularColors: Array.from(colorMap.entries())
           .sort((a, b) => b[1] - a[1])
           .slice(0, 3)
-          .map(([color, quantity]) => ({ color, quantity }))
+          .map(([color, quantity]) => ({ color, quantity })),
       };
     });
 
     // Map day of week numbers to names
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    
-    const processedDayOfWeek = (dayOfWeekPattern as DayOfWeekPatternResult[]).map((day) => ({
-      day: dayNames[day._id - 1] ?? 'Unknown',
+    const dayNames = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+
+    const processedDayOfWeek = (
+      dayOfWeekPattern as DayOfWeekPatternResult[]
+    ).map((day) => ({
+      day: dayNames[day._id - 1] ?? "Unknown",
       revenue: day.revenue,
       orderCount: day.orderCount,
-      avgOrderValue: day.avgOrderValue
+      avgOrderValue: day.avgOrderValue,
     }));
 
-    const filterData = (filterValues[0] as { countries?: string[]; cities?: string[]; states?: string[]; paymentMethods?: string[]; orderStatuses?: string[]; customers?: string[] } | undefined) ?? {};
+    const filterData =
+      (filterValues[0] as
+        | {
+            countries?: string[];
+            cities?: string[];
+            states?: string[];
+            paymentMethods?: string[];
+            orderStatuses?: string[];
+            customers?: string[];
+          }
+        | undefined) ?? {};
 
     return NextResponse.json(
       {
-      period,
-      dateRange: {
-        from: startDate.toISOString(),
-        to: endDate.toISOString()
-      },
-      summary: (summaryStats[0] as SummaryStatsResult | undefined) ?? {
-        totalRevenue: 0,
-        totalOrders: 0,
-        avgOrderValue: 0,
-        maxOrderValue: 0,
-        minOrderValue: 0
-      },
-      revenueOverTime: timeRevenue as TimeRevenueResult[],
-      topProducts: processedProducts,
-      hourlyPattern: (hourlyPattern as HourlyPatternResult[]).map((h) => ({
-        hour: h._id,
-        time: `${h._id}:00`,
-        revenue: h.revenue,
-        orderCount: h.orderCount
-      })),
-      dayOfWeekPattern: processedDayOfWeek,
-      topCustomers: (topCustomers as CustomerResult[]).map((c) => ({
-        email: c._id,
-        totalSpent: c.totalSpent,
-        orderCount: c.orderCount,
-        avgOrderValue: c.avgOrderValue,
-        customerLifetimeValue: c.totalSpent,
-        daysSinceFirstOrder: Math.floor((now.getTime() - new Date(c.firstOrder).getTime()) / (1000 * 60 * 60 * 24)),
-        daysSinceLastOrder: Math.floor((now.getTime() - new Date(c.lastOrder).getTime()) / (1000 * 60 * 60 * 24))
-      })),
-      filterOptions: {
-        countries: (filterData.countries ?? []).filter((c): c is string => Boolean(c)),
-        cities: (filterData.cities ?? []).filter((c): c is string => Boolean(c)),
-        states: (filterData.states ?? []).filter((s): s is string => Boolean(s)),
-        paymentMethods: (filterData.paymentMethods ?? []).filter((p): p is string => Boolean(p)),
-        orderStatuses: (filterData.orderStatuses ?? []).filter((s): s is string => Boolean(s)),
-        customers: (filterData.customers ?? []).filter((c): c is string => Boolean(c))
-      },
-      recentOrders: (recentOrders as Array<{
-        _id: string;
-        orderNumber: string;
-        customer: { firstName: string; lastName: string; email: string };
-        total: number;
-        status: string;
-        createdAt: Date;
-        items: Array<{ 
-          productName: string; 
-          quantity: number; 
-          productPrice: number;
-          selectedSize?: string;
-          selectedColor?: string;
-        }>;
-      }>).map(order => ({
-        id: String(order._id),
-        orderNumber: order.orderNumber,
-        customerName: `${order.customer.firstName} ${order.customer.lastName}`.trim(),
-        customerEmail: order.customer.email,
-        total: order.total,
-        status: order.status,
-        createdAt: order.createdAt,
-        itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
-        items: order.items.map(item => ({
-          productName: item.productName,
-          quantity: item.quantity,
-          productPrice: item.productPrice,
-          selectedSize: item.selectedSize,
-          selectedColor: item.selectedColor
-        }))
-      }))
+        period,
+        dateRange: {
+          from: startDate.toISOString(),
+          to: endDate.toISOString(),
+        },
+        summary: (summaryStats[0] as SummaryStatsResult | undefined) ?? {
+          totalRevenue: 0,
+          totalOrders: 0,
+          avgOrderValue: 0,
+          maxOrderValue: 0,
+          minOrderValue: 0,
+        },
+        revenueOverTime: timeRevenue as TimeRevenueResult[],
+        topProducts: processedProducts,
+        hourlyPattern: (hourlyPattern as HourlyPatternResult[]).map((h) => ({
+          hour: h._id,
+          time: `${h._id}:00`,
+          revenue: h.revenue,
+          orderCount: h.orderCount,
+        })),
+        dayOfWeekPattern: processedDayOfWeek,
+        topCustomers: (topCustomers as CustomerResult[]).map((c) => ({
+          email: c._id,
+          totalSpent: c.totalSpent,
+          orderCount: c.orderCount,
+          avgOrderValue: c.avgOrderValue,
+          customerLifetimeValue: c.totalSpent,
+          daysSinceFirstOrder: Math.floor(
+            (now.getTime() - new Date(c.firstOrder).getTime()) /
+              (1000 * 60 * 60 * 24),
+          ),
+          daysSinceLastOrder: Math.floor(
+            (now.getTime() - new Date(c.lastOrder).getTime()) /
+              (1000 * 60 * 60 * 24),
+          ),
+        })),
+        filterOptions: {
+          countries: (filterData.countries ?? []).filter((c): c is string =>
+            Boolean(c),
+          ),
+          cities: (filterData.cities ?? []).filter((c): c is string =>
+            Boolean(c),
+          ),
+          states: (filterData.states ?? []).filter((s): s is string =>
+            Boolean(s),
+          ),
+          paymentMethods: (filterData.paymentMethods ?? []).filter(
+            (p): p is string => Boolean(p),
+          ),
+          orderStatuses: (filterData.orderStatuses ?? []).filter(
+            (s): s is string => Boolean(s),
+          ),
+          customers: (filterData.customers ?? []).filter((c): c is string =>
+            Boolean(c),
+          ),
+        },
+        recentOrders: (
+          recentOrders as Array<{
+            _id: string;
+            orderNumber: string;
+            customer: { firstName: string; lastName: string; email: string };
+            total: number;
+            status: string;
+            createdAt: Date;
+            items: Array<{
+              productName: string;
+              quantity: number;
+              productPrice: number;
+              selectedSize?: string;
+              selectedColor?: string;
+            }>;
+          }>
+        ).map((order) => ({
+          id: String(order._id),
+          orderNumber: order.orderNumber,
+          customerName:
+            `${order.customer.firstName} ${order.customer.lastName}`.trim(),
+          customerEmail: order.customer.email,
+          total: order.total,
+          status: order.status,
+          createdAt: order.createdAt,
+          itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
+          items: order.items.map((item) => ({
+            productName: item.productName,
+            quantity: item.quantity,
+            productPrice: item.productPrice,
+            selectedSize: item.selectedSize,
+            selectedColor: item.selectedColor,
+          })),
+        })),
       },
       {
         headers: {
-          'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=60',
-          'X-Content-Type-Options': 'nosniff',
+          "Cache-Control": "private, s-maxage=300, stale-while-revalidate=600",
+          "CDN-Cache-Control":
+            "private, s-maxage=300, stale-while-revalidate=600",
+          "X-Content-Type-Options": "nosniff",
         },
-      }
+      },
     );
   } catch (error) {
-    console.error('Error fetching analytics:', error);
+    console.error("Error fetching analytics:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch analytics' },
-      { status: 500 }
+      { error: "Failed to fetch analytics" },
+      { status: 500 },
     );
   }
 }
 
 function getTimeGrouping(groupBy: string) {
   switch (groupBy) {
-    case 'hour':
+    case "hour":
       return {
         year: "$year",
         month: "$month",
         day: "$dayOfMonth",
-        hour: "$hour"
+        hour: "$hour",
       };
-    case 'day':
+    case "day":
       return {
         year: "$year",
         month: "$month",
-        day: "$dayOfMonth"
+        day: "$dayOfMonth",
       };
-    case 'week':
+    case "week":
       return {
         year: "$year",
-        week: "$week"
+        week: "$week",
       };
-    case 'month':
+    case "month":
       return {
         year: "$year",
-        month: "$month"
+        month: "$month",
       };
     default:
       return {
         year: "$year",
         month: "$month",
-        day: "$dayOfMonth"
+        day: "$dayOfMonth",
       };
   }
 }
-

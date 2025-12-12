@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import clientPromise from "~/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { getCacheHeaders } from "~/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,11 @@ export async function GET(request: NextRequest) {
       { success: true, reviews: mappedReviews },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=1800",
+          "CDN-Cache-Control":
+            "public, s-maxage=60, stale-while-revalidate=1800",
+          "Vercel-CDN-Cache-Control":
+            "public, s-maxage=60, stale-while-revalidate=1800",
         },
       },
     );
