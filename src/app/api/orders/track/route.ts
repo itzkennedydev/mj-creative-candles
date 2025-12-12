@@ -10,15 +10,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as {
       email: string;
-      orderNumber: string;
+      orderNumber?: string;
     };
 
-    // Validate input
-    if (!body.email || !body.orderNumber) {
-      return NextResponse.json(
-        { error: "Email and order number are required" },
-        { status: 400 },
-      );
+    // Validate email is provided
+    if (!body.email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     // Sanitize and validate email
@@ -31,32 +28,63 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Sanitize order number
-    const orderNumber = sanitizeString(body.orderNumber.trim(), 50);
-
     const client = await clientPromise;
     const db = client.db("mj-creative-candles");
     const ordersCollection = db.collection<Order>("orders");
 
-    // Find order by email and order number
-    const order = await ordersCollection.findOne({
-      "customer.email": email,
-      orderNumber: orderNumber,
-    });
+    let order;
 
-    if (!order) {
-      logSecurityEvent(request, "ORDER_TRACKING_FAILED", {
-        email,
-        orderNumber,
+    // If order number is provided, search by both email and order number
+    if (body.orderNumber && body.orderNumber.trim()) {
+      const orderNumber = sanitizeString(body.orderNumber.trim(), 50);
+
+      order = await ordersCollection.findOne({
+        "customer.email": email,
+        orderNumber: orderNumber,
       });
-      return NextResponse.json(
-        { error: "Order not found. Please check your email and order number." },
-        { status: 404 },
+
+      if (!order) {
+        logSecurityEvent(request, "ORDER_TRACKING_FAILED", {
+          email,
+          orderNumber,
+        });
+        return NextResponse.json(
+          {
+            error: "Order not found. Please check your email and order number.",
+          },
+          { status: 404 },
+        );
+      }
+    } else {
+      // If no order number, find the most recent order for this email
+      order = await ordersCollection.findOne(
+        {
+          "customer.email": email,
+          // Only show paid orders or orders that have progressed beyond pending
+          $or: [
+            { status: { $ne: "pending" } as any },
+            { status: "pending" as any, paidAt: { $exists: true } },
+          ],
+        },
+        {
+          sort: { createdAt: -1 }, // Most recent first
+        },
       );
+
+      if (!order) {
+        logSecurityEvent(request, "ORDER_TRACKING_FAILED", {
+          email,
+          reason: "No orders found for email",
+        });
+        return NextResponse.json(
+          { error: "No orders found for this email address." },
+          { status: 404 },
+        );
+      }
     }
 
     logSecurityEvent(request, "ORDER_TRACKED", {
-      orderNumber,
+      orderNumber: order.orderNumber,
       email,
     });
 

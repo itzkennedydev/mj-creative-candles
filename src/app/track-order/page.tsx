@@ -143,7 +143,7 @@ export default function TrackOrderPage() {
               Track Your Order
             </h1>
             <p className="mt-2 text-gray-600">
-              Enter your email and order number to view your order status
+              Enter your email to view your order status
             </p>
           </div>
 
@@ -173,16 +173,16 @@ export default function TrackOrderPage() {
                     htmlFor="orderNumber"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Order Number
+                    Order Number{" "}
+                    <span className="text-gray-500">(Optional)</span>
                   </label>
                   <input
                     type="text"
                     id="orderNumber"
                     value={orderNumber}
                     onChange={(e) => setOrderNumber(e.target.value)}
-                    required
                     className="mt-1 block w-full rounded-sm border border-gray-300 px-4 py-2 text-gray-900 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/20"
-                    placeholder="SP-1234567890-ABCD"
+                    placeholder="1234567890"
                   />
                 </div>
 
