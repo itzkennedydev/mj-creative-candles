@@ -50,7 +50,7 @@ const categories: CategoryCard[] = [
   {
     id: 4,
     title: "Seasonal",
-    image: "/images/featured/optimized_F4.png",
+    image: "/images/featured/optimized_F1.png", // Using F1 as placeholder until F4 is added
     label: "SEASONAL",
     link: "/shop?category=seasonal",
   },

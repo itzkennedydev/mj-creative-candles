@@ -21,7 +21,7 @@ import { Button } from "~/components/ui/button";
 import { Container } from "~/components/ui/container";
 import { useCart } from "~/lib/cart-context";
 import { useToast } from "~/lib/toast-context";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Product } from "~/lib/types";
 import { getOptimizedImageUrl, getProductPrice } from "~/lib/types";
 import { trackViewItem } from "~/lib/analytics";
@@ -1010,6 +1010,7 @@ function ReviewsSection({
     comment: "",
   });
   const { addToast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch reviews from API
   const {
@@ -1023,7 +1024,8 @@ function ReviewsSection({
       if (!response.ok) throw new Error("Failed to fetch reviews");
       return response.json() as Promise<{ reviews: Review[] }>;
     },
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache
   });
 
   const reviews = reviewsData?.reviews ?? [];
@@ -1064,7 +1066,8 @@ function ReviewsSection({
       setFormData({ author: "", email: "", rating: 5, comment: "" });
       setShowReviewForm(false);
 
-      // Refetch reviews
+      // Invalidate and refetch reviews
+      await queryClient.invalidateQueries({ queryKey: ["reviews", productId] });
       await refetch();
     } catch (error) {
       addToast({
