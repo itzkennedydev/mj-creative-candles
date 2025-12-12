@@ -231,54 +231,13 @@ export function CheckoutForm({ appliedDiscount }: CheckoutFormProps = {}) {
         ...(itemOrderNotes.length > 0 ? itemOrderNotes : []),
       ].join("\n\n");
 
-      // Prepare order data for database
-      const orderData: CreateOrderRequest = {
-        customer: customerInfo,
-        shipping: settings.pickupOnly
-          ? {
-              street: "Pickup Only",
-              city: "Pickup Location",
-              state: "Local",
-              zipCode: "00000",
-              country: "United States",
-            }
-          : {
-              street: "Pickup Only", // Still pickup for now, but structure allows shipping
-              city: "Pickup Location",
-              state: "Local",
-              zipCode: "00000",
-              country: "United States",
-            },
-        items: orderItems,
-        subtotal: subtotalAfterDiscount,
-        tax,
-        shippingCost,
-        discountCode: appliedDiscount?.code,
-        discountAmount: discountAmount > 0 ? discountAmount : undefined,
-        total,
-        paymentMethod,
-        notes: allNotes || undefined,
-      };
-
-      // Save order to database first using secure API client
-      const result: {
-        success: boolean;
-        orderId?: string;
-        orderNumber?: string;
-        error?: string;
-      } = await api.createOrder(orderData);
-
-      if (!result.success || !result.orderId) {
-        throw new Error("Failed to create order");
-      }
-
-      // Create Stripe Checkout session using secure API client
+      // Create Stripe Checkout session with order data in metadata
+      // Order will be created by webhook when payment succeeds
       const checkoutResult: {
         sessionId?: string;
         url?: string;
         error?: string;
       } = await api.createCheckoutSession({
-        orderId: result.orderId,
         items: orderItems,
         subtotal: subtotalAfterDiscount,
         tax,
@@ -287,6 +246,27 @@ export function CheckoutForm({ appliedDiscount }: CheckoutFormProps = {}) {
         discountAmount: discountAmount > 0 ? discountAmount : undefined,
         total,
         customerEmail: customerInfo.email,
+        // Store order data in metadata for webhook to create order on success
+        orderData: {
+          customer: customerInfo,
+          shipping: settings.pickupOnly
+            ? {
+                street: "Pickup Only",
+                city: "Pickup Location",
+                state: "Local",
+                zipCode: "00000",
+                country: "United States",
+              }
+            : {
+                street: "Pickup Only",
+                city: "Pickup Location",
+                state: "Local",
+                zipCode: "00000",
+                country: "United States",
+              },
+          paymentMethod,
+          notes: allNotes || undefined,
+        },
       });
 
       if (checkoutResult.url) {
