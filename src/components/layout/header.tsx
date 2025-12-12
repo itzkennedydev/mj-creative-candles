@@ -17,7 +17,11 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
+  const [isFaqMenuOpen, setIsFaqMenuOpen] = useState(false);
   const [shopMenuTimeout, setShopMenuTimeout] = useState<NodeJS.Timeout | null>(
+    null,
+  );
+  const [faqMenuTimeout, setFaqMenuTimeout] = useState<NodeJS.Timeout | null>(
     null,
   );
 
@@ -67,6 +71,21 @@ export function Header() {
       setIsShopMenuOpen(false);
     }, 200);
     setShopMenuTimeout(timeout);
+  };
+
+  // FAQ menu hover handlers
+  const handleFaqMouseEnter = () => {
+    if (faqMenuTimeout) {
+      clearTimeout(faqMenuTimeout);
+    }
+    setIsFaqMenuOpen(true);
+  };
+
+  const handleFaqMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setIsFaqMenuOpen(false);
+    }, 200);
+    setFaqMenuTimeout(timeout);
   };
 
   // Handle scroll effect
@@ -156,7 +175,7 @@ export function Header() {
                             key={index}
                             className="flex flex-col items-start"
                           >
-                            <h3 className="mb-4 w-full text-left text-sm font-semibold uppercase tracking-wide text-gray-900">
+                            <h3 className="mb-4 w-full whitespace-nowrap text-left text-sm font-semibold uppercase tracking-wide text-gray-900">
                               {category.title}
                             </h3>
                             <ul className="w-full space-y-3 text-left">
@@ -214,8 +233,45 @@ export function Header() {
 
               <NavLink href="/track-order">Track Order</NavLink>
               <NavLink href="/about">About</NavLink>
-              <NavLink href="/candle-care">Candle Care</NavLink>
-              <NavLink href="/faq">FAQ</NavLink>
+
+              {/* FAQ with Submenu */}
+              <div
+                className="relative"
+                onMouseEnter={handleFaqMouseEnter}
+                onMouseLeave={handleFaqMouseLeave}
+              >
+                <Link
+                  href="/faq"
+                  className="group relative inline-flex items-center gap-[4px] text-[14px] font-medium leading-[130%] text-black/[0.72] transition-colors duration-300 hover:text-black"
+                >
+                  <span className="relative">
+                    FAQ
+                    <span className="absolute bottom-[-4px] left-0 right-0 h-[2px] origin-center scale-x-0 bg-black/[0.72] transition-transform duration-300 group-hover:scale-x-100" />
+                  </span>
+                  <ChevronDown className="h-3 w-3" />
+                </Link>
+
+                {/* FAQ Dropdown */}
+                {isFaqMenuOpen && (
+                  <div className="absolute left-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                    <div className="py-2">
+                      <Link
+                        href="/faq"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        FAQs
+                      </Link>
+                      <Link
+                        href="/candle-care"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        Candle Care
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <NavLink href="/contact">Contact</NavLink>
             </nav>
 
@@ -290,16 +346,16 @@ export function Header() {
                 About
               </MobileNavLink>
               <MobileNavLink
-                href="/candle-care"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Candle Care
-              </MobileNavLink>
-              <MobileNavLink
                 href="/faq"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 FAQ
+              </MobileNavLink>
+              <MobileNavLink
+                href="/candle-care"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Candle Care
               </MobileNavLink>
               <MobileNavLink
                 href="/contact"

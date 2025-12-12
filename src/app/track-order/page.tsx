@@ -135,7 +135,7 @@ export default function TrackOrderPage() {
   const StatusIcon = statusInfo[status]?.icon || Package;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-white py-12">
       <Container>
         <div className="mx-auto max-w-2xl">
           <div className="mb-8 text-center">
