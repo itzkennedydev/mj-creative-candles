@@ -170,12 +170,10 @@ export function ImageLibraryModal({
               {filteredImages.map((image) => (
                 <div
                   key={image._id}
+                  onClick={() => handleSelect(image.dataUri)}
                   className="group relative cursor-pointer overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition-all hover:border-neutral-900 hover:shadow-md"
                 >
-                  <div
-                    className="aspect-square w-full overflow-hidden bg-neutral-100"
-                    onClick={() => handleSelect(image.dataUri)}
-                  >
+                  <div className="aspect-square w-full overflow-hidden bg-neutral-100">
                     <Image
                       src={image.dataUri}
                       alt={image.name}
@@ -210,10 +208,7 @@ export function ImageLibraryModal({
                     )}
                   </button>
 
-                  <div
-                    className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10"
-                    onClick={() => handleSelect(image.dataUri)}
-                  >
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10">
                     <div className="translate-y-4 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
                       <div className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white">
                         Select
