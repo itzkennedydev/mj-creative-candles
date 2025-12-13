@@ -168,12 +168,14 @@ export function ImageLibraryModal({
           ) : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
               {filteredImages.map((image) => (
-                <button
+                <div
                   key={image._id}
-                  onClick={() => handleSelect(image.dataUri)}
                   className="group relative cursor-pointer overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm transition-all hover:border-neutral-900 hover:shadow-md"
                 >
-                  <div className="aspect-square w-full overflow-hidden bg-neutral-100">
+                  <div
+                    className="aspect-square w-full overflow-hidden bg-neutral-100"
+                    onClick={() => handleSelect(image.dataUri)}
+                  >
                     <Image
                       src={image.dataUri}
                       alt={image.name}
@@ -195,9 +197,10 @@ export function ImageLibraryModal({
 
                   {/* Delete button */}
                   <button
+                    type="button"
                     onClick={(e) => handleDelete(image._id, e)}
                     disabled={deletingId === image._id}
-                    className="absolute right-2 top-2 rounded-full bg-red-500/90 p-2 text-white opacity-0 transition-all hover:bg-red-600 disabled:opacity-50 group-hover:opacity-100"
+                    className="absolute right-2 top-2 z-10 rounded-full bg-red-500/90 p-2 text-white opacity-0 transition-all hover:bg-red-600 disabled:opacity-50 group-hover:opacity-100"
                     title="Delete image"
                   >
                     {deletingId === image._id ? (
@@ -207,14 +210,17 @@ export function ImageLibraryModal({
                     )}
                   </button>
 
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10">
+                  <div
+                    className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10"
+                    onClick={() => handleSelect(image.dataUri)}
+                  >
                     <div className="translate-y-4 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
                       <div className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white">
                         Select
                       </div>
                     </div>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}

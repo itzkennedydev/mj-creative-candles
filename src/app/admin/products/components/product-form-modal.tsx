@@ -556,11 +556,14 @@ export function ProductFormModal({
                       />
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log("Removing primary image");
                           setPrimaryImage("");
                           setPrimaryImageFile(null);
                         }}
-                        className="absolute right-3 top-3 rounded-full border border-red-200 bg-white p-2 text-red-600 shadow-md transition-all hover:bg-red-50 hover:text-red-700"
+                        className="absolute right-3 top-3 z-10 rounded-full border border-red-200 bg-white p-2 text-red-600 shadow-md transition-all hover:bg-red-50 hover:text-red-700"
                         aria-label="Remove image"
                       >
                         <X className="h-4 w-4" />
