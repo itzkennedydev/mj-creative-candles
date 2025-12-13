@@ -39,7 +39,6 @@ export function ProductFormModal({
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState<string>("");
   const [inStock, setInStock] = useState(true);
-  const [colors, setColors] = useState<string>("");
 
   // Candle-specific fields
   const [topNotes, setTopNotes] = useState<string>("");
@@ -65,7 +64,6 @@ export function ProductFormModal({
         setPrice(product.price?.toString() || "");
         setCategory(product.category || "");
         setInStock(product.inStock !== false);
-        setColors(product.colors?.join(", ") || "");
         setTopNotes(product.topNotes || "");
         setMiddleNotes(product.middleNotes || "");
         setBaseNotes(product.baseNotes || "");
@@ -85,7 +83,6 @@ export function ProductFormModal({
         setPrice("");
         setCategory("");
         setInStock(true);
-        setColors("");
         setTopNotes("");
         setMiddleNotes("");
         setBaseNotes("");
@@ -237,12 +234,6 @@ export function ProductFormModal({
         image: primaryImage,
         category: category || "Apparel",
         inStock,
-        colors: colors
-          ? colors
-              .split(",")
-              .map((c) => c.trim())
-              .filter(Boolean)
-          : [],
         topNotes: topNotes || undefined,
         middleNotes: middleNotes || undefined,
         baseNotes: baseNotes || undefined,
@@ -388,20 +379,6 @@ export function ProductFormModal({
                       }
                       placeholder="Select category"
                       buttonProps={{ className: "w-full" }}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                      Colors (comma-separated)
-                    </label>
-                    <Input
-                      value={colors}
-                      onChange={(e) => setColors(e.target.value)}
-                      placeholder="Black, White, Red"
-                      className="w-full"
                     />
                   </div>
                 </div>

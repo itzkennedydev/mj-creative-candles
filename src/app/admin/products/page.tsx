@@ -62,6 +62,8 @@ export default function ProductsPage() {
             name: p.name,
             description: p.description || "",
             price: p.price,
+            regularPrice: p.regularPrice,
+            salePrice: p.salePrice,
             image: p.image,
             imageId: p.imageId,
             images: p.images || [],
@@ -323,21 +325,6 @@ export default function ProductsPage() {
                                 {product.description}
                               </p>
                             )}
-
-                            {/* Product Details - Show colors only */}
-                            {product.colors && product.colors.length > 0 ? (
-                              <div className="flex-shrink-0 space-y-1.5">
-                                {product.colors &&
-                                  product.colors.length > 0 && (
-                                    <div className="text-xs text-neutral-400">
-                                      <span className="font-medium text-neutral-500">
-                                        Colors:{" "}
-                                      </span>
-                                      <span>{product.colors.join(", ")}</span>
-                                    </div>
-                                  )}
-                              </div>
-                            ) : null}
 
                             {/* Additional Product Info */}
                             <div className="flex-shrink-0 space-y-1 text-xs text-neutral-400">
