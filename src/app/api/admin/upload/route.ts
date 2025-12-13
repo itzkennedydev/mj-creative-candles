@@ -1,14 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticateRequest } from '~/lib/auth';
-import { put } from '@vercel/blob';
+import { NextRequest, NextResponse } from "next/server";
+import { authenticateRequest } from "~/lib/auth";
+import { put } from "@vercel/blob";
+import clientPromise from "~/lib/mongodb";
 
 // Lazy load sharp to handle potential import errors
 async function getSharp() {
   try {
-    const sharpModule = await import('sharp');
+    const sharpModule = await import("sharp");
     return sharpModule.default;
   } catch (error) {
-    console.warn('Sharp not available, images will be saved without optimization');
+    console.warn(
+      "Sharp not available, images will be saved without optimization",
+    );
     return null;
   }
 }
@@ -18,30 +21,36 @@ export async function POST(request: NextRequest) {
   try {
     // Authenticate request
     const auth = await authenticateRequest(request);
-    
+
     if (!auth.isAuthenticated || !auth.isAdmin) {
       return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
+        { error: "Unauthorized - Admin access required" },
+        { status: 401 },
       );
     }
 
     const formData = await request.formData();
-    const file = formData.get('file') as File;
-    
+    const file = formData.get("file") as File;
+
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Invalid file type. Only JPEG, PNG, GIF, and WEBP are allowed.' },
-        { status: 400 }
+        {
+          error:
+            "Invalid file type. Only JPEG, PNG, GIF, and WEBP are allowed.",
+        },
+        { status: 400 },
       );
     }
 
@@ -49,8 +58,8 @@ export async function POST(request: NextRequest) {
     const maxSize = 25 * 1024 * 1024; // 25MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: 'File size exceeds 25MB limit' },
-        { status: 400 }
+        { error: "File size exceeds 25MB limit" },
+        { status: 400 },
       );
     }
 
@@ -60,8 +69,9 @@ export async function POST(request: NextRequest) {
 
     // Generate unique filename
     const timestamp = Date.now();
-    const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const originalExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const originalExtension =
+      file.name.split(".").pop()?.toLowerCase() || "jpg";
 
     // Optimize image with sharp (if available)
     // Max dimensions: 2000px (width or height), maintain aspect ratio
@@ -69,55 +79,55 @@ export async function POST(request: NextRequest) {
     let optimizedBuffer: Buffer;
     let finalMimeType: string;
     let finalExtension: string;
-    
+
     const sharp = await getSharp();
-    
+
     if (sharp) {
       try {
         const image = sharp(buffer);
         const metadata = await image.metadata();
-        
+
         // Determine if we should convert to WebP (for better compression)
         // Convert to WebP if original is larger than 1MB or if it's PNG/GIF
-        const shouldConvertToWebP = 
+        const shouldConvertToWebP =
           buffer.length > 1024 * 1024 || // Larger than 1MB
-          file.type === 'image/png' || 
-          file.type === 'image/gif';
-        
+          file.type === "image/png" ||
+          file.type === "image/gif";
+
         // Resize if image is too large (max 2000px on longest side)
         const maxDimension = 2000;
-        const needsResize = 
+        const needsResize =
           (metadata.width && metadata.width > maxDimension) ||
           (metadata.height && metadata.height > maxDimension);
-        
+
         let processedImage = image;
-        
+
         if (needsResize) {
           processedImage = processedImage.resize(maxDimension, maxDimension, {
-            fit: 'inside',
+            fit: "inside",
             withoutEnlargement: true,
           });
         }
-        
+
         // Apply compression based on format
         if (shouldConvertToWebP) {
           optimizedBuffer = await processedImage
             .webp({ quality: 85 })
             .toBuffer();
-          finalMimeType = 'image/webp';
-          finalExtension = 'webp';
-        } else if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
+          finalMimeType = "image/webp";
+          finalExtension = "webp";
+        } else if (file.type === "image/jpeg" || file.type === "image/jpg") {
           optimizedBuffer = await processedImage
             .jpeg({ quality: 85, mozjpeg: true })
             .toBuffer();
-          finalMimeType = 'image/jpeg';
-          finalExtension = 'jpg';
-        } else if (file.type === 'image/png') {
+          finalMimeType = "image/jpeg";
+          finalExtension = "jpg";
+        } else if (file.type === "image/png") {
           optimizedBuffer = await processedImage
             .png({ quality: 85, compressionLevel: 9 })
             .toBuffer();
-          finalMimeType = 'image/png';
-          finalExtension = 'png';
+          finalMimeType = "image/png";
+          finalExtension = "png";
         } else {
           // For other formats, just resize if needed but keep original format
           optimizedBuffer = await processedImage.toBuffer();
@@ -125,7 +135,7 @@ export async function POST(request: NextRequest) {
           finalExtension = originalExtension;
         }
       } catch (sharpError) {
-        console.error('Error processing image with sharp:', sharpError);
+        console.error("Error processing image with sharp:", sharpError);
         // Fallback: use original buffer if sharp fails
         optimizedBuffer = buffer;
         finalMimeType = file.type;
@@ -139,63 +149,112 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate filename with appropriate extension
-    const baseFilename = sanitizedFilename.replace(/\.[^.]+$/, '') || 'image';
+    const baseFilename = sanitizedFilename.replace(/\.[^.]+$/, "") || "image";
     const filename = `uploads/${timestamp}_${baseFilename}.${finalExtension}`;
-    
-    // Upload to Vercel Blob storage
-    let blobUrl: string;
-    try {
-      const blob = await put(filename, optimizedBuffer, {
-        access: 'public',
-        contentType: finalMimeType,
-      });
-      blobUrl = blob.url;
-    } catch (blobError) {
-      console.error('Error uploading to Vercel Blob:', blobError);
-      if (blobError instanceof Error) {
-        console.error('Blob error details:', {
-          message: blobError.message,
-          name: blobError.name
-        });
-      }
-      throw new Error(`Failed to upload file to storage: ${blobError instanceof Error ? blobError.message : 'Unknown error'}`);
-    }
-    
-    // Calculate compression ratio safely
-    const compressionRatio = file.size > 0
-      ? ((1 - optimizedBuffer.length / file.size) * 100).toFixed(1) + '%'
-      : '0%';
-    
-    return NextResponse.json({
-      url: blobUrl,
-      filename: filename.split('/').pop() || filename,
-      mimeType: finalMimeType,
-      size: optimizedBuffer.length,
-      originalSize: file.size,
-      compressionRatio: compressionRatio
-    }, { status: 201 });
 
+    // Upload to storage (Vercel Blob if available, otherwise MongoDB)
+    let blobUrl: string;
+
+    // Check if Vercel Blob is configured
+    const hasBlobStorage = !!process.env.BLOB_READ_WRITE_TOKEN;
+
+    if (hasBlobStorage) {
+      // Use Vercel Blob storage
+      try {
+        const blob = await put(filename, optimizedBuffer, {
+          access: "public",
+          contentType: finalMimeType,
+        });
+        blobUrl = blob.url;
+      } catch (blobError) {
+        console.error("Error uploading to Vercel Blob:", blobError);
+        if (blobError instanceof Error) {
+          console.error("Blob error details:", {
+            message: blobError.message,
+            name: blobError.name,
+          });
+        }
+        throw new Error(
+          `Failed to upload file to storage: ${blobError instanceof Error ? blobError.message : "Unknown error"}`,
+        );
+      }
+    } else {
+      // Fallback to MongoDB storage
+      try {
+        const client = await clientPromise;
+        const db = client.db("mj-creative-candles");
+
+        // Convert to base64 for storage
+        const base64 = optimizedBuffer.toString("base64");
+        const dataUri = `data:${finalMimeType};base64,${base64}`;
+
+        // Store in uploads collection
+        const imageDoc = {
+          filename,
+          dataUri,
+          originalName: file.name,
+          mimeType: finalMimeType,
+          size: optimizedBuffer.length,
+          originalSize: file.size,
+          uploadedAt: new Date(),
+        };
+
+        const result = await db.collection("uploads").insertOne(imageDoc);
+
+        // Return the data URI as the URL
+        blobUrl = dataUri;
+
+        console.log(`Image stored in MongoDB with ID: ${result.insertedId}`);
+      } catch (mongoError) {
+        console.error("Error uploading to MongoDB:", mongoError);
+        throw new Error(
+          `Failed to upload file to database: ${mongoError instanceof Error ? mongoError.message : "Unknown error"}`,
+        );
+      }
+    }
+
+    // Calculate compression ratio safely
+    const compressionRatio =
+      file.size > 0
+        ? ((1 - optimizedBuffer.length / file.size) * 100).toFixed(1) + "%"
+        : "0%";
+
+    return NextResponse.json(
+      {
+        url: blobUrl,
+        filename: filename.split("/").pop() || filename,
+        mimeType: finalMimeType,
+        size: optimizedBuffer.length,
+        originalSize: file.size,
+        compressionRatio: compressionRatio,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     // Enhanced error logging for debugging
-    console.error('Error uploading image:', error);
+    console.error("Error uploading image:", error);
     if (error instanceof Error) {
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
     }
-    
+
     // Return more detailed error in development, generic in production
-    const errorMessage = process.env.NODE_ENV === 'development' 
-      ? (error instanceof Error ? error.message : 'Failed to upload image')
-      : 'Failed to upload image';
-    
+    const errorMessage =
+      process.env.NODE_ENV === "development"
+        ? error instanceof Error
+          ? error.message
+          : "Failed to upload image"
+        : "Failed to upload image";
+
     return NextResponse.json(
-      { 
+      {
         error: errorMessage,
-        ...(process.env.NODE_ENV === 'development' && error instanceof Error && {
-          details: error.stack
-        })
+        ...(process.env.NODE_ENV === "development" &&
+          error instanceof Error && {
+            details: error.stack,
+          }),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
