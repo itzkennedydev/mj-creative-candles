@@ -13,6 +13,7 @@ import Image from "next/image";
 import type { Product } from "~/lib/types";
 import { getProductPrice } from "~/lib/types";
 import { ImageLibraryModal } from "./image-library-modal";
+import { ImageCropperModal } from "./image-cropper-modal";
 
 interface ProductFormModalProps {
   open: boolean;
@@ -33,6 +34,9 @@ export function ProductFormModal({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string>("");
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
+  const [isCropperModalOpen, setIsCropperModalOpen] = useState(false);
+  const [tempImageForCrop, setTempImageForCrop] = useState<string>("");
+  const [cropType, setCropType] = useState<"primary" | "additional">("primary");
 
   // Form fields
   const [name, setName] = useState("");
@@ -115,12 +119,25 @@ export function ProductFormModal({
       return;
     }
 
+    setUploadError("");
+
+    // Convert file to data URL for cropper
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTempImageForCrop(reader.result as string);
+      setCropType("primary");
+      setIsCropperModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
     setIsUploading(true);
     setUploadError("");
 
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", croppedBlob, "cropped-image.jpg");
 
       const token = sessionStorage.getItem("adminToken");
       const response = await fetch("/api/admin/upload", {
@@ -137,8 +154,14 @@ export function ProductFormModal({
       }
 
       const data = await response.json();
-      setPrimaryImage(data.url);
-      setPrimaryImageFile(file);
+
+      if (cropType === "primary") {
+        setPrimaryImage(data.url);
+        setPrimaryImageFile(null);
+      } else {
+        setAdditionalImages((prev) => [...prev, { url: data.url }]);
+      }
+
       setUploadError("");
     } catch (error) {
       console.error("Upload error:", error);
@@ -168,40 +191,19 @@ export function ProductFormModal({
       return;
     }
 
-    setIsUploading(true);
     setUploadError("");
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
+    // Convert file to data URL for cropper
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTempImageForCrop(reader.result as string);
+      setCropType("additional");
+      setIsCropperModalOpen(true);
+    };
+    reader.readAsDataURL(file);
 
-      const token = sessionStorage.getItem("adminToken");
-      const response = await fetch("/api/admin/upload", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to upload image");
-      }
-
-      const data = await response.json();
-      setAdditionalImages((prev) => [...prev, { url: data.url, file }]);
-      setUploadError("");
-    } catch (error) {
-      console.error("Upload error:", error);
-      setUploadError(
-        error instanceof Error ? error.message : "Failed to upload image",
-      );
-    } finally {
-      setIsUploading(false);
-      // Reset input
-      e.target.value = "";
-    }
+    // Reset input
+    e.target.value = "";
   };
 
   const removeAdditionalImage = (index: number) => {
@@ -691,6 +693,15 @@ export function ProductFormModal({
               setPrimaryImage(imageUri);
               setIsLibraryModalOpen(false);
             }}
+          />
+
+          {/* Image Cropper Modal */}
+          <ImageCropperModal
+            open={isCropperModalOpen}
+            onOpenChange={setIsCropperModalOpen}
+            imageSrc={tempImageForCrop}
+            onCropComplete={handleCropComplete}
+            aspect={1}
           />
         </Dialog.Content>
       </Dialog.Portal>

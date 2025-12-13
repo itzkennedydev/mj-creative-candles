@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Search, Image as ImageIcon } from "lucide-react";
+import { X, Search, Image as ImageIcon, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "~/app/sca-dashboard/components/ui/button";
 import { Input } from "~/app/sca-dashboard/components/ui/input";
@@ -31,6 +31,7 @@ export function ImageLibraryModal({
   const [images, setImages] = useState<LibraryImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 
@@ -70,6 +71,38 @@ export function ImageLibraryModal({
   const handleSelect = (imageUri: string) => {
     onSelect(imageUri);
     onClose();
+  };
+
+  const handleDelete = async (imageId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (!confirm("Are you sure you want to delete this image?")) {
+      return;
+    }
+
+    setDeletingId(imageId);
+
+    try {
+      const response = await fetch(`/api/admin/image-library?id=${imageId}`, {
+        method: "DELETE",
+        headers: {
+          "x-api-key": API_KEY || "",
+        },
+      });
+
+      if (response.ok) {
+        // Remove from local state
+        setImages((prev) => prev.filter((img) => img._id !== imageId));
+      } else {
+        const error = await response.json();
+        alert(error.error || "Failed to delete image");
+      }
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      alert("Failed to delete image");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   if (!isOpen) return null;
@@ -157,6 +190,21 @@ export function ImageLibraryModal({
                       </p>
                     )}
                   </div>
+
+                  {/* Delete button */}
+                  <button
+                    onClick={(e) => handleDelete(image._id, e)}
+                    disabled={deletingId === image._id}
+                    className="absolute right-2 top-2 rounded-full bg-red-500/90 p-2 text-white opacity-0 transition-all hover:bg-red-600 disabled:opacity-50 group-hover:opacity-100"
+                    title="Delete image"
+                  >
+                    {deletingId === image._id ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </button>
+
                   <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10">
                     <div className="translate-y-4 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
                       <div className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white">

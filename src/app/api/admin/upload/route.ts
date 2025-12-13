@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "~/lib/auth";
 import clientPromise from "~/lib/mongodb";
 
+// Increase body size limit for image uploads (50MB)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "50mb",
+    },
+  },
+};
+
 // Lazy load sharp to handle potential import errors
 async function getSharp() {
   try {

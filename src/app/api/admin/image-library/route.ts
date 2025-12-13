@@ -106,3 +106,45 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// DELETE: Delete image from library
+export async function DELETE(request: NextRequest) {
+  try {
+    if (!validateApiKey(request)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const imageId = searchParams.get("id");
+
+    if (!imageId) {
+      return NextResponse.json(
+        { error: "Image ID is required" },
+        { status: 400 },
+      );
+    }
+
+    const client = await clientPromise;
+    const db = client.db("mj-creative-candles");
+
+    // Import ObjectId if needed
+    const { ObjectId } = await import("mongodb");
+
+    // Delete the image
+    const result = await db
+      .collection("image_library")
+      .deleteOne({ _id: new ObjectId(imageId) });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: "Image not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: "Image deleted" });
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    return NextResponse.json(
+      { error: "Failed to delete image" },
+      { status: 500 },
+    );
+  }
+}
