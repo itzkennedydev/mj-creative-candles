@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Upload, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "../../../sca-dashboard/components/ui/button";
@@ -61,6 +61,12 @@ export function ProductFormModal({
   >([]);
   const [primaryImageFile, setPrimaryImageFile] = useState<File | null>(null);
 
+  // Track if form has been initialized to prevent resets
+  const initializedRef = useRef<{ open: boolean; productId: string | null }>({
+    open: false,
+    productId: null,
+  });
+
   // Debug: Log primaryImage state changes
   useEffect(() => {
     console.log("Primary image state changed:", {
@@ -72,7 +78,15 @@ export function ProductFormModal({
 
   // Reset form when product changes or modal opens/closes
   useEffect(() => {
-    if (open) {
+    const currentProductId = product?.id || null;
+    const shouldInitialize =
+      open &&
+      (!initializedRef.current.open ||
+        initializedRef.current.productId !== currentProductId);
+
+    if (shouldInitialize) {
+      initializedRef.current = { open: true, productId: currentProductId };
+
       if (product) {
         // Edit mode - populate form
         setName(product.name || "");
@@ -110,6 +124,11 @@ export function ProductFormModal({
         setAdditionalImages([]);
         setPrimaryImageFile(null);
       }
+    }
+
+    // Reset initialization flag when modal closes
+    if (!open) {
+      initializedRef.current = { open: false, productId: null };
     }
   }, [product, open]);
 
