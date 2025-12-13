@@ -248,13 +248,28 @@ export function ProductFormModal({
     try {
       const token = sessionStorage.getItem("adminToken");
 
+      // If no primary image but we have additional images, promote the first additional image
+      let finalPrimaryImage = primaryImage;
+      let finalAdditionalImages = [...additionalImages];
+
+      if (!primaryImage && additionalImages.length > 0) {
+        finalPrimaryImage = additionalImages[0]?.url || "";
+        finalAdditionalImages = additionalImages.slice(1);
+
+        addToast({
+          title: "Image promoted",
+          description: "First additional image promoted to primary image",
+          type: "info",
+        });
+      }
+
       // Prepare product data
       const productData: Partial<Product> = {
         name,
         description: description || "",
         price: parseFloat(price),
         image:
-          primaryImage ||
+          finalPrimaryImage ||
           "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e5e5' width='400' height='400'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E",
         category: category || "Apparel",
         inStock,
@@ -263,7 +278,7 @@ export function ProductFormModal({
         baseNotes: baseNotes || undefined,
         scentFamily: scentFamily || undefined,
         burnTime: burnTime || undefined,
-        images: additionalImages.map((img) => ({
+        images: finalAdditionalImages.map((img) => ({
           id: `img_${Date.now()}_${Math.random()}`,
           imageId: "",
           dataUri: img.url,
@@ -271,6 +286,12 @@ export function ProductFormModal({
           filename: img.url.split("/").pop() || "image.png",
         })),
       };
+
+      console.log("Saving product with data:", {
+        primaryImage: finalPrimaryImage,
+        additionalImagesCount: finalAdditionalImages.length,
+        images: productData.images,
+      });
 
       const url = product ? `/api/products/${product.id}` : "/api/products";
       const method = product ? "PUT" : "POST";
