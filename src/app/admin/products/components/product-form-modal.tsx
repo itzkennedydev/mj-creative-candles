@@ -11,6 +11,7 @@ import {
 } from "../../../sca-dashboard/components/ui/combobox";
 import Image from "next/image";
 import type { Product } from "~/lib/types";
+import { getProductPrice } from "~/lib/types";
 import { ImageLibraryModal } from "./image-library-modal";
 
 interface ProductFormModalProps {
@@ -61,7 +62,7 @@ export function ProductFormModal({
         // Edit mode - populate form
         setName(product.name || "");
         setDescription(product.description || "");
-        setPrice(product.price?.toString() || "");
+        setPrice(getProductPrice(product).toString() || "");
         setCategory(product.category || "");
         setInStock(product.inStock !== false);
         setTopNotes(product.topNotes || "");
