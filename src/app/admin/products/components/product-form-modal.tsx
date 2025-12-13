@@ -548,29 +548,34 @@ export function ProductFormModal({
                     </p>
                   </div>
 
-                  {primaryImage ? (
+                  {primaryImage || !product ? (
                     <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-100 shadow-sm">
                       <Image
-                        src={primaryImage}
+                        src={
+                          primaryImage ||
+                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e5e5' width='400' height='400'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E"
+                        }
                         alt="Primary product image"
                         fill
                         className="object-cover"
                         unoptimized
                       />
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log("Removing primary image");
-                          setPrimaryImage("");
-                          setPrimaryImageFile(null);
-                        }}
-                        className="absolute right-3 top-3 z-10 rounded-full border border-red-200 bg-white p-2 text-red-600 shadow-md transition-all hover:bg-red-50 hover:text-red-700"
-                        aria-label="Remove image"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                      {primaryImage && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log("Removing primary image");
+                            setPrimaryImage("");
+                            setPrimaryImageFile(null);
+                          }}
+                          className="absolute right-3 top-3 z-10 rounded-full border border-red-200 bg-white p-2 text-red-600 shadow-md transition-all hover:bg-red-50 hover:text-red-700"
+                          aria-label="Remove image"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
                       <div className="absolute bottom-3 left-3 right-3">
                         <div className="flex gap-2">
                           <button
