@@ -83,10 +83,12 @@ export function ImageLibraryModal({
     setDeletingId(imageId);
 
     try {
+      const token = sessionStorage.getItem("adminToken");
       const response = await fetch(`/api/admin/image-library?id=${imageId}`, {
         method: "DELETE",
         headers: {
           "x-api-key": API_KEY || "",
+          Authorization: `Bearer ${token}`,
         },
       });
 

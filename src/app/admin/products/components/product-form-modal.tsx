@@ -268,9 +268,7 @@ export function ProductFormModal({
         name,
         description: description || "",
         price: parseFloat(price),
-        image:
-          finalPrimaryImage ||
-          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e5e5' width='400' height='400'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E",
+        image: finalPrimaryImage,
         category: category || "Apparel",
         inStock,
         topNotes: topNotes || undefined,
@@ -286,6 +284,12 @@ export function ProductFormModal({
           filename: img.url.split("/").pop() || "image.png",
         })),
       };
+
+      // Only use placeholder if creating a NEW product with no images at all
+      if (!product && !finalPrimaryImage) {
+        productData.image =
+          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e5e5' width='400' height='400'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
+      }
 
       console.log("Saving product with data:", {
         primaryImage: finalPrimaryImage,
@@ -643,62 +647,64 @@ export function ProductFormModal({
                   )}
                 </div>
 
-                {/* Additional Images */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="mb-1 text-base font-semibold text-neutral-900">
-                      Additional Images
-                    </h3>
-                    <p className="text-sm text-neutral-500">
-                      Add more images to showcase different angles or variants
-                    </p>
-                  </div>
+                {/* Additional Images - Only show if primary image exists */}
+                {primaryImage && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="mb-1 text-base font-semibold text-neutral-900">
+                        Additional Images
+                      </h3>
+                      <p className="text-sm text-neutral-500">
+                        Add more images to showcase different angles or variants
+                      </p>
+                    </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    {additionalImages.map((img, index) => (
-                      <div
-                        key={index}
-                        className="group relative aspect-square overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-100 shadow-sm"
-                      >
-                        <Image
-                          src={img.url}
-                          alt={`Additional image ${index + 1}`}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeAdditionalImage(index)}
-                          className="absolute right-2 top-2 rounded-full border border-red-200 bg-white p-1.5 text-red-600 opacity-0 shadow-md transition-all hover:bg-red-50 hover:text-red-700 group-hover:opacity-100"
-                          aria-label="Remove image"
+                    <div className="grid grid-cols-2 gap-4">
+                      {additionalImages.map((img, index) => (
+                        <div
+                          key={index}
+                          className="group relative aspect-square overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-100 shadow-sm"
                         >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    ))}
+                          <Image
+                            src={img.url}
+                            alt={`Additional image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeAdditionalImage(index)}
+                            className="absolute right-2 top-2 rounded-full border border-red-200 bg-white p-1.5 text-red-600 opacity-0 shadow-md transition-all hover:bg-red-50 hover:text-red-700 group-hover:opacity-100"
+                            aria-label="Remove image"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
 
-                    <label className="group flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 transition-all hover:border-[#737373] hover:bg-[#737373]/5">
-                      {isUploading ? (
-                        <Loader2 className="h-6 w-6 animate-spin text-[#737373]" />
-                      ) : (
-                        <>
-                          <Upload className="mb-1 h-6 w-6 text-neutral-400 transition-colors group-hover:text-[#737373]" />
-                          <span className="text-xs text-neutral-600 transition-colors group-hover:text-[#737373]">
-                            Add Image
-                          </span>
-                        </>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAdditionalImageUpload}
-                        className="hidden"
-                        disabled={isUploading}
-                      />
-                    </label>
+                      <label className="group flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 transition-all hover:border-[#737373] hover:bg-[#737373]/5">
+                        {isUploading ? (
+                          <Loader2 className="h-6 w-6 animate-spin text-[#737373]" />
+                        ) : (
+                          <>
+                            <Upload className="mb-1 h-6 w-6 text-neutral-400 transition-colors group-hover:text-[#737373]" />
+                            <span className="text-xs text-neutral-600 transition-colors group-hover:text-[#737373]">
+                              Add Image
+                            </span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAdditionalImageUpload}
+                          className="hidden"
+                          disabled={isUploading}
+                        />
+                      </label>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
