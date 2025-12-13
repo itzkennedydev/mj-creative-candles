@@ -84,7 +84,17 @@ export function ProductFormModal({
       (!initializedRef.current.open ||
         initializedRef.current.productId !== currentProductId);
 
+    console.log("Form initialization check:", {
+      open,
+      currentProductId,
+      initializedRefOpen: initializedRef.current.open,
+      initializedRefProductId: initializedRef.current.productId,
+      shouldInitialize,
+      currentPrimaryImage: primaryImage?.substring(0, 50),
+    });
+
     if (shouldInitialize) {
+      console.log("INITIALIZING FORM - this will reset all fields");
       initializedRef.current = { open: true, productId: currentProductId };
 
       if (product) {
