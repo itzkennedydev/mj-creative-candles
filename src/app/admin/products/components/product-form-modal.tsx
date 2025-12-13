@@ -501,6 +501,7 @@ export function ProductFormModal({
                         alt="Primary product image"
                         fill
                         className="object-cover"
+                        unoptimized
                       />
                       <button
                         type="button"
@@ -617,6 +618,7 @@ export function ProductFormModal({
                           alt={`Additional image ${index + 1}`}
                           fill
                           className="object-cover"
+                          unoptimized
                         />
                         <button
                           type="button"

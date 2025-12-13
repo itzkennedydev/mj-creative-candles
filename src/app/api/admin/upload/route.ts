@@ -175,10 +175,26 @@ export async function POST(request: NextRequest) {
 
       const result = await db.collection("uploads").insertOne(imageDoc);
 
+      // Also save to image library for easy reuse
+      const libraryDoc = {
+        name: file.name,
+        dataUri,
+        originalName: file.name,
+        mimeType: finalMimeType,
+        size: optimizedBuffer.length,
+        tags: ["product-upload"],
+        uploadedAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await db.collection("image_library").insertOne(libraryDoc);
+
       // Return the data URI as the URL
       imageUrl = dataUri;
 
-      console.log(`Image stored in MongoDB with ID: ${result.insertedId}`);
+      console.log(
+        `Image stored in MongoDB uploads (ID: ${result.insertedId}) and image_library`,
+      );
     } catch (mongoError) {
       console.error("Error uploading to MongoDB:", mongoError);
       throw new Error(
