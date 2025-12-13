@@ -120,8 +120,8 @@ export function ProductFormModal({
     // Validate file size (25MB max)
     if (file.size > 25 * 1024 * 1024) {
       addToast({
-        title: "File too large",
-        description: "Image size must be less than 25MB",
+        title: "File too large (max 25MB)",
+        description: "",
         type: "error",
       });
       return;
@@ -207,8 +207,8 @@ export function ProductFormModal({
     // Validate file size (25MB max)
     if (file.size > 25 * 1024 * 1024) {
       addToast({
-        title: "File too large",
-        description: "Image size must be less than 25MB",
+        title: "File too large (max 25MB)",
+        description: "",
         type: "error",
       });
       return;
@@ -292,9 +292,12 @@ export function ProductFormModal({
       }
 
       console.log("Saving product with data:", {
+        isEditing: !!product,
         primaryImage: finalPrimaryImage,
+        primaryImageState: primaryImage,
         additionalImagesCount: finalAdditionalImages.length,
         images: productData.images,
+        willUsePlaceholder: !product && !finalPrimaryImage,
       });
 
       const url = product ? `/api/products/${product.id}` : "/api/products";
@@ -744,6 +747,7 @@ export function ProductFormModal({
             isOpen={isLibraryModalOpen}
             onClose={() => setIsLibraryModalOpen(false)}
             onSelect={(imageUri) => {
+              console.log("Image selected from library:", imageUri);
               setPrimaryImage(imageUri);
               setIsLibraryModalOpen(false);
             }}
