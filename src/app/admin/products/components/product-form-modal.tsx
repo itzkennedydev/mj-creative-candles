@@ -60,6 +60,15 @@ export function ProductFormModal({
   >([]);
   const [primaryImageFile, setPrimaryImageFile] = useState<File | null>(null);
 
+  // Debug: Log primaryImage state changes
+  useEffect(() => {
+    console.log("Primary image state changed:", {
+      hasImage: !!primaryImage,
+      length: primaryImage?.length || 0,
+      preview: primaryImage?.substring(0, 50) || "empty",
+    });
+  }, [primaryImage]);
+
   // Reset form when product changes or modal opens/closes
   useEffect(() => {
     if (open) {
@@ -752,8 +761,12 @@ export function ProductFormModal({
             isOpen={isLibraryModalOpen}
             onClose={() => setIsLibraryModalOpen(false)}
             onSelect={(imageUri) => {
-              console.log("Image selected from library:", imageUri);
+              console.log("Image selected from library:", {
+                length: imageUri.length,
+                preview: imageUri.substring(0, 100) + "...",
+              });
               setPrimaryImage(imageUri);
+              console.log("Primary image state updated");
               setIsLibraryModalOpen(false);
             }}
           />
