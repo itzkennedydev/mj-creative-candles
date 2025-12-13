@@ -557,115 +557,67 @@ export function ProductFormModal({
                     </p>
                   </div>
 
-                  {primaryImage || !product ? (
-                    <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-100 shadow-sm">
-                      <Image
-                        key={primaryImage || "placeholder"}
-                        src={
-                          primaryImage ||
-                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e5e5' width='400' height='400'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E"
-                        }
-                        alt="Primary product image"
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
-                      {primaryImage && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log("Removing primary image");
-                            setPrimaryImage("");
-                            setPrimaryImageFile(null);
-                          }}
-                          className="absolute right-3 top-3 z-10 rounded-full border border-red-200 bg-white p-2 text-red-600 shadow-md transition-all hover:bg-red-50 hover:text-red-700"
-                          aria-label="Remove image"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                      <div className="absolute bottom-3 left-3 right-3">
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              document
-                                .getElementById("primary-image-input")
-                                ?.click()
-                            }
-                            className="flex-1 rounded-lg border border-neutral-200 bg-white/90 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-white"
-                          >
-                            Change Image
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setIsLibraryModalOpen(true)}
-                            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white/90 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-white"
-                          >
-                            <ImageIcon className="h-4 w-4" />
-                            Library
-                          </button>
-                        </div>
-                        <input
-                          id="primary-image-input"
-                          type="file"
-                          accept="image/*"
-                          onChange={handlePrimaryImageUpload}
-                          className="hidden"
-                          disabled={isUploading}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <label className="group flex aspect-square w-full max-w-sm cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 transition-all hover:border-[#737373] hover:bg-[#737373]/5">
-                        {isUploading ? (
-                          <>
-                            <Loader2 className="mb-3 h-10 w-10 animate-spin text-[#737373]" />
-                            <span className="text-sm font-medium text-neutral-700">
-                              Uploading...
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <div className="mb-4 rounded-full bg-[#737373]/10 p-4 transition-colors group-hover:bg-[#737373]/20">
-                              <Upload className="h-8 w-8 text-[#737373]" />
-                            </div>
-                            <span className="mb-1 text-sm font-medium text-neutral-700">
-                              Click to upload
-                            </span>
-                            <span className="text-xs text-neutral-500">
-                              PNG, JPG, GIF up to 25MB
-                            </span>
-                          </>
-                        )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handlePrimaryImageUpload}
-                          className="hidden"
-                          disabled={isUploading}
-                        />
-                      </label>
-
-                      <div className="flex items-center gap-3">
-                        <div className="h-px flex-1 bg-neutral-200"></div>
-                        <span className="text-xs text-neutral-500">or</span>
-                        <div className="h-px flex-1 bg-neutral-200"></div>
-                      </div>
-
+                  {/* Always show preview box - display image or placeholder */}
+                  <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-100 shadow-sm">
+                    <Image
+                      key={primaryImage || "placeholder"}
+                      src={
+                        primaryImage ||
+                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e5e5' width='400' height='400'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E"
+                      }
+                      alt="Primary product image"
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                    {primaryImage && (
                       <button
                         type="button"
-                        onClick={() => setIsLibraryModalOpen(true)}
-                        className="flex w-full max-w-sm items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log("Removing primary image");
+                          setPrimaryImage("");
+                          setPrimaryImageFile(null);
+                        }}
+                        className="absolute right-3 top-3 z-10 rounded-full border border-red-200 bg-white p-2 text-red-600 shadow-md transition-all hover:bg-red-50 hover:text-red-700"
+                        aria-label="Remove image"
                       >
-                        <ImageIcon className="h-4 w-4" />
-                        Select from Image Library
+                        <X className="h-4 w-4" />
                       </button>
+                    )}
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            document
+                              .getElementById("primary-image-input")
+                              ?.click()
+                          }
+                          className="flex-1 rounded-lg border border-neutral-200 bg-white/90 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-white"
+                        >
+                          {primaryImage ? "Change Image" : "Upload Image"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsLibraryModalOpen(true)}
+                          className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white/90 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-white"
+                        >
+                          <ImageIcon className="h-4 w-4" />
+                          Library
+                        </button>
+                      </div>
+                      <input
+                        id="primary-image-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePrimaryImageUpload}
+                        className="hidden"
+                        disabled={isUploading}
+                      />
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Additional Images - Only show if primary image exists */}
