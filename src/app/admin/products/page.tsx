@@ -290,6 +290,7 @@ export default function ProductsPage() {
                               fill
                               className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                              unoptimized
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100">
