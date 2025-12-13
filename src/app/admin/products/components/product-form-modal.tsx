@@ -14,6 +14,7 @@ import type { Product } from "~/lib/types";
 import { getProductPrice } from "~/lib/types";
 import { ImageLibraryModal } from "./image-library-modal";
 import { ImageCropperModal } from "./image-cropper-modal";
+import { useToast } from "~/lib/toast-context";
 
 interface ProductFormModalProps {
   open: boolean;
@@ -30,9 +31,9 @@ export function ProductFormModal({
   product,
   onSuccess,
 }: ProductFormModalProps) {
+  const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string>("");
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [isCropperModalOpen, setIsCropperModalOpen] = useState(false);
   const [tempImageForCrop, setTempImageForCrop] = useState<string>("");
@@ -97,7 +98,6 @@ export function ProductFormModal({
         setAdditionalImages([]);
         setPrimaryImageFile(null);
       }
-      setUploadError("");
     }
   }, [product, open]);
 
@@ -109,17 +109,23 @@ export function ProductFormModal({
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      setUploadError("Please select an image file");
+      addToast({
+        title: "Invalid file type",
+        description: "Please select an image file",
+        type: "error",
+      });
       return;
     }
 
     // Validate file size (25MB max)
     if (file.size > 25 * 1024 * 1024) {
-      setUploadError("Image size must be less than 25MB");
+      addToast({
+        title: "File too large",
+        description: "Image size must be less than 25MB",
+        type: "error",
+      });
       return;
     }
-
-    setUploadError("");
 
     // Convert file to data URL for cropper
     const reader = new FileReader();
@@ -133,7 +139,6 @@ export function ProductFormModal({
 
   const handleCropComplete = async (croppedBlob: Blob) => {
     setIsUploading(true);
-    setUploadError("");
 
     try {
       const formData = new FormData();
@@ -162,12 +167,22 @@ export function ProductFormModal({
         setAdditionalImages((prev) => [...prev, { url: data.url }]);
       }
 
-      setUploadError("");
+      addToast({
+        title: "Image uploaded",
+        description:
+          cropType === "primary"
+            ? "Primary image uploaded successfully"
+            : "Additional image uploaded successfully",
+        type: "success",
+      });
     } catch (error) {
       console.error("Upload error:", error);
-      setUploadError(
-        error instanceof Error ? error.message : "Failed to upload image",
-      );
+      addToast({
+        title: "Upload failed",
+        description:
+          error instanceof Error ? error.message : "Failed to upload image",
+        type: "error",
+      });
     } finally {
       setIsUploading(false);
     }
@@ -181,17 +196,23 @@ export function ProductFormModal({
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      setUploadError("Please select an image file");
+      addToast({
+        title: "Invalid file type",
+        description: "Please select an image file",
+        type: "error",
+      });
       return;
     }
 
     // Validate file size (25MB max)
     if (file.size > 25 * 1024 * 1024) {
-      setUploadError("Image size must be less than 25MB");
+      addToast({
+        title: "File too large",
+        description: "Image size must be less than 25MB",
+        type: "error",
+      });
       return;
     }
-
-    setUploadError("");
 
     // Convert file to data URL for cropper
     const reader = new FileReader();
@@ -214,17 +235,15 @@ export function ProductFormModal({
     e.preventDefault();
 
     if (!name || !price || parseFloat(price) <= 0) {
-      setUploadError("Please fill in all required fields");
-      return;
-    }
-
-    if (!primaryImage) {
-      setUploadError("Please upload a primary image");
+      addToast({
+        title: "Missing fields",
+        description: "Please fill in all required fields (name and price)",
+        type: "error",
+      });
       return;
     }
 
     setIsSubmitting(true);
-    setUploadError("");
 
     try {
       const token = sessionStorage.getItem("adminToken");
@@ -234,7 +253,9 @@ export function ProductFormModal({
         name,
         description: description || "",
         price: parseFloat(price),
-        image: primaryImage,
+        image:
+          primaryImage ||
+          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e5e5' width='400' height='400'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E",
         category: category || "Apparel",
         inStock,
         topNotes: topNotes || undefined,
@@ -268,13 +289,24 @@ export function ProductFormModal({
         throw new Error(error.error || "Failed to save product");
       }
 
+      addToast({
+        title: "Success",
+        description: product
+          ? "Product updated successfully"
+          : "Product created successfully",
+        type: "success",
+      });
+
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error("Save error:", error);
-      setUploadError(
-        error instanceof Error ? error.message : "Failed to save product",
-      );
+      addToast({
+        title: "Save failed",
+        description:
+          error instanceof Error ? error.message : "Failed to save product",
+        type: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -301,14 +333,6 @@ export function ProductFormModal({
           </div>
 
           <form onSubmit={handleSubmit} className="p-6">
-            {uploadError && (
-              <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
-                <p className="text-sm font-medium text-red-800">
-                  {uploadError}
-                </p>
-              </div>
-            )}
-
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
               {/* Left Column - Basic Information */}
@@ -489,7 +513,7 @@ export function ProductFormModal({
                 <div className="space-y-4">
                   <div>
                     <h3 className="mb-1 text-base font-semibold text-neutral-900">
-                      Primary Image <span className="text-red-500">*</span>
+                      Primary Image
                     </h3>
                     <p className="text-sm text-neutral-500">
                       This will be the main product image displayed in the shop
