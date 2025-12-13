@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "~/lib/auth";
-import { put } from "@vercel/blob";
 import clientPromise from "~/lib/mongodb";
 
 // Lazy load sharp to handle potential import errors
@@ -152,65 +151,39 @@ export async function POST(request: NextRequest) {
     const baseFilename = sanitizedFilename.replace(/\.[^.]+$/, "") || "image";
     const filename = `uploads/${timestamp}_${baseFilename}.${finalExtension}`;
 
-    // Upload to storage (Vercel Blob if available, otherwise MongoDB)
-    let blobUrl: string;
+    // Upload to MongoDB storage
+    let imageUrl: string;
 
-    // Check if Vercel Blob is configured
-    const hasBlobStorage = !!process.env.BLOB_READ_WRITE_TOKEN;
+    try {
+      const client = await clientPromise;
+      const db = client.db("mj-creative-candles");
 
-    if (hasBlobStorage) {
-      // Use Vercel Blob storage
-      try {
-        const blob = await put(filename, optimizedBuffer, {
-          access: "public",
-          contentType: finalMimeType,
-        });
-        blobUrl = blob.url;
-      } catch (blobError) {
-        console.error("Error uploading to Vercel Blob:", blobError);
-        if (blobError instanceof Error) {
-          console.error("Blob error details:", {
-            message: blobError.message,
-            name: blobError.name,
-          });
-        }
-        throw new Error(
-          `Failed to upload file to storage: ${blobError instanceof Error ? blobError.message : "Unknown error"}`,
-        );
-      }
-    } else {
-      // Fallback to MongoDB storage
-      try {
-        const client = await clientPromise;
-        const db = client.db("mj-creative-candles");
+      // Convert to base64 for storage
+      const base64 = optimizedBuffer.toString("base64");
+      const dataUri = `data:${finalMimeType};base64,${base64}`;
 
-        // Convert to base64 for storage
-        const base64 = optimizedBuffer.toString("base64");
-        const dataUri = `data:${finalMimeType};base64,${base64}`;
+      // Store in uploads collection
+      const imageDoc = {
+        filename,
+        dataUri,
+        originalName: file.name,
+        mimeType: finalMimeType,
+        size: optimizedBuffer.length,
+        originalSize: file.size,
+        uploadedAt: new Date(),
+      };
 
-        // Store in uploads collection
-        const imageDoc = {
-          filename,
-          dataUri,
-          originalName: file.name,
-          mimeType: finalMimeType,
-          size: optimizedBuffer.length,
-          originalSize: file.size,
-          uploadedAt: new Date(),
-        };
+      const result = await db.collection("uploads").insertOne(imageDoc);
 
-        const result = await db.collection("uploads").insertOne(imageDoc);
+      // Return the data URI as the URL
+      imageUrl = dataUri;
 
-        // Return the data URI as the URL
-        blobUrl = dataUri;
-
-        console.log(`Image stored in MongoDB with ID: ${result.insertedId}`);
-      } catch (mongoError) {
-        console.error("Error uploading to MongoDB:", mongoError);
-        throw new Error(
-          `Failed to upload file to database: ${mongoError instanceof Error ? mongoError.message : "Unknown error"}`,
-        );
-      }
+      console.log(`Image stored in MongoDB with ID: ${result.insertedId}`);
+    } catch (mongoError) {
+      console.error("Error uploading to MongoDB:", mongoError);
+      throw new Error(
+        `Failed to upload file to database: ${mongoError instanceof Error ? mongoError.message : "Unknown error"}`,
+      );
     }
 
     // Calculate compression ratio safely
@@ -221,7 +194,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        url: blobUrl,
+        url: imageUrl,
         filename: filename.split("/").pop() || filename,
         mimeType: finalMimeType,
         size: optimizedBuffer.length,
