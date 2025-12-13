@@ -86,6 +86,7 @@ export function ProductFormModal({
         setScentFamily(product.scentFamily || "");
         setBurnTime(product.burnTime || "");
         setPrimaryImage(product.image || "");
+        setImageKey((prev) => prev + 1); // Force re-render when modal opens
         setAdditionalImages(
           product.images?.map((img) => ({
             url: typeof img === "string" ? img : img.dataUri,
@@ -105,6 +106,7 @@ export function ProductFormModal({
         setScentFamily("");
         setBurnTime("");
         setPrimaryImage("");
+        setImageKey((prev) => prev + 1); // Force re-render when modal opens
         setAdditionalImages([]);
         setPrimaryImageFile(null);
       }
