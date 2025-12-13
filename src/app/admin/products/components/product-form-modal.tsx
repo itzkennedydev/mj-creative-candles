@@ -78,11 +78,17 @@ export function ProductFormModal({
 
   // Reset form when product changes or modal opens/closes
   useEffect(() => {
+    // Reset initialization flag when modal closes (do this FIRST)
+    if (!open) {
+      console.log("Modal closed - resetting initialization flag");
+      initializedRef.current = { open: false, productId: null };
+      return; // Exit early when modal is closed
+    }
+
     const currentProductId = product?.id || null;
     const shouldInitialize =
-      open &&
-      (!initializedRef.current.open ||
-        initializedRef.current.productId !== currentProductId);
+      !initializedRef.current.open ||
+      initializedRef.current.productId !== currentProductId;
 
     console.log("Form initialization check:", {
       open,
@@ -134,11 +140,6 @@ export function ProductFormModal({
         setAdditionalImages([]);
         setPrimaryImageFile(null);
       }
-    }
-
-    // Reset initialization flag when modal closes
-    if (!open) {
-      initializedRef.current = { open: false, productId: null };
     }
   }, [product, open]);
 
