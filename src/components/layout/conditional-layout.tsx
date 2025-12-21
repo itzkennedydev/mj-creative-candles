@@ -11,8 +11,9 @@ interface ConditionalLayoutProps {
 export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith("/admin");
+  const isComingSoonPage = pathname === "/coming-soon";
 
-  if (isAdminPage) {
+  if (isAdminPage || isComingSoonPage) {
     return <>{children}</>;
   }
 

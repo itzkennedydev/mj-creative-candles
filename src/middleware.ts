@@ -4,6 +4,21 @@ import type { NextRequest } from 'next/server';
 import { rateLimit, getCorsHeaders, getSecurityHeaders, logSecurityEvent } from '~/lib/security';
 
 export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Allow access to admin routes and API routes
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isApiRoute = pathname.startsWith('/api');
+  const isComingSoonPage = pathname === '/coming-soon';
+  const isStaticAsset = pathname.startsWith('/_next') || 
+                        pathname.startsWith('/images') || 
+                        pathname.includes('.');
+
+  // Redirect all public routes to coming soon page
+  if (!isAdminRoute && !isApiRoute && !isComingSoonPage && !isStaticAsset) {
+    return NextResponse.redirect(new URL('/coming-soon', request.url));
+  }
+
   const response = NextResponse.next();
 
   // Apply security headers
