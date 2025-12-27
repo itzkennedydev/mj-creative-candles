@@ -1,9 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { Product } from "./types";
-import { env } from "~/env";
+
+function getAdminToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return sessionStorage.getItem('adminToken');
+}
 
 interface ProductsContextType {
   products: Product[];
@@ -54,14 +58,15 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     void fetchProducts();
   }, []);
 
-  const addProduct = async (productData: Omit<Product, "id">) => {
+  const addProduct = useCallback(async (productData: Omit<Product, "id">) => {
     try {
       setError(null);
+      const token = getAdminToken();
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD,
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
         body: JSON.stringify(productData),
       });
@@ -76,16 +81,17 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       setError(err instanceof Error ? err.message : 'Failed to create product');
       throw err;
     }
-  };
+  }, []);
 
-  const updateProduct = async (id: string, productData: Partial<Product>) => {
+  const updateProduct = useCallback(async (id: string, productData: Partial<Product>) => {
     try {
       setError(null);
+      const token = getAdminToken();
       const response = await fetch(`/api/products/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD,
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
         body: JSON.stringify(productData),
       });
@@ -95,8 +101,8 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       }
 
       const updatedProduct = await response.json() as Product;
-      setProducts(prev => 
-        prev.map(product => 
+      setProducts(prev =>
+        prev.map(product =>
           product.id === id ? updatedProduct : product
         )
       );
@@ -104,15 +110,16 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       setError(err instanceof Error ? err.message : 'Failed to update product');
       throw err;
     }
-  };
+  }, []);
 
-  const deleteProduct = async (id: string) => {
+  const deleteProduct = useCallback(async (id: string) => {
     try {
       setError(null);
+      const token = getAdminToken();
       const response = await fetch(`/api/products/${id}`, {
         method: 'DELETE',
         headers: {
-          'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD,
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
       });
 
@@ -125,22 +132,25 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       setError(err instanceof Error ? err.message : 'Failed to delete product');
       throw err;
     }
-  };
+  }, []);
 
-  const getProduct = (id: string) => {
+  const getProduct = useCallback((id: string) => {
     return products.find(product => product.id === id);
-  };
+  }, [products]);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    products,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    getProduct,
+    loading,
+    error
+  }), [products, addProduct, updateProduct, deleteProduct, getProduct, loading, error]);
 
   return (
-    <ProductsContext.Provider value={{
-      products,
-      addProduct,
-      updateProduct,
-      deleteProduct,
-      getProduct,
-      loading,
-      error
-    }}>
+    <ProductsContext.Provider value={contextValue}>
       {children}
     </ProductsContext.Provider>
   );

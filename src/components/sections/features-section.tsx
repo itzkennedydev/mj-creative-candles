@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import Image from 'next/image';
 import { Container } from '~/components/ui/container';
 
@@ -37,7 +38,7 @@ const features: Feature[] = [
   }
 ];
 
-export function FeaturesSection() {
+function FeaturesSectionComponent() {
   return (
     <section className="hidden sm:block py-4 sm:py-6 bg-white border-b border-gray-200">
       <Container>
@@ -74,3 +75,6 @@ export function FeaturesSection() {
     </section>
   );
 }
+
+// Memoize the component since it has static content
+export const FeaturesSection = memo(FeaturesSectionComponent);

@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense, memo } from "react";
 import Image from "next/image";
 import { HeroSlider } from "~/components/sections/hero-slider";
 import { FeaturesSection } from "~/components/sections/features-section";
@@ -10,114 +10,32 @@ import { Button } from "~/components/ui/button";
 import { Container } from "~/components/ui/container";
 import { Skeleton } from "~/components/ui/skeleton";
 
-// Helper to get memory info if available
-const getMemoryInfo = () => {
-  if (typeof window !== "undefined" && (performance as any).memory) {
-    const mem = (performance as any).memory;
-    return {
-      usedJSHeapSize: (mem.usedJSHeapSize / 1048576).toFixed(2) + "MB",
-      totalJSHeapSize: (mem.totalJSHeapSize / 1048576).toFixed(2) + "MB",
-      jsHeapSizeLimit: (mem.jsHeapSizeLimit / 1048576).toFixed(2) + "MB",
-    };
-  }
-  return null;
-};
+// Lazy load heavy components to improve initial bundle size and prevent mobile crashes
+const CategorySection = lazy(() =>
+  import("~/components/sections/category-section").then((mod) => ({
+    default: mod.CategorySection,
+  }))
+);
 
-// Lazy load heavy components to prevent mobile crashes
-const CategorySection = lazy(() => {
-  console.log(
-    "[HOME PAGE] 🔄 Starting to load CategorySection...",
-    getMemoryInfo(),
-  );
-  return import("~/components/sections/category-section")
-    .then((mod) => {
-      console.log(
-        "[HOME PAGE] ✅ CategorySection loaded successfully",
-        getMemoryInfo(),
-      );
-      return { default: mod.CategorySection };
-    })
-    .catch((err) => {
-      console.error("[HOME PAGE] ❌ Failed to load CategorySection:", err);
-      throw err;
-    });
-});
+const FeaturedProducts = lazy(() =>
+  import("~/components/sections/featured-products").then((mod) => ({
+    default: mod.FeaturedProducts,
+  }))
+);
 
-const FeaturedProducts = lazy(() => {
-  console.log(
-    "[HOME PAGE] 🔄 Starting to load FeaturedProducts...",
-    getMemoryInfo(),
-  );
-  return import("~/components/sections/featured-products")
-    .then((mod) => {
-      console.log(
-        "[HOME PAGE] ✅ FeaturedProducts loaded successfully",
-        getMemoryInfo(),
-      );
-      return { default: mod.FeaturedProducts };
-    })
-    .catch((err) => {
-      console.error("[HOME PAGE] ❌ Failed to load FeaturedProducts:", err);
-      throw err;
-    });
-});
-
-const AboutSection = lazy(() => {
-  console.log(
-    "[HOME PAGE] 🔄 Starting to load AboutSection...",
-    getMemoryInfo(),
-  );
-  return import("~/components/sections/about-section")
-    .then((mod) => {
-      console.log(
-        "[HOME PAGE] ✅ AboutSection loaded successfully",
-        getMemoryInfo(),
-      );
-      return { default: mod.AboutSection };
-    })
-    .catch((err) => {
-      console.error("[HOME PAGE] ❌ Failed to load AboutSection:", err);
-      throw err;
-    });
-});
+const AboutSection = lazy(() =>
+  import("~/components/sections/about-section").then((mod) => ({
+    default: mod.AboutSection,
+  }))
+);
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
-  // Track component lifecycle
+  // Set loading to false after initial render
   useEffect(() => {
-    console.log("[HOME PAGE] 🚀 HomePage component mounted", {
-      timestamp: new Date().toISOString(),
-      memory: getMemoryInfo(),
-      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "SSR",
-      viewport:
-        typeof window !== "undefined"
-          ? {
-              width: window.innerWidth,
-              height: window.innerHeight,
-            }
-          : null,
-    });
-
     setLoading(false);
-
-    return () => {
-      console.log("[HOME PAGE] 🔚 HomePage component unmounting", {
-        timestamp: new Date().toISOString(),
-        memory: getMemoryInfo(),
-      });
-    };
   }, []);
-
-  // Track loading state changes
-  useEffect(() => {
-    if (!loading) {
-      console.log(
-        "[HOME PAGE] 📊 Initial loading complete, rendering main content",
-        getMemoryInfo(),
-      );
-    }
-  }, [loading]);
 
   if (loading) {
     return (
@@ -147,21 +65,15 @@ export default function HomePage() {
 
       <Suspense
         fallback={
-          <>
-            {console.log(
-              "[HOME PAGE] ⏳ CategorySection fallback shown (loading...)",
-              getMemoryInfo(),
-            )}
-            <section className="mb-[90px] bg-white py-12 sm:py-16">
-              <Container>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-                  {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="h-64 rounded-sm sm:h-96" />
-                  ))}
-                </div>
-              </Container>
-            </section>
-          </>
+          <section className="mb-[90px] bg-white py-12 sm:py-16">
+            <Container>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-64 rounded-sm sm:h-96" />
+                ))}
+              </div>
+            </Container>
+          </section>
         }
       >
         <CategorySection />
@@ -169,21 +81,15 @@ export default function HomePage() {
 
       <Suspense
         fallback={
-          <>
-            {console.log(
-              "[HOME PAGE] ⏳ FeaturedProducts fallback shown (loading...)",
-              getMemoryInfo(),
-            )}
-            <section className="mb-[90px] bg-white py-12 sm:py-16">
-              <Container>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-                  {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="h-80 rounded-sm" />
-                  ))}
-                </div>
-              </Container>
-            </section>
-          </>
+          <section className="mb-[90px] bg-white py-12 sm:py-16">
+            <Container>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-80 rounded-sm" />
+                ))}
+              </div>
+            </Container>
+          </section>
         }
       >
         <FeaturedProducts />
@@ -191,23 +97,17 @@ export default function HomePage() {
 
       <Suspense
         fallback={
-          <>
-            {console.log(
-              "[HOME PAGE] ⏳ AboutSection fallback shown (loading...)",
-              getMemoryInfo(),
-            )}
-            <section className="mb-[90px] bg-white py-12 sm:py-16">
-              <Container>
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                  <Skeleton className="h-96 rounded-sm" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <Skeleton className="h-80 rounded-sm" />
-                    <Skeleton className="h-80 rounded-sm" />
-                  </div>
+          <section className="mb-[90px] bg-white py-12 sm:py-16">
+            <Container>
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+                <Skeleton className="h-96 rounded-sm" />
+                <div className="grid grid-cols-2 gap-4">
+                  <Skeleton className="h-80 rounded-sm" />
+                  <Skeleton className="h-80 rounded-sm" />
                 </div>
-              </Container>
-            </section>
-          </>
+              </div>
+            </Container>
+          </section>
         }
       >
         <AboutSection />
@@ -222,19 +122,7 @@ export default function HomePage() {
             fill
             loading="lazy"
             className="object-cover"
-            onError={(e) =>
-              console.error(
-                "[HOME PAGE] ❌ Banner image failed to load:",
-                e,
-                getMemoryInfo(),
-              )
-            }
-            onLoad={() =>
-              console.log(
-                "[HOME PAGE] 🖼️  Banner image loaded successfully",
-                getMemoryInfo(),
-              )
-            }
+            sizes="100vw"
           />
         </div>
       </section>

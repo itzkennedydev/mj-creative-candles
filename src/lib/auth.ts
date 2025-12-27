@@ -2,6 +2,25 @@
 import type { NextRequest } from 'next/server';
 import { env } from '~/env.js';
 import { verifyToken } from '~/lib/auth-utils';
+import { timingSafeEqual } from 'crypto';
+
+function safeCompare(a: string, b: string): boolean {
+  try {
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) {
+      const maxLen = Math.max(bufA.length, bufB.length);
+      const paddedA = Buffer.alloc(maxLen);
+      const paddedB = Buffer.alloc(maxLen);
+      bufA.copy(paddedA);
+      bufB.copy(paddedB);
+      return timingSafeEqual(paddedA, paddedB);
+    }
+    return timingSafeEqual(bufA, bufB);
+  } catch {
+    return false;
+  }
+}
 
 export interface AuthResult {
   isAuthenticated: boolean;
@@ -36,7 +55,7 @@ export async function authenticateRequest(request: NextRequest): Promise<AuthRes
     // Fallback: Check for admin password in headers (legacy support)
     const adminPassword = request.headers.get('x-admin-password');
     
-    if (adminPassword && adminPassword === env.ADMIN_PASSWORD) {
+    if (adminPassword && safeCompare(adminPassword, env.ADMIN_PASSWORD)) {
       return {
         isAuthenticated: true,
         isAdmin: true

@@ -5,12 +5,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Menu, ShoppingCart, X, ChevronDown } from "lucide-react";
 import { useCart } from "~/lib/cart-context";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { Container } from "~/components/ui/container";
 import { Button } from "~/components/ui/button";
 import { IMAGE_URLS } from "~/lib/image-config";
 
-export function Header() {
+function HeaderComponent() {
   const { getTotalItems } = useCart();
   const router = useRouter();
   const itemCount = getTotalItems();
@@ -25,8 +25,8 @@ export function Header() {
     null,
   );
 
-  // Shop categories for mega menu
-  const shopCategories = [
+  // Memoize shop categories since they are static
+  const shopCategories = useMemo(() => [
     {
       title: "Product Categories",
       items: [
@@ -56,37 +56,37 @@ export function Header() {
         { name: "New Arrivals", href: "/shop?sort=newest" },
       ],
     },
-  ];
+  ], []);
 
-  // Shop menu hover handlers
-  const handleShopMouseEnter = () => {
+  // Shop menu hover handlers - memoized
+  const handleShopMouseEnter = useCallback(() => {
     if (shopMenuTimeout) {
       clearTimeout(shopMenuTimeout);
     }
     setIsShopMenuOpen(true);
-  };
+  }, [shopMenuTimeout]);
 
-  const handleShopMouseLeave = () => {
+  const handleShopMouseLeave = useCallback(() => {
     const timeout = setTimeout(() => {
       setIsShopMenuOpen(false);
     }, 200);
     setShopMenuTimeout(timeout);
-  };
+  }, []);
 
-  // FAQ menu hover handlers
-  const handleFaqMouseEnter = () => {
+  // FAQ menu hover handlers - memoized
+  const handleFaqMouseEnter = useCallback(() => {
     if (faqMenuTimeout) {
       clearTimeout(faqMenuTimeout);
     }
     setIsFaqMenuOpen(true);
-  };
+  }, [faqMenuTimeout]);
 
-  const handleFaqMouseLeave = () => {
+  const handleFaqMouseLeave = useCallback(() => {
     const timeout = setTimeout(() => {
       setIsFaqMenuOpen(false);
     }, 200);
     setFaqMenuTimeout(timeout);
-  };
+  }, []);
 
   // Handle scroll effect
   useEffect(() => {
@@ -102,11 +102,19 @@ export function Header() {
     setMobileMenuOpen(false);
   }, [router]);
 
-  const handleCartClick = () => {
+  const handleCartClick = useCallback(() => {
     if (itemCount > 0) {
       router.push("/shop/checkout");
     }
-  };
+  }, [itemCount, router]);
+
+  const closeMobileMenu = useCallback(() => {
+    setMobileMenuOpen(false);
+  }, []);
+
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen(prev => !prev);
+  }, []);
 
   return (
     <>
@@ -124,7 +132,7 @@ export function Header() {
             <Link
               href="/"
               className="group flex items-center"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={closeMobileMenu}
             >
               <div
                 className="relative overflow-hidden"
@@ -293,7 +301,7 @@ export function Header() {
 
               {/* Mobile Menu Toggle */}
               <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                onClick={toggleMobileMenu}
                 className="rounded-full p-[8px] transition-all duration-300 hover:bg-black/[0.03] lg:hidden"
                 aria-label="Menu"
               >
@@ -324,49 +332,31 @@ export function Header() {
         >
           <Container>
             <nav className="flex flex-col gap-[8px] py-[40px]">
-              <MobileNavLink href="/" onClick={() => setMobileMenuOpen(false)}>
+              <MobileNavLink href="/" onClick={closeMobileMenu}>
                 Home
               </MobileNavLink>
-              <MobileNavLink
-                href="/shop"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <MobileNavLink href="/shop" onClick={closeMobileMenu}>
                 Shop
               </MobileNavLink>
-              <MobileNavLink
-                href="/track-order"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <MobileNavLink href="/track-order" onClick={closeMobileMenu}>
                 Track Order
               </MobileNavLink>
-              <MobileNavLink
-                href="/about"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <MobileNavLink href="/about" onClick={closeMobileMenu}>
                 About
               </MobileNavLink>
-              <MobileNavLink
-                href="/faq"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <MobileNavLink href="/faq" onClick={closeMobileMenu}>
                 FAQ
               </MobileNavLink>
-              <MobileNavLink
-                href="/candle-care"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <MobileNavLink href="/candle-care" onClick={closeMobileMenu}>
                 Candle Care
               </MobileNavLink>
-              <MobileNavLink
-                href="/contact"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <MobileNavLink href="/contact" onClick={closeMobileMenu}>
                 Contact
               </MobileNavLink>
 
               {/* Mobile CTA Button */}
               <div className="mt-[32px] border-t border-black/[0.06] pt-[32px]">
-                <Link href="/shop" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/shop" onClick={closeMobileMenu}>
                   <Button className="w-full rounded-xl bg-[#1d1d1f] font-medium text-white hover:bg-[#0a0a0a]">
                     Start Shopping
                   </Button>
@@ -374,10 +364,7 @@ export function Header() {
 
                 {/* Cart Summary for Mobile */}
                 {itemCount > 0 && (
-                  <Link
-                    href="/shop/checkout"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <Link href="/shop/checkout" onClick={closeMobileMenu}>
                     <Button
                       className="mt-[12px] w-full bg-[#737373]/10 text-black/[0.72] hover:bg-[#737373]/20"
                       variant="outline"
@@ -455,3 +442,6 @@ function MobileNavLink({
     </Link>
   );
 }
+
+// Memoize Header to prevent unnecessary re-renders
+export const Header = memo(HeaderComponent);

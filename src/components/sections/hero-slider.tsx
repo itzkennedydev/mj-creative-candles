@@ -4,22 +4,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/cart-context";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 
-export function HeroSlider() {
+function HeroSliderComponent() {
   const { openScentQuiz } = useCart();
   const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+  // Memoize the resize handler
+  const checkMobile = useCallback(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
 
+  useEffect(() => {
     checkMobile();
     window.addEventListener("resize", checkMobile);
 
     return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  }, [checkMobile]);
 
   return (
     <section className="relative h-[400px] overflow-hidden sm:h-[500px] lg:h-[600px]">
@@ -61,3 +62,6 @@ export function HeroSlider() {
     </section>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const HeroSlider = memo(HeroSliderComponent);

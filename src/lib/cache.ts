@@ -218,8 +218,11 @@ export const cacheInvalidation = {
 
   // Invalidate a specific product
   product: (productId: string) => {
-    memoryCache.delete(`products:${productId}`);
+    memoryCache.delete(`product-${productId}`); // Match the key format in GET route
+    memoryCache.delete(`products:${productId}`); // Also try alternative format
+    memoryCache.delete("all-products"); // Invalidate the all products list cache
     memoryCache.invalidatePattern("^products:list"); // Also invalidate lists
+    memoryCache.invalidatePattern("^products-"); // Invalidate any product-* keys
     console.log(`[Cache] Invalidated product ${productId}`);
   },
 

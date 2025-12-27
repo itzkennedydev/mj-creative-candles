@@ -3,6 +3,10 @@
     "src/app/api/admin/upload/route.ts": {
       "maxDuration": 60,
       "memory": 1024
+    },
+    "src/app/api/products/[id]/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
     }
   }
 }

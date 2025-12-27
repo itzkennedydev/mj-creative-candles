@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
 import { Container } from "~/components/ui/container";
 import { IMAGE_URLS } from "~/lib/image-config";
 
-export function Footer() {
+function FooterComponent() {
   const [storeInfo, setStoreInfo] = useState({
     name: "MJ Creative Candles",
     email: "hello@mjcreativecandles.com",
@@ -320,3 +320,6 @@ export function Footer() {
     </footer>
   );
 }
+
+// Memoize Footer to prevent unnecessary re-renders
+export const Footer = memo(FooterComponent);

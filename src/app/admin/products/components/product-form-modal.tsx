@@ -85,22 +85,27 @@ export function ProductFormModal({
       return; // Exit early when modal is closed
     }
 
+    // Only initialize if modal just opened or product changed
     const currentProductId = product?.id || null;
-    const shouldInitialize =
-      !initializedRef.current.open ||
+    const productIdChanged =
       initializedRef.current.productId !== currentProductId;
+    const modalJustOpened = !initializedRef.current.open;
+    const shouldInitialize = modalJustOpened || productIdChanged;
 
     console.log("Form initialization check:", {
       open,
       currentProductId,
       initializedRefOpen: initializedRef.current.open,
       initializedRefProductId: initializedRef.current.productId,
+      modalJustOpened,
+      productIdChanged,
       shouldInitialize,
       currentPrimaryImage: primaryImage?.substring(0, 50),
     });
 
     if (shouldInitialize) {
       console.log("INITIALIZING FORM - this will reset all fields");
+      // Mark as initialized BEFORE setting state to prevent race conditions
       initializedRef.current = { open: true, productId: currentProductId };
 
       if (product) {
@@ -116,7 +121,6 @@ export function ProductFormModal({
         setScentFamily(product.scentFamily || "");
         setBurnTime(product.burnTime || "");
         setPrimaryImage(product.image || "");
-        setImageKey((prev) => prev + 1); // Force re-render when modal opens
         setAdditionalImages(
           product.images?.map((img) => ({
             url: typeof img === "string" ? img : img.dataUri,
@@ -136,12 +140,11 @@ export function ProductFormModal({
         setScentFamily("");
         setBurnTime("");
         setPrimaryImage("");
-        setImageKey((prev) => prev + 1); // Force re-render when modal opens
         setAdditionalImages([]);
         setPrimaryImageFile(null);
       }
     }
-  }, [product, open]);
+  }, [product?.id, open]); // Only depend on product ID, not the whole product object
 
   const handlePrimaryImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -292,10 +295,10 @@ export function ProductFormModal({
       const token = sessionStorage.getItem("adminToken");
 
       // If no primary image but we have additional images, promote the first additional image
-      let finalPrimaryImage = primaryImage;
+      let finalPrimaryImage = primaryImage || "";
       let finalAdditionalImages = [...additionalImages];
 
-      if (!primaryImage && additionalImages.length > 0) {
+      if (!finalPrimaryImage && additionalImages.length > 0) {
         finalPrimaryImage = additionalImages[0]?.url || "";
         finalAdditionalImages = additionalImages.slice(1);
 
@@ -306,12 +309,19 @@ export function ProductFormModal({
         });
       }
 
-      // Prepare product data
+      // Verify image is set before saving
+      console.log("[SAVE] Final image check:", {
+        finalPrimaryImage: finalPrimaryImage?.substring(0, 50) || "empty",
+        finalPrimaryImageLength: finalPrimaryImage?.length || 0,
+        primaryImageState: primaryImage?.substring(0, 50) || "empty",
+        primaryImageStateLength: primaryImage?.length || 0,
+      });
+
+      // Prepare product data - ALWAYS include image field explicitly
       const productData: Partial<Product> = {
         name,
         description: description || "",
         price: parseFloat(price),
-        image: finalPrimaryImage,
         category: category || "Apparel",
         inStock,
         topNotes: topNotes || undefined,
@@ -328,36 +338,102 @@ export function ProductFormModal({
         })),
       };
 
-      // Only use placeholder if creating a NEW product with no images at all
+      // Handle image field - always set it explicitly
       if (!product && !finalPrimaryImage) {
+        // New product with no image - use placeholder
         productData.image =
           "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e5e5' width='400' height='400'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
+      } else {
+        // Editing existing product or has image - use the actual value (even if empty string)
+        productData.image = finalPrimaryImage || "";
       }
 
       console.log("Saving product with data:", {
         isEditing: !!product,
         primaryImage: finalPrimaryImage,
+        primaryImageLength: finalPrimaryImage.length,
         primaryImageState: primaryImage,
         additionalImagesCount: finalAdditionalImages.length,
         images: productData.images,
         willUsePlaceholder: !product && !finalPrimaryImage,
+        actualImageValue: productData.image,
+        imageFieldLength: productData.image?.length,
       });
 
       const url = product ? `/api/products/${product.id}` : "/api/products";
       const method = product ? "PUT" : "POST";
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(productData),
+      // DEBUG: Log the exact JSON being sent
+      const jsonBody = JSON.stringify(productData);
+      console.log("[DEBUG] Request body being sent:", {
+        imageField: productData.image?.substring(0, 100) || "empty",
+        imageFieldType: typeof productData.image,
+        imageLength: productData.image?.length || 0,
+        imageIsEmpty: productData.image === "" || !productData.image,
+        bodyLength: jsonBody.length,
+        hasImageField: "image" in productData,
+        allFields: Object.keys(productData),
       });
+      
+      // Validate body size (warn if too large)
+      if (jsonBody.length > 4 * 1024 * 1024) {
+        console.warn("[WARNING] Request body is very large:", {
+          size: jsonBody.length,
+          sizeMB: (jsonBody.length / 1024 / 1024).toFixed(2),
+        });
+      }
+
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: jsonBody,
+        });
+      } catch (fetchError) {
+        console.error("[ERROR] Fetch failed:", fetchError);
+        throw new Error(
+          fetchError instanceof Error
+            ? fetchError.message
+            : "Network error while saving product",
+        );
+      }
 
       if (!response.ok) {
-        const error = await response.json();
+        const errorText = await response.text();
+        let error;
+        try {
+          error = JSON.parse(errorText);
+        } catch {
+          error = { error: errorText || "Failed to save product" };
+        }
+        console.error("[ERROR] API response not OK:", {
+          status: response.status,
+          statusText: response.statusText,
+          error,
+          bodyLength: jsonBody.length,
+          imageInBody: "image" in productData,
+          imageLength: productData.image?.length,
+        });
         throw new Error(error.error || "Failed to save product");
+      }
+
+      // DEBUG: Log what the API returned
+      const responseData = await response.json();
+      console.log("[DEBUG] API response:", {
+        returnedImageLength: responseData.image?.length || 0,
+        returnedImage: responseData.image?.substring(0, 100) || "empty",
+        hasImage: !!responseData.image,
+        allResponseFields: Object.keys(responseData),
+      });
+
+      // Update local state with the response data
+      // Only update if we actually got a response with image data
+      if (responseData.image !== undefined) {
+        setPrimaryImage(responseData.image || "");
       }
 
       addToast({
@@ -368,6 +444,7 @@ export function ProductFormModal({
         type: "success",
       });
 
+      // Call onSuccess to refresh product data, then close modal
       onSuccess();
       onOpenChange(false);
     } catch (error) {
@@ -392,6 +469,11 @@ export function ProductFormModal({
             <Dialog.Title className="text-xl font-semibold text-neutral-900">
               {product ? "Edit Product" : "Add New Product"}
             </Dialog.Title>
+            <Dialog.Description className="sr-only">
+              {product
+                ? "Edit the product details and images"
+                : "Fill in the form to create a new product"}
+            </Dialog.Description>
             <Dialog.Close asChild>
               <button
                 type="button"
@@ -593,17 +675,36 @@ export function ProductFormModal({
 
                   {/* Always show preview box - display image or placeholder */}
                   <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-100 shadow-sm">
-                    {primaryImage ? (
-                      <Image
-                        key={`primary-${imageKey}`}
-                        src={primaryImage}
-                        alt="Primary product image"
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
+                    {primaryImage && primaryImage.trim().length > 0 ? (
+                      <>
+                        <img
+                          key={primaryImage.substring(0, 100)}
+                          src={primaryImage}
+                          alt="Primary product image"
+                          className="absolute inset-0 h-full w-full object-cover"
+                          onError={(e) => {
+                            console.error("Image failed to load");
+                          }}
+                          onLoad={() => {
+                            console.log("Image loaded successfully");
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setPrimaryImageFile(null);
+                            setPrimaryImage("");
+                          }}
+                          className="absolute right-3 top-3 z-10 rounded-full border border-red-200 bg-white p-2 text-red-600 shadow-md transition-all hover:bg-red-50 hover:text-red-700"
+                          aria-label="Remove image"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </>
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center">
+                      <div className="flex h-full w-full items-center justify-center bg-neutral-100">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="100%"
@@ -624,23 +725,6 @@ export function ProductFormModal({
                           </text>
                         </svg>
                       </div>
-                    )}
-                    {primaryImage && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log("Removing primary image");
-                          setPrimaryImage("");
-                          setPrimaryImageFile(null);
-                          setImageKey((prev) => prev + 1); // Force re-render
-                        }}
-                        className="absolute right-3 top-3 z-10 rounded-full border border-red-200 bg-white p-2 text-red-600 shadow-md transition-all hover:bg-red-50 hover:text-red-700"
-                        aria-label="Remove image"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
                     )}
                     <div className="absolute bottom-3 left-3 right-3">
                       <div className="flex gap-2">
@@ -770,13 +854,19 @@ export function ProductFormModal({
             isOpen={isLibraryModalOpen}
             onClose={() => setIsLibraryModalOpen(false)}
             onSelect={(imageUri) => {
-              console.log("Image selected from library:", {
-                length: imageUri.length,
-                preview: imageUri.substring(0, 100) + "...",
+              console.log("Library image selected:", {
+                imageUriLength: imageUri?.length,
+                imageUriPreview: imageUri?.substring(0, 50),
+                isValid: !!imageUri && imageUri.length > 0,
               });
+              
+              if (!imageUri || imageUri.trim().length === 0) {
+                console.error("Invalid image URI from library:", imageUri);
+                return;
+              }
+              
               setPrimaryImage(imageUri);
-              setImageKey((prev) => prev + 1); // Force re-render
-              console.log("Primary image state updated");
+              setPrimaryImageFile(null);
               setIsLibraryModalOpen(false);
             }}
           />

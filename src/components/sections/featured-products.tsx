@@ -7,19 +7,27 @@ import { Container } from "~/components/ui/container";
 import { useCart } from "~/lib/cart-context";
 import { useProductsQuery } from "~/lib/hooks/use-products";
 import { ProductCard } from "~/components/shop/product-card";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import type { Product } from "~/lib/types";
 
-export function FeaturedProducts() {
+function FeaturedProductsComponent() {
   const { addItem } = useCart();
   const { data: allProducts, isLoading } = useProductsQuery();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(4);
 
-  // Filter for featured/visible products only
-  const products =
+  // Memoize filtered products to prevent recalculation on every render
+  const products = useMemo(() =>
     allProducts
       ?.filter((p) => p.visibility === "visible" && p.featured)
-      .slice(0, 20) || [];
+      .slice(0, 20) || [],
+    [allProducts]
+  );
+
+  // Memoize the addItem callback to prevent ProductCard re-renders
+  const handleAddToCart = useCallback((product: Product) => {
+    addItem(product, 1);
+  }, [addItem]);
 
   // Update items per view based on screen size
   useEffect(() => {
@@ -68,21 +76,22 @@ export function FeaturedProducts() {
     return null;
   }
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentIndex + itemsPerView < products.length) {
       setCurrentIndex(currentIndex + 1);
     }
-  };
+  }, [currentIndex, itemsPerView, products.length]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
-  };
+  }, [currentIndex]);
 
-  const visibleProducts = products.slice(
-    currentIndex,
-    currentIndex + itemsPerView,
+  // Memoize visible products slice
+  const visibleProducts = useMemo(() =>
+    products.slice(currentIndex, currentIndex + itemsPerView),
+    [products, currentIndex, itemsPerView]
   );
 
   return (
@@ -132,7 +141,7 @@ export function FeaturedProducts() {
               key={product.id}
               product={product}
               showAddToCart={true}
-              onAddToCart={(product) => addItem(product, 1)}
+              onAddToCart={handleAddToCart}
             />
           ))}
         </div>
@@ -149,3 +158,6 @@ export function FeaturedProducts() {
     </section>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const FeaturedProducts = memo(FeaturedProductsComponent);

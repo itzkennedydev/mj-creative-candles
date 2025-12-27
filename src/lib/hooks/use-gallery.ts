@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { env } from '~/env';
 import type { ProductImage } from '~/lib/types';
 
 interface GalleryResponse {
@@ -11,9 +10,10 @@ interface GalleryResponse {
 }
 
 async function fetchGalleryImages(): Promise<GalleryResponse> {
+  const token = typeof window !== 'undefined' ? sessionStorage.getItem('adminToken') : null;
   const response = await fetch('/api/admin/gallery', {
     headers: {
-      'x-admin-password': env.NEXT_PUBLIC_ADMIN_PASSWORD as string,
+      ...(token && { 'Authorization': `Bearer ${token}` }),
     },
   });
 

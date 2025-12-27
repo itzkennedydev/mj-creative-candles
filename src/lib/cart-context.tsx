@@ -1,11 +1,17 @@
 "use client";
 import { getProductPrice } from "./types";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { CartItem, Product } from "./types";
 import { trackAddToCart } from "./analytics";
-import { ScentTypeform } from "~/components/shop/scent-typeform";
+import dynamic from "next/dynamic";
+
+// Dynamically import heavy ScentTypeform component
+const ScentTypeform = dynamic(
+  () => import("~/components/shop/scent-typeform").then((mod) => mod.ScentTypeform),
+  { ssr: false }
+);
 
 interface CartContextType {
   items: CartItem[];
@@ -46,7 +52,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const addItem = (
+  const addItem = useCallback((
     product: Product,
     quantity: number,
     selectedSize?: string,
@@ -90,9 +96,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         },
       ];
     });
-  };
+  }, []);
 
-  const removeItem = (itemId: string) => {
+  const removeItem = useCallback((itemId: string) => {
     setItems((prev) =>
       prev.filter(
         (item) =>
@@ -100,11 +106,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
           itemId,
       ),
     );
-  };
+  }, []);
 
-  const updateQuantity = (itemId: string, quantity: number) => {
+  const updateQuantity = useCallback((itemId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeItem(itemId);
+      setItems((prev) =>
+        prev.filter(
+          (item) =>
+            `${item.product.id}-${item.selectedColor ?? "default"}-${item.customColorValue ?? "default"}` !==
+            itemId,
+        ),
+      );
       return;
     }
 
@@ -114,46 +126,47 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return currentItemId === itemId ? { ...item, quantity } : item;
       }),
     );
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
-  };
+  }, []);
 
-  const getTotalItems = () => {
+  const getTotalItems = useCallback(() => {
     return items.reduce((sum, item) => sum + item.quantity, 0);
-  };
+  }, [items]);
 
-  const getTotalPrice = () => {
+  const getTotalPrice = useCallback(() => {
     return items.reduce((sum, item) => {
       const itemPrice = getProductPrice(item.product);
       return sum + itemPrice * item.quantity;
     }, 0);
-  };
+  }, [items]);
 
-  const openScentQuiz = () => {
+  const openScentQuiz = useCallback(() => {
     setIsScentQuizOpen(true);
-  };
+  }, []);
 
-  const closeScentQuiz = () => {
+  const closeScentQuiz = useCallback(() => {
     setIsScentQuizOpen(false);
-  };
+  }, []);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    items,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    getTotalItems,
+    getTotalPrice,
+    isScentQuizOpen,
+    openScentQuiz,
+    closeScentQuiz,
+  }), [items, addItem, removeItem, updateQuantity, clearCart, getTotalItems, getTotalPrice, isScentQuizOpen, openScentQuiz, closeScentQuiz]);
 
   return (
-    <CartContext.Provider
-      value={{
-        items,
-        addItem,
-        removeItem,
-        updateQuantity,
-        clearCart,
-        getTotalItems,
-        getTotalPrice,
-        isScentQuizOpen,
-        openScentQuiz,
-        closeScentQuiz,
-      }}
-    >
+    <CartContext.Provider value={contextValue}>
       {children}
       <ScentTypeform isOpen={isScentQuizOpen} onClose={closeScentQuiz} />
     </CartContext.Provider>

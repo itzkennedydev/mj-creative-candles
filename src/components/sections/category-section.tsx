@@ -1,21 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "~/components/ui/container";
-
-// Helper to get memory info
-const getMemoryInfo = () => {
-  if (typeof window !== "undefined" && (performance as any).memory) {
-    const mem = (performance as any).memory;
-    return {
-      usedJSHeapSize: (mem.usedJSHeapSize / 1048576).toFixed(2) + "MB",
-      totalJSHeapSize: (mem.totalJSHeapSize / 1048576).toFixed(2) + "MB",
-    };
-  }
-  return null;
-};
 
 interface CategoryCard {
   id: number;
@@ -56,21 +44,7 @@ const categories: CategoryCard[] = [
   },
 ];
 
-export function CategorySection() {
-  useEffect(() => {
-    console.log("[CATEGORY SECTION] 🚀 Component mounted", {
-      timestamp: new Date().toISOString(),
-      memory: getMemoryInfo(),
-    });
-
-    return () => {
-      console.log("[CATEGORY SECTION] 🔚 Component unmounting", {
-        timestamp: new Date().toISOString(),
-        memory: getMemoryInfo(),
-      });
-    };
-  }, []);
-
+function CategorySectionComponent() {
   return (
     <section className="mb-[90px] bg-white py-12 sm:py-16">
       <Container>
@@ -190,3 +164,6 @@ export function CategorySection() {
     </section>
   );
 }
+
+// Memoize the component since it has static content
+export const CategorySection = memo(CategorySectionComponent);

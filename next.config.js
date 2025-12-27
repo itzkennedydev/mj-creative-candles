@@ -46,8 +46,22 @@ const nextConfig = {
   },
   // Performance optimizations
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', '@tanstack/react-query'],
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-icons',
+      '@tanstack/react-query',
+      'framer-motion',
+      'date-fns',
+      '@visx/axis',
+      '@visx/scale',
+      '@visx/shape',
+      '@visx/group',
+      '@visx/tooltip',
+      '@visx/responsive',
+    ],
   },
+  // Enable React strict mode for performance debugging
+  reactStrictMode: true,
   // Aggressive caching for static assets
   async headers() {
     return [
